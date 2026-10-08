@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Волшебная школа: Мемо таблица умножения</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at 20% 30%, #2e1a47, #1a0b2e, #0b0515);
+            padding: 16px;
+            margin: 0;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Волшебные звёзды на фоне */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 15% 20%, #ffdd88, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 80% 10%, #d4b0ff, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 45% 70%, #b28aff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 92% 65%, #ffe48a, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 10% 85%, #c39bff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 70% 90%, #ffd966, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 55% 35%, #b28aff, rgba(0,0,0,0));
+            background-repeat: no-repeat;
+            pointer-events: none;
+            opacity: 0.7;
+            animation: twinkle 3s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        .game-container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(46, 26, 71, 0.65);
+            backdrop-filter: blur(6px);
+            border: 3px solid #b886ff;
+            border-radius: 48px;
+            box-shadow: 0 0 40px #9f6eff, 0 0 15px #c89aff inset;
+            padding: 24px 24px 32px;
+            position: relative;
+            z-index: 3;
+            transition: all 0.2s;
+        }
+
+        /* Магические руны по углам */
+        .game-container::before,
+        .game-container::after {
+            content: '✦';
+            position: absolute;
+            font-size: 34px;
+            color: #ffe48a;
+            text-shadow: 0 0 12px #ffb347, 0 0 25px #b886ff;
+            opacity: 0.8;
+        }
+        .game-container::before {
+            top: 10px;
+            left: 25px;
+            transform: rotate(20deg);
+        }
+        .game-container::after {
+            bottom: 10px;
+            right: 25px;
+            transform: rotate(-15deg);
+        }
+
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 26px;
+            gap: 16px;
+        }
+
+        .title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .title h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #f3e7ff;
+            text-shadow: 0 0 12px #c28aff, 0 0 25px #9f4eff, 0 0 35px #6300c7;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #fff4d0, #e6d0ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .stats {
+            display: flex;
+            gap: 28px;
+            background: rgba(28, 12, 49, 0.8);
+            padding: 12px 26px;
+            border-radius: 50px;
+            border: 2px solid #b886ff;
+            box-shadow: 0 0 18px #bc8aff, inset 0 0 10px #4b2a7a;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #ffe8b0;
+            font-weight: 600;
+            font-size: 1.4rem;
+            text-shadow: 0 0 8px #e1b3ff;
+        }
+
+        .stat-icon {
+            font-size: 1.9rem;
+            filter: drop-shadow(0 0 8px #ffbb33);
+        }
+
+        .lives {
+            color: #ff7b9c;
+        }
+
+        .timer {
+            color: #a8e6ff;
+        }
+
+        /* Игровое поле - сетка */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            justify-content: center;
+            margin: 25px 0 25px;
+        }
+
+        .card {
+            aspect-ratio: 1 / 1;
+            background: radial-gradient(circle at 30% 25%, #653ea8, #2a1447);
+            border: 3px solid #d6b0ff;
+            border-radius: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #fef6d6;
+            text-shadow: 0 0 12px #ffffb0, 0 0 25px #b57bff;
+            cursor: pointer;
+            box-shadow: 0 10px 0 #1f0b32, 0 0 20px #b97aff, inset 0 0 20px #cfaaff;
+            transition: all 0.1s ease;
+            padding: 8px;
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 235, 140, 0.25) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .card:hover::after {
+            opacity: 1;
+        }
+
+        .card.closed {
+            background: radial-gradient(circle at 30% 25%, #3f266b, #1b0d2e);
+            border-color: #7f5eb3;
+            color: transparent;
+            text-shadow: none;
+            box-shadow: 0 8px 0 #130824, 0 0 20px #7f5eb3, inset 0 0 20px #491e7a;
+            cursor: pointer;
+        }
+
+        .card.closed::before {
+            content: '?';
+            font-size: 2.8rem;
+            font-weight: 900;
+            color: #cdb0ff;
+            text-shadow: 0 0 15px #f0e2ff, 0 0 30px #9d65ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .card.matched {
+            background: radial-gradient(circle at 30% 25%, #64b86b, #1f6b2a);
+            border-color: #d4ffb0;
+            box-shadow: 0 8px 0 #0e3b15, 0 0 30px #b0ff9e, inset 0 0 20px #d0ffb0;
+            color: #ffffe0;
+            text-shadow: 0 0 15px #aaffaa, 0 0 25px #ffffb0;
+            cursor: default;
+            pointer-events: none;
+            transition: all 0.3s;
+            transform: scale(0.98);
+        }
+
+        .card.matched::before {
+            content: none;
+        }
+
+        .card:active:not(.closed):not(.matched) {
+            transform: scale(0.96);
+            box-shadow: 0 5px 0 #1f0b32, 0 0 25px #cfaaff;
+        }
+
+        /* Кнопка перезапуска */
+        .restart-btn {
+            display: block;
+            margin: 10px auto 0;
+            padding: 14px 48px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ad72ff, #6d31b0);
+            border: none;
+            border-radius: 50px;
+            color: #fff7d6;
+            text-shadow: 0 0 10px #ffe28a;
+            letter-spacing: 2px;
+            box-shadow: 0 10px 0 #2a1740, 0 0 30px #b77aff;
+            cursor: pointer;
+            transition: all 0.08s linear;
+            width: fit-content;
+            border: 2px solid #e5c3ff;
+        }
+
+        .restart-btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 5px 0 #2a1740, 0 0 35px #cfaaff;
+        }
+
+        .message-box {
+            text-align: center;
+            font-size: 1.6rem;
+            margin-top: 16px;
+            color: #ffecb3;
+            text-shadow: 0 0 15px #bb8aff;
+            min-height: 3rem;
+            font-weight: 600;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 16px;
+            }
+            .title h1 {
+                font-size: 1.6rem;
+            }
+            .stats {
+                padding: 8px 16px;
+                gap: 16px;
+            }
+            .stat-item {
+                font-size: 1.1rem;
+            }
+            .board {
+                gap: 10px;
+            }
+            .card {
+                font-size: 1.5rem;
+                border-radius: 16px;
+            }
+            .card.closed::before {
+                font-size: 2rem;
+            }
+            .restart-btn {
+                font-size: 1.1rem;
+                padding: 12px 30px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .board {
+                gap: 6px;
+            }
+            .card {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div class="header">
+        <div class="title">
+            <h1>✨ Магическая таблица ✨</h1>
+        </div>
+        <div class="stats">
+            <div class="stat-item timer">
+                <span class="stat-icon">⏳</span>
+                <span id="timerDisplay">60</span>
+            </div>
+            <div class="stat-item lives">
+                <span class="stat-icon">💖</span>
+                <span id="livesDisplay">3</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="board" id="board"></div>
+
+    <button class="restart-btn" id="restartBtn">🔄 Заклинание сброса</button>
+    <div class="message-box" id="messageBox"></div>
+</div>
+
+<script>
+    (function() {
+        // ---------- НАСТРОЙКИ ИГРЫ ----------
+        const PAIRS_COUNT = 8;            // 8 пар = 16 карточек
+        const INITIAL_TIME = 60;          // секунд
+        const INITIAL_LIVES = 3;
+
+        // ---------- ГЕНЕРАЦИЯ ПАР (пример и ответ) ----------
+        // Создаём массив примеров: [множитель1, множитель2] -> результат
+        // Используем числа от 2 до 9, чтобы примеры были в рамках таблицы умножения
+        function generatePairs() {
+            const pairs = [];
+            const usedExamples = new Set();
+
+            while (pairs.length < PAIRS_COUNT) {
+                const a = Math.floor(Math.random() * 8) + 2; // 2-9
+                const b = Math.floor(Math.random() * 8) + 2; // 2-9
+                const key = `${a}×${b}`;
+
+                if (!usedExamples.has(key)) {
+                    usedExamples.add(key);
+                    const product = a * b;
+                    // пример в виде "a×b", ответ в виде "= product" (без пробелов для компактности)
+                    pairs.push({
+                        example: `${a}×${b}`,
+                        answer: `${product}`,
+                        pairId: pairs.length // уникальный id пары
+                    });
+                }
+            }
+            return pairs;
+        }
+
+        // ---------- СОСТОЯНИЕ ИГРЫ ----------
+        let cards = [];                 // массив объектов карточек { pairId, content, type, matched, element }
+        let openedCards = [];           // индексы открытых (не подобранных) карточек
+        let matchedCount = 0;           // количество найденных пар
+        let lives = INITIAL_LIVES;
+        let timer = INITIAL_TIME;
+        let timerInterval = null;
+        let gameActive = false;
+        let lockBoard = false;          // блокировка на время проверки
+
+        // DOM элементы
+        const boardEl = document.getElementById('board');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const livesDisplay = document.getElementById('livesDisplay');
+        const messageBox = document.getElementById('messageBox');
+        const restartBtn = document.getElementById('restartBtn');
+
+        // ---------- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ----------
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // Обновление отображения жизней и таймера
+        function updateStats() {
+            timerDisplay.textContent = timer;
+            livesDisplay.textContent = lives;
+        }
+
+        // Остановка таймера
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        // Запуск таймера (если игра активна и не закончилась)
+        function startTimer() {
+            if (timerInterval) stopTimer();
+            timerInterval = setInterval(() => {
+                if (!gameActive) return;
+                timer -= 1;
+                updateStats();
+
+                if (timer <= 0) {
+                    timer = 0;
+                    updateStats();
+                    endGame('timeout');
+                }
+            }, 1000);
+        }
+
+        // Завершение игры (проигрыш или победа)
+        function endGame(reason) {
+            if (!gameActive) return;
+            gameActive = false;
+            stopTimer();
+
+            if (reason === 'win') {
+                messageBox.textContent = '🎉 Победа! Ты великий волшебник умножения! 🎉';
+            } else if (reason === 'timeout') {
+                messageBox.textContent = '⏰ Время вышло! Попробуй ещё раз! ⏰';
+            } else if (reason === 'lives') {
+                messageBox.textContent = '💔 Жизни закончились... Магия рассеялась. 💔';
+            } else if (reason === 'restart') {
+                // ничего не пишем, перезапуск сам очистит
+            }
+
+            // Блокируем все карточки (визуально можно оставить)
+            // Но не даём кликать, для этого отключаем обработчики через gameActive
+        }
+
+        // Проверка на победу
+        function checkWin() {
+            if (matchedCount === PAIRS_COUNT) {
+                endGame('win');
+                return true;
+            }
+            return false;
+        }
+
+        // Сброс состояния открытых карт (при ошибке или в конце хода)
+        function resetOpenedCards() {
+            openedCards.forEach(idx => {
+                const card = cards[idx];
+                if (!card.matched && card.element) {
+                    card.element.classList.add('closed');
+                }
+            });
+            openedCards = [];
+        }
+
+        // Обработка ошибки (несовпадение)
+        function handleMismatch() {
+            lives -= 1;
+            updateStats();
+
+            // Визуальная тряска для карточек
+            openedCards.forEach(idx => {
+                const el = cards[idx].element;
+                if (el) {
+                    el.style.transform = 'translateX(4px)';
+                    setTimeout(() => el.style.transform = '', 100);
+                    setTimeout(() => el.style.transform = 'translateX(-4px)', 100);
+                    setTimeout(() => el.style.transform = '', 200);
+                }
+            });
+
+            if (lives <= 0) {
+                endGame('lives');
+                // Закрываем все открытые карточки
+                resetOpenedCards();
+                // Блокируем клики
+                return;
+            }
+
+            // Закрываем открытые карточки с задержкой
+            setTimeout(() => {
+                resetOpenedCards();
+                lockBoard = false;
+            }, 500);
+        }
+
+        // Обработка совпадения
+        function handleMatch(card1Idx, card2Idx) {
+            const card1 = cards[card1Idx];
+            const card2 = cards[card2Idx];
+
+            card1.matched = true;
+            card2.matched = true;
+            matchedCount += 1;
+
+            // Помечаем элементы как matched (убираем класс closed)
+            if (card1.element) {
+                card1.element.classList.remove('closed');
+                card1.element.classList.add('matched');
+            }
+            if (card2.element) {
+                card2.element.classList.remove('closed');
+                card2.element.classList.add('matched');
+            }
+
+            // Очищаем openedCards
+            openedCards = openedCards.filter(idx => idx !== card1Idx && idx !== card2Idx);
+            lockBoard = false;
+
+            if (checkWin()) return;
+        }
+
+        // ---------- ОБРАБОТЧИК КЛИКА ПО КАРТОЧКЕ ----------
+        function onCardClick(index) {
+            // Проверки: игра активна, нет блокировки, карточка не открыта и не найдена
+            if (!gameActive || lockBoard) return;
+
+            const card = cards[index];
+            if (!card || card.matched) return;
+            if (openedCards.includes(index)) return; // уже открыта
+
+            // Открываем карточку
+            card.element.classList.remove('closed');
+            openedCards.push(index);
+
+            // Если открыто две карточки
+            if (openedCards.length === 2) {
+                lockBoard = true;
+                const idx1 = openedCards[0];
+                const idx2 = openedCards[1];
+                const card1 = cards[idx1];
+                const card2 = cards[idx2];
+
+                // Проверяем, являются ли они парой (одинаковый pairId)
+                // Важно: пример и ответ одной пары имеют одинаковый pairId
+                if (card1.pairId === card2.pairId) {
+                    // Совпадение!
+                    handleMatch(idx1, idx2);
+                } else {
+                    // Ошибка
+                    handleMismatch();
+                }
+            }
+        }
+
+        // ---------- СОЗДАНИЕ ИГРОВОГО ПОЛЯ ----------
+        function buildBoard() {
+            // Генерируем пары
+            const pairs = generatePairs();
+
+            // Создаём массив карточек: для каждой пары две карточки (пример и ответ)
+            const newCards = [];
+            pairs.forEach((pair, pairIndex) => {
+                // Пример (например "3×4")
+                newCards.push({
+                    pairId: pairIndex,
+                    content: pair.example,
+                    type: 'example',
+                    matched: false,
+                    element: null,
+                });
+                // Ответ (например "12")
+                newCards.push({
+                    pairId: pairIndex,
+                    content: pair.answer,
+                    type: 'answer',
+                    matched: false,
+                    element: null,
+                });
+            });
+
+            // Перемешиваем
+            cards = shuffleArray(newCards);
+
+            // Очищаем доску
+            boardEl.innerHTML = '';
+            // Сбрасываем счётчики
+            openedCards = [];
+            matchedCount = 0;
+            lockBoard = false;
+
+            // Создаём DOM-элементы
+            cards.forEach((card, idx) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card closed';   // изначально закрыта
+                cardEl.textContent = card.content;  // текст будет виден при открытии (CSS скрывает через цвет)
+                // Но для закрытой карточки мы хотим видеть "?" - это реализовано через ::before
+                // А textContent скрыт благодаря color: transparent в .closed
+                cardEl.addEventListener('click', () => onCardClick(idx));
+                boardEl.appendChild(cardEl);
+                card.element = cardEl;
+            });
+
+            // Обновляем статистику
+            updateStats();
+            messageBox.textContent = 'Найди все пары: пример и ответ!';
+        }
+
+        // ---------- ПЕРЕЗАПУСК ИГРЫ ----------
+        function restartGame() {
+            // Останавливаем текущий таймер
+            stopTimer();
+            // Сбрасываем параметры
+            gameActive = false;
+            lives = INITIAL_LIVES;
+            timer = INITIAL_TIME;
+            updateStats();
+            messageBox.textContent = '';
+
+            // Перестраиваем доску
+            buildBoard();
+
+            // Запускаем игру
+            gameActive = true;
+            startTimer();
+        }
+
+        // ---------- ИНИЦИАЛИЗАЦИЯ ----------
+        function initGame() {
+            restartGame(); // сразу запускаем
+
+            // Обработчик кнопки рестарта
+            restartBtn.addEventListener('click', () => {
+                restartGame();
+            });
+        }
+
+        // Запуск после загрузки страницы
+        window.addEventListener('load', initGame);
+    })();
+</script>
+</body>
+</html>
