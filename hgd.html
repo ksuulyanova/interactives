@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Простые и сложные предложения — 3 класс</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #e8f0e3; /* мягкий пастельный зелёный фон-запасной */
+            background-image: url('https://i.pinimg.com/736x/1a/8c/32/1a8c32c1edc122942a4db2c973be0b97.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            padding: 16px;
+        }
+
+        /* Полупрозрачная пастельно-зелёная подложка, чтобы текст читался на фоне */
+        .game-wrapper {
+            background-color: rgba(240, 255, 240, 0.82);
+            backdrop-filter: blur(2px);
+            border-radius: 50px 50px 40px 40px;
+            padding: 30px 35px 40px;
+            max-width: 850px;
+            width: 100%;
+            box-shadow: 0 15px 30px rgba(80, 100, 70, 0.2);
+            border: 3px solid #c0d9b5;
+            transition: all 0.2s;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            color: #2d5e2d;
+            text-shadow: 2px 2px 0 #d4e8d0;
+            letter-spacing: 1px;
+            margin-top: -10px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            word-break: break-word;
+        }
+
+        /* Верхняя панель: таймер и очки */
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #d9ead3;
+            border-radius: 100px;
+            padding: 12px 25px;
+            margin-bottom: 25px;
+            border: 2px solid #a8c99b;
+            box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8), 0 5px 0 #8fb583;
+            font-weight: bold;
+            color: #264d26;
+        }
+
+        .timer-box, .score-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+        }
+
+        .timer-box span, .score-box span {
+            background: white;
+            padding: 5px 18px;
+            border-radius: 40px;
+            border: 2px solid #b1cfaa;
+            color: #2b5e2b;
+            font-weight: 800;
+            min-width: 90px;
+            text-align: center;
+            box-shadow: 0 3px 0 #8cb080;
+            font-size: 1.7rem;
+            line-height: 1.2;
+        }
+
+        .icon {
+            font-size: 1.9rem;
+            line-height: 1;
+        }
+
+        /* Карточка героя и предложения */
+        .hero-card {
+            background: #f7fff2;
+            border-radius: 60px;
+            padding: 20px 25px 15px;
+            border: 3px solid #b8d9ae;
+            box-shadow: 0 10px 0 #9bbd8e, 0 10px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.1s;
+        }
+
+        .hero-avatar {
+            font-size: 4.5rem;
+            filter: drop-shadow(0 8px 6px rgba(120, 100, 70, 0.2));
+            margin-bottom: 5px;
+            line-height: 1;
+            transition: transform 0.3s ease;
+        }
+
+        .hero-avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .sentence-bubble {
+            background: #ffffff;
+            border-radius: 40px 40px 40px 15px;
+            padding: 24px 30px;
+            border: 3px solid #b0d2a5;
+            box-shadow: inset 0 0 0 3px #e2f0db, 0 6px 0 #9cbd8f;
+            width: 100%;
+            text-align: center;
+            font-size: 1.7rem;
+            font-weight: 600;
+            color: #1e3d1e;
+            line-height: 1.4;
+            word-break: break-word;
+            margin: 5px 0 10px;
+            position: relative;
+        }
+
+        /* Хвостик у облачка предложения */
+        .sentence-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 20px solid #b0d2a5;
+            filter: drop-shadow(0 4px 0 #9cbd8f);
+        }
+
+        .sentence-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -11px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 17px solid transparent;
+            border-right: 17px solid transparent;
+            border-top: 17px solid #ffffff;
+            z-index: 2;
+        }
+
+        /* Кнопки вариантов */
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+            margin: 25px 0 18px;
+        }
+
+        .option-btn {
+            background: #e2f0db;
+            border: 3px solid #a1c296;
+            border-radius: 50px;
+            padding: 16px 24px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #204d20;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #86a97a, 0 6px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.1s ease;
+            flex: 1 1 180px;
+            letter-spacing: 0.3px;
+            font-family: inherit;
+            text-align: center;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: #d4e8ca;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #86a97a, 0 10px 18px rgba(0, 0, 0, 0.1);
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #86a97a, 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .option-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: translateY(3px);
+            box-shadow: 0 3px 0 #86a97a;
+            background: #d0dfc8;
+            border-color: #9bb28f;
+        }
+
+        /* Правильный/неправильный ответ — цветовая подсветка (добавляется на клик) */
+        .option-btn.correct-highlight {
+            background: #b5e6a8;
+            border-color: #4caf50;
+            box-shadow: 0 3px 0 #3d8b40;
+        }
+
+        .option-btn.wrong-highlight {
+            background: #f8c6c0;
+            border-color: #d46b5e;
+            box-shadow: 0 3px 0 #b35a4e;
+        }
+
+        .feedback {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            min-height: 3.5rem;
+            color: #2a552a;
+            padding: 10px 0 0;
+            transition: all 0.2s;
+        }
+
+        .next-btn {
+            background: #c7e0bc;
+            border: 3px solid #88b07c;
+            border-radius: 40px;
+            padding: 15px 45px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1d3d1d;
+            cursor: pointer;
+            box-shadow: 0 7px 0 #6e9463;
+            transition: all 0.1s ease;
+            display: block;
+            margin: 10px auto 0;
+            font-family: inherit;
+            letter-spacing: 0.5px;
+        }
+
+        .next-btn:hover:not(:disabled) {
+            background: #b8d6ac;
+            transform: translateY(-2px);
+            box-shadow: 0 9px 0 #6e9463;
+        }
+
+        .next-btn:active:not(:disabled) {
+            transform: translateY(5px);
+            box-shadow: 0 2px 0 #6e9463;
+        }
+
+        .next-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: translateY(4px);
+            box-shadow: 0 3px 0 #6e9463;
+        }
+
+        /* Финишный экран */
+        .finish-screen {
+            text-align: center;
+            padding: 20px 10px;
+        }
+
+        .finish-screen h2 {
+            font-size: 2.5rem;
+            color: #265226;
+            margin-bottom: 20px;
+        }
+
+        .finish-score {
+            font-size: 2rem;
+            background: #d9ead3;
+            display: inline-block;
+            padding: 15px 40px;
+            border-radius: 60px;
+            border: 3px solid #a8c99b;
+            margin: 15px 0 25px;
+            font-weight: 800;
+            color: #1d4a1d;
+            box-shadow: 0 6px 0 #8fb583;
+        }
+
+        .restart-btn {
+            background: #c7e0bc;
+            border: 3px solid #88b07c;
+            border-radius: 40px;
+            padding: 15px 40px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1d3d1d;
+            cursor: pointer;
+            box-shadow: 0 7px 0 #6e9463;
+            transition: all 0.1s ease;
+            font-family: inherit;
+        }
+
+        .restart-btn:hover {
+            background: #b8d6ac;
+            transform: translateY(-2px);
+            box-shadow: 0 9px 0 #6e9463;
+        }
+
+        /* Адаптив */
+        @media (max-width: 650px) {
+            .game-wrapper {
+                padding: 20px 18px 30px;
+                border-radius: 30px;
+            }
+            h1 {
+                font-size: 1.6rem;
+            }
+            .timer-box span, .score-box span {
+                font-size: 1.3rem;
+                min-width: 70px;
+                padding: 3px 12px;
+            }
+            .icon {
+                font-size: 1.5rem;
+            }
+            .sentence-bubble {
+                font-size: 1.3rem;
+                padding: 18px 15px;
+            }
+            .option-btn {
+                font-size: 1.1rem;
+                padding: 12px 16px;
+                flex: 1 1 140px;
+            }
+            .hero-avatar {
+                font-size: 3.5rem;
+            }
+            .feedback {
+                font-size: 1.2rem;
+                min-height: 3rem;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+                text-align: center;
+            }
+            .timer-box, .score-box {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-wrapper" id="gameWrapper">
+        <!-- Основной игровой интерфейс будет отрисован здесь -->
+    </div>
+
+    <script>
+        (function() {
+            // ---------- ДАННЫЕ ----------
+            const HEROES = [
+                { avatar: '🦊', name: 'Лисёнок' },
+                { avatar: '🐻', name: 'Медвежонок' },
+                { avatar: '🐰', name: 'Зайчонок' },
+                { avatar: '🦉', name: 'Совёнок' },
+                { avatar: '🐨', name: 'Коала' },
+                { avatar: '🐼', name: 'Панда' },
+                { avatar: '🦁', name: 'Львёнок' },
+                { avatar: '🐸', name: 'Лягушонок' }
+            ];
+
+            const SENTENCES = [
+                { text: 'Наступила золотая осень.', type: 'Простое' },
+                { text: 'Птицы улетают на юг, а звери готовятся к зиме.', type: 'Сложное' },
+                { text: 'В саду созрели яблоки, груши и сливы.', type: 'Простое с однородными членами предложения' },
+                { text: 'Дети играли в мяч, и солнце ярко светило.', type: 'Сложное' },
+                { text: 'Мама купила хлеб и молоко.', type: 'Простое с однородными членами предложения' },
+                { text: 'Я люблю читать книги.', type: 'Простое' },
+                { text: 'Ветер дул с моря, и волны бились о берег.', type: 'Сложное' },
+                { text: 'На клумбе росли красные, жёлтые и белые цветы.', type: 'Простое с однородными членами предложения' },
+                { text: 'Пришла зима, и реки покрылись льдом.', type: 'Сложное' },
+                { text: 'Кот спал на диване.', type: 'Простое' },
+                { text: 'Мы бегали, прыгали и веселились.', type: 'Простое с однородными членами предложения' },
+                { text: 'Солнце село, но было ещё светло.', type: 'Сложное' }
+            ];
+
+            const OPTIONS = [
+                { label: 'Простое', value: 'Простое' },
+                { label: 'Сложное', value: 'Сложное' },
+                { label: 'Простое с однородными членами предложения', value: 'Простое с однородными членами предложения' }
+            ];
+
+            const TIMER_START = 60; // секунд
+
+            // ---------- СОСТОЯНИЕ ----------
+            let currentQuestionIndex = 0;
+            let score = 0;
+            let timeLeft = TIMER_START;
+            let timerInterval = null;
+            let answered = false;
+            let gameActive = true;
+            let currentSentence = null;
+            let currentHero = null;
+            let questions = []; // перемешанные предложения
+
+            // DOM-элементы
+            const wrapper = document.getElementById('gameWrapper');
+
+            // ---------- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ----------
+            function shuffleArray(arr) {
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+                return arr;
+            }
+
+            function formatTime(sec) {
+                return `${sec}с`;
+            }
+
+            // Остановка таймера
+            function stopTimer() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            }
+
+            // Запуск таймера
+            function startTimer() {
+                stopTimer();
+                timerInterval = setInterval(() => {
+                    if (!gameActive || answered) return; // таймер не идёт, пока ждём ответа? 
+                    // Нет, таймер должен идти всегда, но если answered, всё равно уменьшаем? 
+                    // Лучше: таймер идёт, но если время вышло — конец игры.
+                    // Но если уже ответили, то время всё равно тикает, но мы не блокируем.
+                    // Однако если ответ уже дан и мы ждём "далее", таймер может закончиться — это нестрашно.
+                    // Но чтобы не было конфликта, оставим тиканье, но если игра завершена — остановим.
+                    if (timeLeft <= 1) {
+                        timeLeft = 0;
+                        updateTimerDisplay();
+                        stopTimer();
+                        if (gameActive) {
+                            // Время вышло — завершаем игру
+                            gameActive = false;
+                            answered = true; // блокируем кнопки
+                            renderGameOver();
+                        }
+                        return;
+                    }
+                    timeLeft--;
+                    updateTimerDisplay();
+                }, 1000);
+            }
+
+            function updateTimerDisplay() {
+                const timerSpan = document.getElementById('timerValue');
+                if (timerSpan) timerSpan.textContent = formatTime(timeLeft);
+            }
+
+            // Обновление отображения счёта
+            function updateScoreDisplay() {
+                const scoreSpan = document.getElementById('scoreValue');
+                if (scoreSpan) scoreSpan.textContent = score;
+            }
+
+            // Сброс игры
+            function resetGame() {
+                stopTimer();
+                // Перемешиваем вопросы
+                questions = shuffleArray([...SENTENCES]);
+                currentQuestionIndex = 0;
+                score = 0;
+                timeLeft = TIMER_START;
+                answered = false;
+                gameActive = true;
+                // Обновляем таймер и счёт
+                updateScoreDisplay();
+                updateTimerDisplay();
+                // Запускаем таймер заново
+                startTimer();
+                // Отрисовываем первый вопрос
+                renderQuestion();
+            }
+
+            // ---------- ОТРИСОВКА ----------
+            function renderQuestion() {
+                if (!gameActive) return;
+
+                // Проверка на конец вопросов
+                if (currentQuestionIndex >= questions.length) {
+                    // Игра пройдена досрочно (все вопросы кончились)
+                    gameActive = false;
+                    stopTimer();
+                    renderFinish(true);
+                    return;
+                }
+
+                currentSentence = questions[currentQuestionIndex];
+                // Случайный герой для каждого вопроса
+                currentHero = HEROES[Math.floor(Math.random() * HEROES.length)];
+                answered = false;
+
+                // Собираем HTML
+                const html = `
+                    <h1>📚 Простые и сложные предложения</h1>
+                    <div class="stats">
+                        <div class="timer-box">
+                            <span class="icon">⏳</span>
+                            <span id="timerValue">${formatTime(timeLeft)}</span>
+                        </div>
+                        <div class="score-box">
+                            <span class="icon">🏆</span>
+                            <span id="scoreValue">${score}</span>
+                        </div>
+                    </div>
+                    <div class="hero-card">
+                        <div class="hero-avatar">${currentHero.avatar}</div>
+                        <div class="sentence-bubble">${currentSentence.text}</div>
+                    </div>
+                    <div class="options" id="optionsContainer">
+                        ${OPTIONS.map(opt => `
+                            <button class="option-btn" data-value="${opt.value}">${opt.label}</button>
+                        `).join('')}
+                    </div>
+                    <div class="feedback" id="feedbackMessage"></div>
+                    <button class="next-btn" id="nextBtn" disabled>➡️ Далее</button>
+                `;
+
+                wrapper.innerHTML = html;
+
+                // Навешиваем обработчики на кнопки вариантов
+                const optionButtons = document.querySelectorAll('.option-btn');
+                optionButtons.forEach(btn => {
+                    btn.addEventListener('click', onOptionClick);
+                });
+
+                // Кнопка "Далее"
+                const nextBtn = document.getElementById('nextBtn');
+                nextBtn.addEventListener('click', onNextClick);
+
+                // Обновляем таймер и счёт (на случай, если изменились)
+                updateTimerDisplay();
+                updateScoreDisplay();
+            }
+
+            // Обработчик клика по варианту
+            function onOptionClick(event) {
+                if (answered || !gameActive) return;
+
+                const selectedBtn = event.currentTarget;
+                const selectedValue = selectedBtn.dataset.value;
+                const isCorrect = (selectedValue === currentSentence.type);
+
+                answered = true;
+
+                // Блокируем все кнопки
+                const allOptions = document.querySelectorAll('.option-btn');
+                allOptions.forEach(btn => {
+                    btn.disabled = true;
+                });
+
+                // Подсвечиваем правильный и неправильный ответ
+                allOptions.forEach(btn => {
+                    if (btn.dataset.value === currentSentence.type) {
+                        btn.classList.add('correct-highlight');
+                    } else if (btn === selectedBtn && !isCorrect) {
+                        btn.classList.add('wrong-highlight');
+                    }
+                });
+
+                // Начисляем баллы
+                if (isCorrect) {
+                    score += 10;
+                    updateScoreDisplay();
+                } else {
+                    // Можно ничего не вычитать, но для 3 класса лучше не наказывать
+                    // Оставим без изменений
+                }
+
+                // Показываем сообщение
+                const feedback = document.getElementById('feedbackMessage');
+                if (isCorrect) {
+                    feedback.textContent = '✅ Верно! Молодец! +10 баллов';
+                    feedback.style.color = '#1e6b1e';
+                } else {
+                    feedback.textContent = `❌ Ошибка. Правильный ответ: "${currentSentence.type}"`;
+                    feedback.style.color = '#b33a2a';
+                }
+
+                // Активируем кнопку "Далее"
+                const nextBtn = document.getElementById('nextBtn');
+                if (nextBtn) nextBtn.disabled = false;
+
+                // Если время уже вышло, gameActive = false, но мы можем обработать
+                if (!gameActive) {
+                    // Если игра завершена по таймеру, кнопка далее не нужна
+                    if (nextBtn) nextBtn.disabled = true;
+                }
+            }
+
+            // Обработчик кнопки "Далее"
+            function onNextClick() {
+                if (!gameActive) return;
+                if (!answered) return; // на всякий случай
+
+                // Переход к следующему вопросу
+                currentQuestionIndex++;
+
+                if (currentQuestionIndex < questions.length) {
+                    renderQuestion();
+                } else {
+                    // Вопросы закончились — победа
+                    gameActive = false;
+                    stopTimer();
+                    renderFinish(true);
+                }
+            }
+
+            // Экран завершения (по таймеру или по окончании вопросов)
+            function renderFinish(isWin = false) {
+                stopTimer();
+                gameActive = false;
+
+                let message = '';
+                let emoji = '';
+                if (timeLeft <= 0 && currentQuestionIndex < questions.length) {
+                    // Время вышло
+                    message = 'Время вышло! Но ты старался!';
+                    emoji = '⏰';
+                } else {
+                    // Все вопросы пройдены
+                    message = 'Отлично! Ты справился со всеми предложениями!';
+                    emoji = '🎉';
+                }
+
+                const html = `
+                    <div class="finish-screen">
+                        <h2>${emoji} Игра завершена!</h2>
+                        <div class="finish-score">🏆 Баллы: ${score}</div>
+                        <p style="font-size: 1.5rem; margin-bottom: 25px; color: #2b552b;">${message}</p>
+                        <button class="restart-btn" id="restartButton">🔄 Играть снова</button>
+                    </div>
+                `;
+
+                wrapper.innerHTML = html;
+
+                const restartBtn = document.getElementById('restartButton');
+                if (restartBtn) {
+                    restartBtn.addEventListener('click', () => {
+                        resetGame();
+                    });
+                }
+            }
+
+            // Экран проигрыша по таймеру (вызывается из таймера)
+            function renderGameOver() {
+                stopTimer();
+                gameActive = false;
+                answered = true;
+
+                // Блокируем кнопки, если они есть
+                const allOptions = document.querySelectorAll('.option-btn');
+                allOptions.forEach(btn => btn.disabled = true);
+                const nextBtn = document.getElementById('nextBtn');
+                if (nextBtn) nextBtn.disabled = true;
+
+                // Показываем экран завершения
+                renderFinish(false);
+            }
+
+            // ---------- ИНИЦИАЛИЗАЦИЯ ----------
+            function initGame() {
+                resetGame();
+            }
+
+            // Запуск при загрузке
+            initGame();
+
+        })();
+    </script>
+</body>
+</html>
