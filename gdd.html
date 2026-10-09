@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Хогвартс: Три испытания</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+        height: 100%;
+        overflow: hidden;
+        font-family: 'Georgia', 'Times New Roman', serif;
+    }
+
+    body {
+        background-color: #0a1f14;
+        background-image: url('https://i.pinimg.com/736x/1a/8c/32/1a8c32c1edc122942a4db2c973be0b97.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        color: #f0e6c0;
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(ellipse at center, rgba(10, 30, 20, 0.55) 0%, rgba(5, 15, 10, 0.88) 100%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .app {
+        position: relative;
+        z-index: 1;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        padding: 14px 20px;
+        overflow: hidden;
+    }
+
+    /* ====== ОБЩИЕ ЭЛЕМЕНТЫ ====== */
+    .title {
+        text-align: center;
+        font-size: clamp(1.2rem, 2.4vw, 1.9rem);
+        font-weight: 700;
+        color: #fff3c4;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        text-shadow: 0 0 14px rgba(184, 150, 62, 0.8), 2px 2px 0 rgba(0,0,0,0.6);
+        margin-bottom: 8px;
+        flex-shrink: 0;
+    }
+
+    .subtitle {
+        text-align: center;
+        font-size: clamp(0.85rem, 1.2vw, 1.05rem);
+        color: #d4c48a;
+        font-style: italic;
+        margin-bottom: 10px;
+        flex-shrink: 0;
+    }
+
+    .hud {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+    }
+
+    .hud-item {
+        background: linear-gradient(145deg, #1a3d2a, #0f2a1c);
+        border: 2px solid #b8963e;
+        border-radius: 30px;
+        padding: 6px 18px;
+        font-size: clamp(0.8rem, 1.1vw, 1rem);
+        color: #fff3c4;
+        font-weight: 700;
+        box-shadow: 0 3px 0 #6b4f1d, 0 4px 12px rgba(0,0,0,0.5);
+        letter-spacing: 0.5px;
+    }
+
+    .hud-item .val { color: #ffd96b; font-size: 1.15em; margin-left: 6px; }
+
+    /* ====== КНОПКИ ====== */
+    .btn {
+        font-family: 'Georgia', serif;
+        font-weight: 700;
+        letter-spacing: 1px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        border: 2px solid #b8963e;
+        color: #f0e6c0;
+        background: linear-gradient(145deg, #1a3d2a, #123322);
+        box-shadow: 0 5px 0 #6b4f1d, 0 6px 12px rgba(0,0,0,0.3);
+        padding: 12px 26px;
+        font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+    }
+
+    .btn:hover:not(:disabled) {
+        background: linear-gradient(145deg, #23573b, #1a422b);
+        transform: translateY(-2px);
+        box-shadow: 0 7px 0 #6b4f1d, 0 9px 18px rgba(0,0,0,0.35);
+    }
+
+    .btn:active:not(:disabled) {
+        transform: translateY(4px);
+        box-shadow: 0 1px 0 #6b4f1d;
+    }
+
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: translateY(3px); box-shadow: 0 2px 0 #6b4f1d; }
+
+    .btn.gold {
+        background: linear-gradient(145deg, #b8963e, #8a6d24);
+        color: #1a2a1a;
+        border-color: #6b4f1d;
+        box-shadow: 0 5px 0 #4a3512, 0 8px 16px rgba(0,0,0,0.35);
+    }
+    .btn.gold:hover:not(:disabled) {
+        background: linear-gradient(145deg, #d4b968, #a8852e);
+        box-shadow: 0 7px 0 #4a3512, 0 10px 20px rgba(0,0,0,0.4);
+    }
+    .btn.gold:active:not(:disabled) { box-shadow: 0 1px 0 #4a3512; }
+
+    /* ====== ГЛАВНОЕ МЕНЮ С ДВЕРЯМИ ====== */
+    .menu-screen {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        min-height: 0;
+    }
+
+    .doors {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        gap: clamp(14px, 3vw, 45px);
+        flex: 1;
+        width: 100%;
+        max-height: 62vh;
+        padding: 10px;
+    }
+
+    .door-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        transition: transform 0.25s ease;
+        flex: 0 1 220px;
+        max-width: 240px;
+    }
+
+    .door-wrap:hover { transform: translateY(-10px); }
+
+    .door {
+        position: relative;
+        width: 100%;
+        height: clamp(220px, 40vh, 380px);
+        border: 5px solid #6b4f1d;
+        border-radius: 100px 100px 8px 8px;
+        background: linear-gradient(180deg, #5a3a1a 0%, #3a2410 100%);
+        box-shadow: 
+            0 0 0 3px #b8963e,
+            0 12px 30px rgba(0,0,0,0.7),
+            inset 0 0 60px rgba(0,0,0,0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: clamp(3rem, 7vw, 5.5rem);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .door-wrap:hover .door {
+        box-shadow: 
+            0 0 0 3px #d4b968,
+            0 0 40px rgba(212, 185, 104, 0.6),
+            0 12px 30px rgba(0,0,0,0.7),
+            inset 0 0 60px rgba(184, 150, 62, 0.2);
+    }
+
+    /* Свечение за дверью (имитация) */
+    .door::before {
+        content: '';
+        position: absolute;
+        inset: 6px;
+        border-radius: 92px 92px 4px 4px;
+        background: radial-gradient(ellipse at 50% 30%, rgba(255, 220, 130, 0.35), transparent 60%);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+    }
+    .door-wrap:hover .door::before { opacity: 1; }
+
+    /* Ручка двери */
+    .door::after {
+        content: '';
+        position: absolute;
+        right: 16%;
+        top: 55%;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #ffd96b, #b8963e);
+        box-shadow: 0 0 10px rgba(255, 217, 107, 0.8);
+    }
+
+    .door-emoji {
+        position: relative;
+        z-index: 2;
+        filter: drop-shadow(0 0 12px rgba(255, 217, 107, 0.6));
+        transition: transform 0.3s ease;
+    }
+
+    .door-wrap:hover .door-emoji { transform: scale(1.15); }
+
+    /* Свечение пола под дверью */
+    .door-glow {
+        position: absolute;
+        bottom: -4px;
+        left: 10%;
+        right: 10%;
+        height: 10px;
+        background: radial-gradient(ellipse at center, rgba(255, 217, 107, 0.6), transparent 70%);
+        filter: blur(4px);
+    }
+
+    .door-label {
+        font-size: clamp(0.85rem, 1.2vw, 1.1rem);
+        font-weight: 700;
+        color: #fff3c4;
+        text-align: center;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        text-shadow: 0 0 10px rgba(184, 150, 62, 0.8), 2px 2px 0 rgba(0,0,0,0.7);
+        background: rgba(10, 30, 20, 0.85);
+        border: 2px solid #b8963e;
+        border-radius: 20px;
+        padding: 6px 16px;
+        white-space: nowrap;
+    }
+
+    .door-status {
+        font-size: 0.8rem;
+        color: #d4c48a;
+        font-style: italic;
+        letter-spacing: 0.5px;
+    }
+
+    .door-wrap.completed .door {
+        filter: saturate(0.5) brightness(0.75);
+    }
+    .door-wrap.completed .door-label::after {
+        content: ' ✓';
+        color: #4fd97a;
+        text-shadow: 0 0 10px #4fd97a;
+    }
+
+    /* ====== ЭКРАНЫ ИСПЫТАНИЙ ====== */
+    .screen {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .screen-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        flex-shrink: 0;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .screen-title {
+        font-size: clamp(1rem, 1.6vw, 1.35rem);
+        font-weight: 700;
+        color: #fff3c4;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        text-shadow: 0 0 12px rgba(184, 150, 62, 0.8);
+    }
+
+    .back-btn {
+        background: linear-gradient(145deg, #6b3a1a, #4a2410);
+        border: 2px solid #b8963e;
+        color: #f0e6c0;
+        border-radius: 30px;
+        padding: 8px 20px;
+        font-size: clamp(0.8rem, 1vw, 0.95rem);
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+        letter-spacing: 0.5px;
+        transition: all 0.15s ease;
+        box-shadow: 0 4px 0 #3a1a08;
+    }
+    .back-btn:hover {
+        background: linear-gradient(145deg, #8a4a24, #6b3a1a);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 0 #3a1a08;
+    }
+    .back-btn:active {
+        transform: translateY(3px);
+        box-shadow: 0 1px 0 #3a1a08;
+    }
+
+    /* --- ИСПЫТАНИЕ 1: АНАГРАММЫ --- */
+    .anagram-board {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: clamp(14px, 3vh, 32px);
+        min-height: 0;
+        padding: 10px;
+    }
+
+    .anagram-task {
+        text-align: center;
+        width: 100%;
+        max-width: 900px;
+    }
+
+    .anagram-label {
+        font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+        color: #d4c48a;
+        font-style: italic;
+        margin-bottom: 10px;
+        letter-spacing: 0.5px;
+    }
+
+    .anagram-letters {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: clamp(6px, 1vw, 12px);
+        margin-bottom: 18px;
+    }
+
+    .letter-tile {
+        width: clamp(42px, 5.5vw, 68px);
+        height: clamp(42px, 5.5vw, 68px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(160deg, #f5ecd0 0%, #d4b968 100%);
+        border: 3px solid #6b4f1d;
+        border-radius: 10px;
+        font-size: clamp(1.4rem, 2.4vw, 2.1rem);
+        font-weight: 800;
+        color: #2d1f0a;
+        text-transform: uppercase;
+        box-shadow: 0 5px 0 #4a3512, 0 6px 14px rgba(0,0,0,0.5);
+        font-family: 'Georgia', serif;
+        text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+    }
+
+    .answer-slots {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: clamp(6px, 1vw, 12px);
+        margin-bottom: 12px;
+        min-height: clamp(50px, 6vw, 78px);
+    }
+
+    .slot {
+        width: clamp(42px, 5.5vw, 68px);
+        height: clamp(42px, 5.5vw, 68px);
+        border: 3px dashed #b8963e;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 250, 230, 0.15);
+        font-size: clamp(1.4rem, 2.4vw, 2.1rem);
+        font-weight: 800;
+        color: #fff3c4;
+        text-transform: uppercase;
+        font-family: 'Georgia', serif;
+        transition: all 0.2s ease;
+    }
+
+    .slot.filled {
+        background: linear-gradient(160deg, #2a5a3a, #1a3d2a);
+        border: 3px solid #4fd97a;
+        color: #fff3c4;
+        box-shadow: 0 0 14px rgba(79, 217, 122, 0.5);
+    }
+
+    .slot.active {
+        border-color: #ffd96b;
+        box-shadow: 0 0 18px rgba(255, 217, 107, 0.7);
+        animation: pulseSlot 1s ease infinite;
+    }
+
+    @keyframes pulseSlot {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.06); }
+    }
+
+    .anagram-hint {
+        font-size: clamp(0.85rem, 1.1vw, 1rem);
+        color: #d4c48a;
+        font-style: italic;
+        text-align: center;
+        min-height: 1.4em;
+    }
+
+    .anagram-progress {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 8px;
+    }
+
+    .word-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid #b8963e;
+        background: transparent;
+        transition: all 0.3s ease;
+    }
+    .word-dot.done {
+        background: #4fd97a;
+        box-shadow: 0 0 12px #4fd97a;
+    }
+
+    /* --- ИСПЫТАНИЕ 2: СОСТАВЛЕНИЕ ПРЕДЛОЖЕНИЙ --- */
+    .compose-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: clamp(10px, 2vh, 20px);
+        min-height: 0;
+        padding: 8px;
+        max-width: 950px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .compose-prompt {
+        text-align: center;
+        font-size: clamp(0.95rem, 1.3vw, 1.15rem);
+        color: #fff3c4;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        flex-shrink: 0;
+    }
+
+    .drop-zone {
+        min-height: clamp(70px, 12vh, 120px);
+        border: 3px dashed #b8963e;
+        border-radius: 14px;
+        background: rgba(255, 250, 230, 0.12);
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .drop-zone.drag-over {
+        border-color: #ffd96b;
+        background: rgba(255, 217, 107, 0.2);
+        box-shadow: inset 0 0 30px rgba(255, 217, 107, 0.3);
+    }
+
+    .drop-zone .placeholder {
+        color: #a89878;
+        font-style: italic;
+        font-size: clamp(0.85rem, 1.1vw, 1rem);
+    }
+
+    .word-bank {
+        flex: 1;
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start;
+        justify-content: center;
+        gap: 10px;
+        padding: 14px;
+        background: rgba(10, 30, 20, 0.5);
+        border: 2px solid #6b4f1d;
+        border-radius: 14px;
+        overflow-y: auto;
+        min-height: 0;
+    }
+
+    .word-chip {
+        background: linear-gradient(160deg, #f5ecd0 0%, #d4b968 100%);
+        color: #2d1f0a;
+        border: 3px solid #6b4f1d;
+        border-radius: 10px;
+        padding: clamp(8px, 1vw, 12px) clamp(14px, 1.6vw, 20px);
+        font-size: clamp(0.95rem, 1.3vw, 1.15rem);
+        font-weight: 700;
+        font-family: 'Georgia', serif;
+        cursor: grab;
+        user-select: none;
+        box-shadow: 0 4px 0 #4a3512, 0 5px 12px rgba(0,0,0,0.4);
+        transition: all 0.15s ease;
+        letter-spacing: 0.3px;
+    }
+
+    .word-chip:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 0 #4a3512, 0 8px 16px rgba(0,0,0,0.5);
+    }
+
+    .word-chip:active { cursor: grabbing; transform: translateY(2px); box-shadow: 0 2px 0 #4a3512; }
+
+    .word-chip.dragging { opacity: 0.45; }
+
+    .word-chip.in-zone {
+        background: linear-gradient(160deg, #2a5a3a, #1a3d2a);
+        color: #fff3c4;
+        border-color: #4fd97a;
+        box-shadow: 0 4px 0 #0d3a1c, 0 0 12px rgba(79, 217, 122, 0.4);
+    }
+
+    /* --- ИСПЫТАНИЕ 3: ПРАВДА И ЛОЖЬ --- */
+    .tf-list {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        gap: 8px;
+        min-height: 0;
+        padding: 8px;
+        max-width: 950px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .tf-item {
+        display: flex;
+        align-items: center;
+        gap: clamp(10px, 1.5vw, 20px);
+        background: rgba(255, 250, 230, 0.1);
+        border: 2px solid #6b4f1d;
+        border-radius: 12px;
+        padding: clamp(10px, 1.4vh, 16px) clamp(14px, 1.8vw, 22px);
+        transition: all 0.2s ease;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .tf-item:hover { background: rgba(255, 250, 230, 0.16); }
+
+    .tf-item.correct {
+        border-color: #4fd97a;
+        background: rgba(79, 217, 122, 0.15);
+        box-shadow: 0 0 16px rgba(79, 217, 122, 0.3);
+    }
+
+    .tf-item.wrong {
+        border-color: #d44a3a;
+        background: rgba(212, 74, 58, 0.15);
+        box-shadow: 0 0 16px rgba(212, 74, 58, 0.3);
+    }
+
+    .tf-text {
+        flex: 1;
+        font-size: clamp(0.9rem, 1.25vw, 1.15rem);
+        color: #f0e6c0;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+
+    .tf-controls {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .tf-btn {
+        width: clamp(42px, 4.5vw, 56px);
+        height: clamp(42px, 4.5vw, 56px);
+        border-radius: 12px;
+        border: 3px solid #6b4f1d;
+        background: rgba(10, 30, 20, 0.6);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: clamp(1.3rem, 1.8vw, 1.7rem);
+        transition: all 0.15s ease;
+        box-shadow: 0 4px 0 #4a3512;
+        position: relative;
+    }
+
+    .tf-btn:hover:not(.locked) { transform: translateY(-2px); box-shadow: 0 6px 0 #4a3512; }
+    .tf-btn:active:not(.locked) { transform: translateY(2px); box-shadow: 0 2px 0 #4a3512; }
+
+    .tf-btn.locked { cursor: default; }
+
+    .tf-btn.selected-true {
+        background: linear-gradient(145deg, #1e6b3a, #14532a);
+        border-color: #4fd97a;
+        box-shadow: 0 4px 0 #0d3a1c, 0 0 18px rgba(79, 217, 122, 0.6);
+    }
+
+    .tf-btn.selected-false {
+        background: linear-gradient(145deg, #6b1e1e, #4a1414);
+        border-color: #d44a3a;
+        box-shadow: 0 4px 0 #3a0d0d, 0 0 18px rgba(212, 74, 58, 0.6);
+    }
+
+    .tf-btn .check-mark {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #4fd97a;
+        color: #0a1f14;
+        font-size: 14px;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 10px #4fd97a;
+        animation: popIn 0.3s ease;
+    }
+
+    @keyframes popIn {
+        0% { transform: scale(0); }
+        70% { transform: scale(1.3); }
+        100% { transform: scale(1); }
+    }
+
+    /* ====== ФИНАЛЬНЫЙ ЭКРАН ПОБЕДЫ ====== */
+    .victory-screen {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 16px;
+        padding: 20px;
+    }
+
+    .victory-crest {
+        font-size: clamp(4rem, 10vw, 7rem);
+        filter: drop-shadow(0 0 30px rgba(255, 217, 107, 0.9));
+        animation: floatCrest 2.5s ease-in-out infinite;
+    }
+
+    @keyframes floatCrest {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-12px); }
+    }
+
+    .victory-title {
+        font-size: clamp(1.5rem, 3vw, 2.4rem);
+        color: #fff3c4;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        text-shadow: 0 0 20px rgba(184, 150, 62, 0.9), 3px 3px 0 rgba(0,0,0,0.6);
+        font-weight: 800;
+    }
+
+    .victory-sub {
+        font-size: clamp(0.95rem, 1.4vw, 1.2rem);
+        color: #d4c48a;
+        font-style: italic;
+        max-width: 600px;
+    }
+
+    /* ====== ТОСТ ====== */
+    .toast {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-120%);
+        background: linear-gradient(145deg, #1a3d2a, #0f2a1c);
+        border: 2px solid #b8963e;
+        color: #fff3c4;
+        padding: 12px 28px;
+        border-radius: 30px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        z-index: 100;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 30px rgba(184, 150, 62, 0.5);
+        transition: transform 0.4s ease;
+        font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+        text-align: center;
+        max-width: 90vw;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .toast.success { border-color: #4fd97a; box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 30px rgba(79, 217, 122, 0.6); }
+    .toast.error { border-color: #d44a3a; box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 30px rgba(212, 74, 58, 0.6); }
+
+    /* ====== АДАПТИВ ====== */
+    @media (max-width: 720px) {
+        .app { padding: 10px 12px; }
+        .doors { gap: 12px; }
+        .door-label { font-size: 0.75rem; padding: 5px 10px; white-space: normal; }
+        .door-status { font-size: 0.7rem; }
+        .screen-header { justify-content: center; }
+    }
+
+    @media (max-width: 500px) {
+        .doors { flex-direction: column; max-height: none; }
+        .door-wrap { flex: 1; max-width: 100%; }
+        .door { height: 28vh; }
+    }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+    // ========== ДАННЫЕ ==========
+    const VOCAB_WORDS = ['ПЕНАЛ', 'МОРОЗ', 'КАРТИНА'];
+
+    const SENTENCE_TASKS = [
+        {
+            prompt: 'Составь предложение: "У меня есть новый пенал."',
+            words: ['У', 'меня', 'есть', 'новый', 'пенал.'],
+            answer: ['У', 'меня', 'есть', 'новый', 'пенал.']
+        },
+        {
+            prompt: 'Составь предложение: "На улице сильный мороз."',
+            words: ['На', 'улице', 'сильный', 'мороз.'],
+            answer: ['На', 'улице', 'сильный', 'мороз.']
+        },
+        {
+            prompt: 'Составь предложение: "На стене висит красивая картина."',
+            words: ['На', 'стене', 'висит', 'красивая', 'картина.'],
+            answer: ['На', 'стене', 'висит', 'красивая', 'картина.']
+        }
+    ];
+
+    const TF_STATEMENTS = [
+        { text: 'Слово «пенал» пишется с буквой «и» в первом слоге.', isTrue: false },
+        { text: 'Слово «мороз» — словарное слово.', isTrue: true },
+        { text: 'В слове «картина» три слога.', isTrue: true },
+        { text: 'Слово «пенал» обозначает школьную принадлежность.', isTrue: true },
+        { text: 'Слово «мороз» пишется с буквой «а» в корне.', isTrue: false },
+        { text: 'Слово «картина» можно перенести как «кар-ти-на».', isTrue: false }
+    ];
+
+    // ========== СОСТОЯНИЕ ==========
+    const state = {
+        screen: 'menu', // menu | anagram | compose | truefalse | victory
+        completed: { anagram: false, compose: false, truefalse: false },
+        // Анаграммы
+        anaWordIndex: 0,
+        anaLetterPool: [],
+        anaSlots: [],
+        anaSolved: [],
+        // Составление
+        composeIndex: 0,
+        // Правда/ложь
+        tfAnswers: {}, // index -> true/false
+        tfChecked: false
+    };
+
+    const app = document.getElementById('app');
+    const toastEl = document.getElementById('toast');
+    let toastTimeout = null;
+
+    // ========== УТИЛИТЫ ==========
+    function shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function showToast(text, type = 'success') {
+        toastEl.textContent = text;
+        toastEl.className = 'toast show ' + type;
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toastEl.classList.remove('show');
+        }, 2200);
+    }
+
+    // ========== ГЛАВНОЕ МЕНЮ ==========
+    function renderMenu() {
+        const done = Object.values(state.completed).filter(Boolean).length;
+        const allDone = done === 3;
+
+        app.innerHTML = `
+            <div class="menu-screen">
+                <div class="title">⚡ Хогвартс: Три испытания ⚡</div>
+                <div class="subtitle">Выбери дверь, чтобы начать испытание · Пройдено: ${done} из 3</div>
+
+                <div class="doors">
+                    ${renderDoor('anagram', '📜', 'Анаграммы', 'Собери словарные слова', state.completed.anagram)}
+                    ${renderDoor('compose', '✍️', 'Предложения', 'Составь предложения из слов', state.completed.compose)}
+                    ${renderDoor('truefalse', '⚖️', 'Правда и ложь', 'Расставь галочки', state.completed.truefalse)}
+                </div>
+
+                ${allDone ? `<button class="btn gold" id="victoryBtn" style="margin-top:8px;">🏆 Завершить обучение</button>` : ''}
+            </div>
+        `;
+
+        document.querySelectorAll('.door-wrap').forEach(el => {
+            el.addEventListener('click', () => {
+                const key = el.dataset.key;
+                if (state.completed[key]) {
+                    showToast('Это испытание уже пройдено!', 'success');
+                    return;
+                }
+                if (key === 'anagram') startAnagram();
+                if (key === 'compose') startCompose();
+                if (key === 'truefalse') startTrueFalse();
+            });
+        });
+
+        const victoryBtn = document.getElementById('victoryBtn');
+        if (victoryBtn) victoryBtn.addEventListener('click', render
