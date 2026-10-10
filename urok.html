@@ -163,59 +163,90 @@
     box-shadow: 0 0 0 4px rgba(216,180,226,0.15);
   }
 
-  .ortho-grid {
+  /* ---- Комната 3: карточки с пропуском ---- */
+  .ortho-tasks {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
-    gap: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 16px;
   }
-  .ortho-card {
+  .task-card {
+    background: #fff8fc;
+    border: 2px solid #f8c8dc;
     border-radius: 16px;
-    padding: 18px 20px;
-    transition: 0.3s;
+    padding: 16px 18px;
     box-shadow: 0 4px 14px rgba(220,190,220,0.2);
+    transition: 0.3s;
   }
-  .ortho-card:nth-child(6n+1) { background: #fff0f5; border: 2px solid #f8c8dc; }
-  .ortho-card:nth-child(6n+2) { background: #f3ecff; border: 2px solid #ddd0f0; }
-  .ortho-card:nth-child(6n+3) { background: #e8f7f5; border: 2px solid #b8e0da; }
-  .ortho-card:nth-child(6n+4) { background: #fff5e8; border: 2px solid #ffd9b3; }
-  .ortho-card:nth-child(6n+5) { background: #eaf4ff; border: 2px solid #b8d4f0; }
-  .ortho-card:nth-child(6n+6) { background: #fdf2f8; border: 2px solid #f0c4dd; }
+  .task-card:hover { box-shadow: 0 8px 20px rgba(200,160,190,0.3); }
+  .task-card.correct { background: #eaf9ef; border-color: #a8d8b8; }
+  .task-card.wrong   { background: #fff0f3; border-color: #f5a8bc; }
 
-  .ortho-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 22px rgba(200,160,190,0.3);
-  }
-  .ortho-card h4 {
-    color: #8a5a7a;
+  .task-word {
+    font-size: 19px;
+    color: #6a5a6a;
     margin-bottom: 12px;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    line-height: 1.5;
   }
-  .ortho-card .badge {
-    background: #fff;
-    color: #b57b9c;
-    padding: 3px 11px;
-    border-radius: 14px;
-    font-size: 12px;
-    border: 1.5px solid #f0c4dd;
-  }
-  .ortho-card ul { list-style: none; }
-  .ortho-card li { margin: 8px 0; font-size: 15px; color: #6a5a6a; }
-  .ortho-card .word {
+  .task-word .blank {
+    display: inline-block;
+    width: 42px;
+    height: 34px;
+    border: none;
+    border-bottom: 2.5px dashed #d8b4e2;
+    background: #fdf7ff;
+    font-family: inherit;
+    font-size: 18px;
     font-weight: bold;
-    color: #c96a9b;
+    color: #b57b9c;
+    text-align: center;
+    vertical-align: middle;
+    outline: none;
+    border-radius: 6px 6px 0 0;
+    transition: 0.25s;
+    text-transform: lowercase;
   }
-  .ortho-card .explain {
-    color: #9888a8;
-    font-style: italic;
-    font-size: 13px;
-    display: block;
-    margin-top: 3px;
+  .task-word .blank:focus {
+    background: #fbf2ff;
+    border-bottom-style: solid;
+    border-bottom-color: #b57b9c;
+    box-shadow: 0 3px 0 rgba(216,180,226,0.25);
   }
+  .task-card.correct .blank { border-bottom-color: #6aab7d; color: #4d7a5a; background: #eaf9ef; }
+  .task-card.wrong   .blank { border-bottom-color: #e57393; color: #c94a6a; background: #fff0f3; }
 
+  .task-rule {
+    width: 100%;
+    padding: 9px 12px;
+    border: 2px dashed #e6d5f7;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 14px;
+    background: #fdf7ff;
+    color: #6a5a6a;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: 0.25s;
+  }
+  .task-rule:focus {
+    outline: none;
+    border-style: solid;
+    border-color: #d8b4e2;
+    background: #fbf2ff;
+  }
+  .task-card.correct .task-rule { border-color: #a8d8b8; background: #f3fbf6; }
+  .task-card.wrong   .task-rule { border-color: #f5a8bc; background: #fff5f7; }
+
+  .task-feedback {
+    font-size: 13px;
+    font-style: italic;
+    color: #9888a8;
+    min-height: 18px;
+    margin-top: 4px;
+  }
+  .task-card.correct .task-feedback { color: #4d7a5a; }
+  .task-card.wrong   .task-feedback { color: #c94a6a; }
+
+  /* ---- Комната 4: слова ---- */
   .match-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -277,6 +308,14 @@
   }
 
   #matchStatus {
+    text-align: center;
+    margin-top: 22px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #b57b9c;
+  }
+
+  #orthoResult {
     text-align: center;
     margin-top: 22px;
     font-size: 18px;
@@ -404,93 +443,18 @@
 
 <!-- ====== КОМНАТА 3 ====== -->
 <div class="room" id="room3">
-  <h2>Комната 3. Орфограммы текста (1–4 класс)</h2>
+  <h2>Комната 3. Вставь пропущенную букву и назови орфограмму</h2>
   <p style="margin-bottom:18px; color:#9888a8;">
-    Здесь только те орфограммы, которые изучают в начальной школе. Наведи мышкой на слово — увидишь пояснение.
+    В каждом слове пропущена буква. Впиши её в окошко и выбери из списка название орфограммы. Потом нажми «Проверить всё».
   </p>
 
-  <div class="ortho-grid">
+  <div class="ortho-tasks" id="orthoTasks"></div>
 
-    <div class="ortho-card">
-      <h4>Безударная гласная в корне (проверяемая) <span class="badge">1</span></h4>
-      <ul>
-        <li><span class="word">провОдил</span> — пров<b>о</b>дит<span class="explain">ставим гласную под ударение</span></li>
-        <li><span class="word">бОльшом</span> — б<b>о</b>льше<span class="explain">проверяем словом «больше»</span></li>
-        <li><span class="word">командОвал</span> — ком<b>а</b>нда<span class="explain">проверяем «команда»</span></li>
-        <li><span class="word">опрЕделил</span> — опр<b>е</b>д<b>е</b>лит<span class="explain">проверяем «определит»</span></li>
-        <li><span class="word">мОряка</span> — м<b>о</b>ре<span class="explain">проверяем «море»</span></li>
-        <li><span class="word">помОгал</span> — пом<b>о</b>щь<span class="explain">проверяем «помощь»</span></li>
-        <li><span class="word">нагрАдить</span> — нагр<b>а</b>да<span class="explain">проверяем «награда»</span></li>
-        <li><span class="word">усЕрдную</span> — ус<b>е</b>рдие<span class="explain">проверяем «усердие»</span></li>
-        <li><span class="word">отстОять</span> — ст<b>о</b>я<span class="explain">проверяем «стоя»</span></li>
-        <li><span class="word">стрОгим</span> — стр<b>о</b>гость<span class="explain">проверяем «строгость»</span></li>
-        <li><span class="word">выдАют</span> — выд<b>а</b>ть<span class="explain">проверяем «выдать»</span></li>
-        <li><span class="word">сиЯют</span> — си<b>я</b>ть<span class="explain">проверяем «сиять»</span></li>
-        <li><span class="word">дОверено</span> — д<b>о</b>верие<span class="explain">проверяем «доверие»</span></li>
-        <li><span class="word">выпАдает</span> — вып<b>а</b>сть<span class="explain">проверяем «выпасть»</span></li>
-      </ul>
-    </div>
-
-    <div class="ortho-card">
-      <h4>Словарные слова (непроверяемая гласная) <span class="badge">2</span></h4>
-      <ul>
-        <li><span class="word">кОрабль</span>, <span class="word">кОрабле</span> — запомнить<span class="explain">словарное слово</span></li>
-        <li><span class="word">сИрота</span>, <span class="word">сИроту</span> — запомнить<span class="explain">словарное слово</span></li>
-        <li><span class="word">пАлуба</span> — запомнить<span class="explain">словарное слово</span></li>
-        <li><span class="word">кАртошка</span> — запомнить<span class="explain">словарное слово</span></li>
-        <li><span class="word">Охрана</span> — запомнить<span class="explain">словарное слово</span></li>
-      </ul>
-    </div>
-
-    <div class="ortho-card">
-      <h4>Гласные после шипящих: ча-ща, жи-ши <span class="badge">3</span></h4>
-      <ul>
-        <li><span class="word">чАяли</span> — <b>ча</b> пишем с буквой «а»<span class="explain">ча-ща с буквой а</span></li>
-        <li><span class="word">душИ</span> — <b>ши</b> пишем с буквой «и»<span class="explain">жи-ши с буквой и</span></li>
-      </ul>
-    </div>
-
-    <div class="ortho-card">
-      <h4>Сочетание «сч» и мягкий знак <span class="badge">4</span></h4>
-      <ul>
-        <li><span class="word">СЧастье</span> — пишем «сч», слышим [щ']<span class="explain">в сочетании «сч» пишется буква «с»</span></li>
-        <li><span class="word">малеНЬкого</span> — ь показывает мягкость<span class="explain">мягкий знак — показатель мягкости</span></li>
-        <li><span class="word">боЛЬшом</span> — ь показывает мягкость<span class="explain">мягкий знак — показатель мягкости</span></li>
-      </ul>
-    </div>
-
-    <div class="ortho-card">
-      <h4>Раздельное написание «не» с глаголами <span class="badge">5</span></h4>
-      <ul>
-        <li><span class="word">не бездельничал</span> — «не» с глаголом раздельно<span class="explain">«не» с глаголами пишется раздельно</span></li>
-        <li><span class="word">не чаяли</span> — «не» с глаголом раздельно<span class="explain">«не» с глаголами пишется раздельно</span></li>
-        <li><span class="word">не получается</span> — «не» с глаголом раздельно<span class="explain">«не» с глаголами пишется раздельно</span></li>
-      </ul>
-    </div>
-
-    <div class="ortho-card">
-      <h4>Раздельное написание предлогов <span class="badge">6</span></h4>
-      <ul>
-        <li><span class="word">на корабле</span> — предлог отдельно<span class="explain">предлоги пишутся раздельно</span></li>
-        <li><span class="word">в училище</span> — предлог отдельно<span class="explain">предлоги пишутся раздельно</span></li>
-        <li><span class="word">на вахте</span> — предлог отдельно<span class="explain">предлоги пишутся раздельно</span></li>
-        <li><span class="word">от радости</span> — предлог отдельно<span class="explain">предлоги пишутся раздельно</span></li>
-        <li><span class="word">за службу</span> — предлог отдельно<span class="explain">предлоги пишутся раздельно</span></li>
-      </ul>
-    </div>
-
-    <div class="ortho-card">
-      <h4>Заглавная буква в именах собственных <span class="badge">7</span></h4>
-      <ul>
-        <li><span class="word">Саша</span> — имя человека<span class="explain">имена пишутся с большой буквы</span></li>
-        <li><span class="word">Василий Васильевич</span> — имя и отчество<span class="explain">имена и отчества — с большой буквы</span></li>
-        <li><span class="word">Нахимовское училище</span> — название<span class="explain">названия пишутся с большой буквы</span></li>
-      </ul>
-    </div>
-
-  </div>
+  <div id="orthoResult"></div>
 
   <div class="btn-row">
+    <button class="btn green" onclick="checkAllOrtho()">✓ Проверить всё</button>
+    <button class="btn" onclick="resetOrtho()">🔄 Сбросить</button>
     <button class="btn yellow" onclick="goRoom('room4')">К словам →</button>
   </div>
 </div>
@@ -555,7 +519,167 @@ function showPlanHint() {
   h.style.display = h.style.display === 'none' ? 'block' : 'none';
 }
 
-/* ---------- Игра на соответствие ---------- */
+/* ===================================================== */
+/* ====== КОМНАТА 3: карточки с пропуском буквы ======== */
+/* ===================================================== */
+
+const ORTHO_DATA = [
+  { before: "пров", after: "дил", correct: "о",
+    rules: ["Безударная гласная в корне (проверяемая)", "Словарное слово", "Гласные после шипящих", "Мягкий знак", "Заглавная буква"],
+    correctRule: 0, hint: "провОдит — гласная под ударением" },
+
+  { before: "б", after: "льшом", correct: "о",
+    rules: ["Безударная гласная в корне (проверяемая)", "Словарное слово", "Гласные после шипящих", "Мягкий знак", "Заглавная буква"],
+    correctRule: 0, hint: "бОльше — гласная под ударением" },
+
+  { before: "ком", after: "ндовал", correct: "а",
+    rules: ["Безударная гласная в корне (проверяемая)", "Словарное слово", "Гласные после шипящих", "Мягкий знак", "Заглавная буква"],
+    correctRule: 0, hint: "комАнда — гласная под ударением" },
+
+  { before: "м", after: "ряка", correct: "о",
+    rules: ["Безударная гласная в корне (проверяемая)", "Словарное слово", "Гласные после шипящих", "Мягкий знак", "Заглавная буква"],
+    correctRule: 0, hint: "мОре — гласная под ударением" },
+
+  { before: "пом", after: "гал", correct: "о",
+    rules: ["Безударная гласная в корне (проверяемая)", "Словарное слово", "Гласные после шипящих", "Мягкий знак", "Заглавная буква"],
+    correctRule: 0, hint: "помОщь — гласная под ударением" },
+
+  { before: "к", after: "рабле", correct: "о",
+    rules: ["Безударная гласная в корне (проверяемая)", "Словарное слово", "Гласные после шипящих", "Мягкий знак", "Заглавная буква"],
+    correctRule: 1, hint: "словарное слово — запомнить" },
+
+  { before: "с", after: "роту", correct: "и",
+    rules: ["Безударная гласная в корне (проверяемая)", "Словарное слово", "Гласные после шипящих", "Мягкий знак", "Заглавная буква"],
+    correctRule: 1, hint: "словарное слово — запомнить" },
+
+  { before: "п", after: "лубу", correct: "а",
+    rules: ["Безударная гласная в корне (проверяемая)", "Словарное слово", "Гласные после шипящих", "Мягкий знак", "Заглавная буква"],
+    correctRule: 1, hint: "словарное слово — запомнить" },
+
+  { before: "к", after: "ртошку", correct: "а",
+    rules: ["Безударная гласная в корне (проверяемая)", "Словарное слово", "Гласные после шипящих", "Мягкий знак", "Заглавная буква"],
+    correctRule: 1, hint: "словарное слово — запомнить" },
+
+  { before: "ч", after: "яли", correct: "а",
+    rules: ["Безударная гласная в корне (проверяемая)", "Словарное слово", "Гласные после шипящих (ча-ща)", "Мягкий знак", "Заглавная буква"],
+    correctRule: 2, hint: "ча-ща пишем с буквой «а»" },
+
+  { before: "душ", after: "", correct: "и",
+    rules: ["Безударная гласная в корне (проверяемая)", "Словарное слово", "Гласные после шипящих (жи-ши)", "Мягкий знак", "Заглавная буква"],
+    correctRule: 2, hint: "жи-ши пишем с буквой «и»" },
+
+  { before: "мале", after: "кого", correct: "нь",
+    rules: ["Безударная гласная в корне (проверяемая)", "Словарное слово", "Гласные после шипящих", "Мягкий знак — показатель мягкости", "Заглавная буква"],
+    correctRule: 3, hint: "ь показывает мягкость согласного [н']" },
+
+  { before: "бо", after: "шом", correct: "ль",
+    rules: ["Безударная гласная в корне (проверяемая)", "Словарное слово", "Гласные после шипящих", "Мягкий знак — показатель мягкости", "Заглавная буква"],
+    correctRule: 3, hint: "ь показывает мягкость согласного [л']" },
+
+  { before: "не бездельни", after: "ал", correct: "ч",
+    rules: ["Безударная гласная в корне (проверяемая)", "Словарное слово", "Гласные после шипящих", "НЕ с глаголами — раздельно", "Заглавная буква"],
+    correctRule: 3, hint: "бездельниЧать — «ч» в корне" },
+
+  { before: "", after: "аша проводил каникулы", correct: "с",
+    rules: ["Безударная гласная в корне (проверяемая)", "Словарное слово", "Гласные после шипящих", "Мягкий знак", "Заглавная буква — имя собственное"],
+    correctRule: 4, hint: "имена пишутся с большой буквы" }
+];
+
+const orthoContainer = document.getElementById('orthoTasks');
+
+function renderOrtho() {
+  orthoContainer.innerHTML = '';
+  ORTHO_DATA.forEach((t, i) => {
+    const card = document.createElement('div');
+    card.className = 'task-card';
+    card.dataset.index = i;
+
+    const optionsHTML = t.rules
+      .map((r, idx) => `<option value="${idx}">${r}</option>`)
+      .join('');
+
+    card.innerHTML = `
+      <div class="task-word">
+        ${t.before}<input type="text" class="blank" maxlength="2" data-role="letter" autocomplete="off">${t.after}
+      </div>
+      <select class="task-rule" data-role="rule">
+        <option value="">— выбери орфограмму —</option>
+        ${optionsHTML}
+      </select>
+      <div class="task-feedback" data-role="feedback"></div>
+    `;
+    orthoContainer.appendChild(card);
+  });
+}
+renderOrtho();
+
+function checkCard(card) {
+  const i = +card.dataset.index;
+  const data = ORTHO_DATA[i];
+
+  const letterInput = card.querySelector('[data-role="letter"]');
+  const ruleSelect  = card.querySelector('[data-role="rule"]');
+  const feedback    = card.querySelector('[data-role="feedback"]');
+
+  const letterVal = letterInput.value.trim().toLowerCase();
+  const ruleVal   = ruleSelect.value;
+
+  let okLetter = letterVal === data.correct.toLowerCase();
+  let okRule   = ruleVal !== '' && +ruleVal === data.correctRule;
+
+  card.classList.remove('correct', 'wrong');
+
+  if (okLetter && okRule) {
+    card.classList.add('correct');
+    feedback.textContent = '✓ Верно! ' + data.hint;
+    return true;
+  } else {
+    card.classList.add('wrong');
+    let msg = [];
+    if (!okLetter) msg.push('буква неверная');
+    if (!okRule)   msg.push('орфограмма выбрана неверно');
+    feedback.textContent = '✗ ' + msg.join(', ') + '. Подсказка: ' + data.hint;
+    return false;
+  }
+}
+
+function checkAllOrtho() {
+  const cards = document.querySelectorAll('#orthoTasks .task-card');
+  let correctCount = 0;
+  cards.forEach(card => {
+    if (checkCard(card)) correctCount++;
+  });
+
+  const result = document.getElementById('orthoResult');
+  if (correctCount === cards.length) {
+    result.textContent = `🌸 Молодец! Все ${cards.length} заданий выполнены верно! 🎀`;
+  } else {
+    result.textContent = `Выполнено верно: ${correctCount} из ${cards.length}. Исправь ошибки и попробуй снова 🌷`;
+  }
+}
+
+function resetOrtho() {
+  document.querySelectorAll('#orthoTasks .task-card').forEach(card => {
+    card.classList.remove('correct', 'wrong');
+    card.querySelector('[data-role="letter"]').value = '';
+    card.querySelector('[data-role="rule"]').value = '';
+    card.querySelector('[data-role="feedback"]').textContent = '';
+  });
+  document.getElementById('orthoResult').textContent = '';
+}
+
+orthoContainer.addEventListener('input', e => {
+  const input = e.target.closest('[data-role="letter"]');
+  if (!input) return;
+  const card = input.closest('.task-card');
+  if (card.classList.contains('correct')) return;
+  card.classList.remove('wrong');
+});
+
+/* ===================================================== */
+/* ====== КОМНАТА 4: игра на соответствие ============== */
+/* ===================================================== */
+
 let selectedWord = null;
 let selectedDef  = null;
 let matchedCount = 0;
