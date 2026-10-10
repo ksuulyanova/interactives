@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Изложение: Каникулы Саши</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Georgia', serif;
+    background: linear-gradient(135deg, #fce4ec 0%, #f3e5f5 35%, #e1f5fe 70%, #e8f5e9 100%);
+    min-height: 100vh;
+    padding: 25px 20px;
+    color: #6a5a6a;
+    background-attachment: fixed;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(circle at 10% 15%, rgba(255,182,193,0.35) 0, transparent 22%),
+      radial-gradient(circle at 88% 12%, rgba(221,190,255,0.35) 0, transparent 20%),
+      radial-gradient(circle at 15% 85%, rgba(178,223,219,0.35) 0, transparent 22%),
+      radial-gradient(circle at 90% 88%, rgba(255,218,185,0.35) 0, transparent 22%);
+    z-index: 0;
+  }
+
+  body > * { position: relative; z-index: 1; }
+
+  h1 {
+    text-align: center;
+    color: #b57b9c;
+    margin-bottom: 28px;
+    font-size: 30px;
+    letter-spacing: 0.5px;
+    text-shadow: 1px 1px 3px rgba(255,255,255,0.9);
+  }
+
+  .rooms-nav {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+  .rooms-nav button {
+    padding: 12px 24px;
+    border-radius: 30px;
+    background: #fff0f5;
+    color: #a5688a;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-family: inherit;
+    font-weight: bold;
+    border: 2px solid #f8c8dc;
+    box-shadow: 0 4px 12px rgba(248,200,220,0.4);
+  }
+  .rooms-nav button:hover {
+    background: #ffe4ef;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(248,200,220,0.6);
+  }
+  .rooms-nav button.active {
+    background: linear-gradient(135deg, #ffd1dc, #e6d5f7);
+    color: #7d4d70;
+    border-color: #e6b3d0;
+    transform: scale(1.05);
+    box-shadow: 0 6px 18px rgba(230,181,208,0.55);
+  }
+
+  .room {
+    display: none;
+    background: #fffdfe;
+    border-radius: 22px;
+    padding: 34px;
+    max-width: 1100px;
+    margin: 0 auto;
+    box-shadow: 0 12px 35px rgba(200,160,190,0.25);
+    border: 2px solid #fce7f0;
+    animation: fadeIn 0.45s ease;
+  }
+  .room.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .room h2 {
+    color: #b57b9c;
+    border-bottom: 3px dashed #f8c8dc;
+    padding-bottom: 12px;
+    margin-bottom: 22px;
+    font-size: 22px;
+  }
+
+  .story {
+    font-size: 18px;
+    line-height: 1.95;
+    text-align: justify;
+    background: linear-gradient(135deg, #fff8fc 0%, #fef9ff 100%);
+    border-left: 6px solid #d8b4e2;
+    padding: 24px 30px;
+    border-radius: 14px;
+    color: #6a5a6a;
+    box-shadow: inset 0 0 20px rgba(248,200,220,0.15);
+  }
+  .story p { margin-bottom: 16px; text-indent: 30px; }
+
+  .plan-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+  }
+  .plan-layout .story { font-size: 15px; line-height: 1.75; padding: 20px; }
+
+  .plan-box h3 {
+    color: #b57b9c;
+    margin-bottom: 14px;
+    font-size: 17px;
+  }
+  .plan-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .plan-num {
+    background: linear-gradient(135deg, #ffc4d6, #d8b4e2);
+    color: #fff;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+    font-size: 14px;
+    box-shadow: 0 3px 8px rgba(216,180,226,0.5);
+  }
+  .plan-item input {
+    flex: 1;
+    padding: 11px 14px;
+    border: 2px dashed #e6d5f7;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 14px;
+    background: #fdf7ff;
+    color: #6a5a6a;
+    transition: 0.3s;
+    resize: vertical;
+    min-height: 44px;
+  }
+  .plan-item input::placeholder { color: #c9b4d4; font-style: italic; }
+  .plan-item input:focus {
+    outline: none;
+    border-color: #d8b4e2;
+    border-style: solid;
+    background: #fbf2ff;
+    box-shadow: 0 0 0 4px rgba(216,180,226,0.15);
+  }
+
+  .ortho-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+    gap: 18px;
+  }
+  .ortho-card {
+    border-radius: 16px;
+    padding: 18px 20px;
+    transition: 0.3s;
+    box-shadow: 0 4px 14px rgba(220,190,220,0.2);
+  }
+  .ortho-card:nth-child(6n+1) { background: #fff0f5; border: 2px solid #f8c8dc; }
+  .ortho-card:nth-child(6n+2) { background: #f3ecff; border: 2px solid #ddd0f0; }
+  .ortho-card:nth-child(6n+3) { background: #e8f7f5; border: 2px solid #b8e0da; }
+  .ortho-card:nth-child(6n+4) { background: #fff5e8; border: 2px solid #ffd9b3; }
+  .ortho-card:nth-child(6n+5) { background: #eaf4ff; border: 2px solid #b8d4f0; }
+  .ortho-card:nth-child(6n+6) { background: #fdf2f8; border: 2px solid #f0c4dd; }
+
+  .ortho-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 22px rgba(200,160,190,0.3);
+  }
+  .ortho-card h4 {
+    color: #8a5a7a;
+    margin-bottom: 12px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .ortho-card .badge {
+    background: #fff;
+    color: #b57b9c;
+    padding: 3px 11px;
+    border-radius: 14px;
+    font-size: 12px;
+    border: 1.5px solid #f0c4dd;
+  }
+  .ortho-card ul { list-style: none; }
+  .ortho-card li { margin: 8px 0; font-size: 15px; color: #6a5a6a; }
+  .ortho-card .word {
+    font-weight: bold;
+    color: #c96a9b;
+  }
+  .ortho-card .explain {
+    color: #9888a8;
+    font-style: italic;
+    font-size: 13px;
+    display: block;
+    margin-top: 3px;
+  }
+
+  .match-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+  }
+  .match-col h3 { color: #b57b9c; margin-bottom: 14px; font-size: 17px; }
+  .match-item {
+    padding: 13px 16px;
+    border-radius: 14px;
+    margin-bottom: 10px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.25s;
+    border: 2px solid transparent;
+    user-select: none;
+    color: #6a5a6a;
+  }
+  .words .match-item {
+    background: #fff0f5;
+    border-color: #f8c8dc;
+    font-weight: bold;
+    color: #a5688a;
+  }
+  .words .match-item:hover { background: #ffe4ef; transform: translateX(3px); }
+  .defs .match-item {
+    background: #f3ecff;
+    border-color: #ddd0f0;
+  }
+  .defs .match-item:hover { background: #ebe0ff; transform: translateX(3px); }
+
+  .match-item.selected {
+    border-color: #d8b4e2;
+    background: #fbf2ff;
+    transform: scale(1.02);
+    box-shadow: 0 0 0 4px rgba(216,180,226,0.25);
+  }
+  .match-item.matched {
+    background: #e0f5e8;
+    border-color: #a8d8b8;
+    color: #4d7a5a;
+    cursor: default;
+    pointer-events: none;
+    opacity: 0.85;
+  }
+  .match-item.matched::before {
+    content: "✓ ";
+    color: #6aab7d;
+    font-weight: bold;
+  }
+  .match-item.wrong {
+    background: #ffe4ea;
+    border-color: #f5a8bc;
+    animation: shake 0.4s;
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+
+  #matchStatus {
+    text-align: center;
+    margin-top: 22px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #b57b9c;
+  }
+
+  .btn-row {
+    text-align: center;
+    margin-top: 24px;
+  }
+  .btn {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 26px;
+    background: linear-gradient(135deg, #d8b4e2, #b8d4f0);
+    color: #fff;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: inherit;
+    transition: 0.3s;
+    margin: 0 6px;
+    box-shadow: 0 5px 14px rgba(216,180,226,0.45);
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(216,180,226,0.6);
+    filter: brightness(1.05);
+  }
+  .btn.yellow {
+    background: linear-gradient(135deg, #ffd1dc, #ffc4d6);
+    color: #a5688a;
+  }
+  .btn.yellow:hover { filter: brightness(1.03); }
+  .btn.green {
+    background: linear-gradient(135deg, #b8e0da, #a8d8b8);
+    color: #4d7a5a;
+  }
+
+  #planHint {
+    background: #f3ecff !important;
+    color: #6a5a6a;
+    border-radius: 12px !important;
+    border: 2px dashed #ddd0f0;
+  }
+  #planHint b { color: #b57b9c; }
+
+  @media (max-width: 800px) {
+    .plan-layout, .match-layout { grid-template-columns: 1fr; }
+    h1 { font-size: 22px; }
+    .room { padding: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>🎀 Урок-изложение «Каникулы Саши» 🌸</h1>
+
+<!-- ====== НАВИГАЦИЯ ====== -->
+<div class="rooms-nav">
+  <button class="active" data-room="room1">🌷 Комната 1 · Текст</button>
+  <button data-room="room2">📝 Комната 2 · План</button>
+  <button data-room="room3">🌼 Комната 3 · Орфограммы</button>
+  <button data-room="room4">🦋 Комната 4 · Слова</button>
+</div>
+
+<!-- ====== КОМНАТА 1 ====== -->
+<div class="room active" id="room1">
+  <h2>Комната 1. Читаем текст внимательно</h2>
+  <div class="story">
+    <p>Каникулы Саша проводил на большом корабле. Командовал крейсером Василий Васильевич. Он усыновил сироту Сашу и определил его в нахимовское училище.</p>
+    <p>Любили матросы маленького моряка. Души в нём не чаяли. Саша не бездельничал на корабле. Он подавал сигнальщикам флаги, помогал палубу мыть, картошку чистить.</p>
+    <p>Стали матросы думать, как лучше наградить Сашу за усердную службу. Ему разрешили отстоять на корабле первую в его жизни вахту.</p>
+    <p>Замер нахимовец на вахте. Хочется ему строгим быть, а не получается. Глаза выдают – так и сияют от радости.</p>
+    <p>Да и как не радоваться, когда Саше доверено важное дело – охрана флага корабля. Такое счастье не каждому выпадает!</p>
+  </div>
+  <div class="btn-row">
+    <button class="btn yellow" onclick="goRoom('room2')">Перейти к плану →</button>
+  </div>
+</div>
+
+<!-- ====== КОМНАТА 2 ====== -->
+<div class="room" id="room2">
+  <h2>Комната 2. Составляем план текста</h2>
+  <p style="margin-bottom:18px; color:#9888a8;">
+    Прочитай текст слева и запиши пункты плана справа. На каждый абзац — свой пункт.
+  </p>
+
+  <div class="plan-layout">
+    <div class="story">
+      <p>Каникулы Саша проводил на большом корабле. Командовал крейсером Василий Васильевич. Он усыновил сироту Сашу и определил его в нахимовское училище.</p>
+      <p>Любили матросы маленького моряка. Души в нём не чаяли. Саша не бездельничал на корабле. Он подавал сигнальщикам флаги, помогал палубу мыть, картошку чистить.</p>
+      <p>Стали матросы думать, как лучше наградить Сашу за усердную службу. Ему разрешили отстоять на корабле первую в его жизни вахту.</p>
+      <p>Замер нахимовец на вахте. Хочется ему строгим быть, а не получается. Глаза выдают – так и сияют от радости.</p>
+      <p>Да и как не радоваться, когда Саше доверено важное дело – охрана флага корабля. Такое счастье не каждому выпадает!</p>
+    </div>
+
+    <div class="plan-box">
+      <h3>План:</h3>
+      <div class="plan-item"><div class="plan-num">1</div><input type="text" placeholder="Пункт 1..."></div>
+      <div class="plan-item"><div class="plan-num">2</div><input type="text" placeholder="Пункт 2..."></div>
+      <div class="plan-item"><div class="plan-num">3</div><input type="text" placeholder="Пункт 3..."></div>
+      <div class="plan-item"><div class="plan-num">4</div><input type="text" placeholder="Пункт 4..."></div>
+      <div class="plan-item"><div class="plan-num">5</div><input type="text" placeholder="Пункт 5..."></div>
+
+      <div class="btn-row" style="text-align:left; margin-top:14px;">
+        <button class="btn green" onclick="showPlanHint()">💡 Показать пример плана</button>
+      </div>
+      <div id="planHint" style="display:none; margin-top:14px; padding:14px; font-size:14px; line-height:1.7;">
+        <b>Примерный план:</b><br>
+        1. Саша на корабле. Василий Васильевич.<br>
+        2. Матросы любят маленького моряка. Саша помогает.<br>
+        3. Награда — первая вахта.<br>
+        4. Волнение на вахте.<br>
+        5. Охрана флага — большое счастье.
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn yellow" onclick="goRoom('room3')">К орфограммам →</button>
+  </div>
+</div>
+
+<!-- ====== КОМНАТА 3 ====== -->
+<div class="room" id="room3">
+  <h2>Комната 3. Орфограммы текста (1–4 класс)</h2>
+  <p style="margin-bottom:18px; color:#9888a8;">
+    Здесь только те орфограммы, которые изучают в начальной школе. Наведи мышкой на слово — увидишь пояснение.
+  </p>
+
+  <div class="ortho-grid">
+
+    <div class="ortho-card">
+      <h4>Безударная гласная в корне (проверяемая) <span class="badge">1</span></h4>
+      <ul>
+        <li><span class="word">провОдил</span> — пров<b>о</b>дит<span class="explain">ставим гласную под ударение</span></li>
+        <li><span class="word">бОльшом</span> — б<b>о</b>льше<span class="explain">проверяем словом «больше»</span></li>
+        <li><span class="word">командОвал</span> — ком<b>а</b>нда<span class="explain">проверяем «команда»</span></li>
+        <li><span class="word">опрЕделил</span> — опр<b>е</b>д<b>е</b>лит<span class="explain">проверяем «определит»</span></li>
+        <li><span class="word">мОряка</span> — м<b>о</b>ре<span class="explain">проверяем «море»</span></li>
+        <li><span class="word">помОгал</span> — пом<b>о</b>щь<span class="explain">проверяем «помощь»</span></li>
+        <li><span class="word">нагрАдить</span> — нагр<b>а</b>да<span class="explain">проверяем «награда»</span></li>
+        <li><span class="word">усЕрдную</span> — ус<b>е</b>рдие<span class="explain">проверяем «усердие»</span></li>
+        <li><span class="word">отстОять</span> — ст<b>о</b>я<span class="explain">проверяем «стоя»</span></li>
+        <li><span class="word">стрОгим</span> — стр<b>о</b>гость<span class="explain">проверяем «строгость»</span></li>
+        <li><span class="word">выдАют</span> — выд<b>а</b>ть<span class="explain">проверяем «выдать»</span></li>
+        <li><span class="word">сиЯют</span> — си<b>я</b>ть<span class="explain">проверяем «сиять»</span></li>
+        <li><span class="word">дОверено</span> — д<b>о</b>верие<span class="explain">проверяем «доверие»</span></li>
+        <li><span class="word">выпАдает</span> — вып<b>а</b>сть<span class="explain">проверяем «выпасть»</span></li>
+      </ul>
+    </div>
+
+    <div class="ortho-card">
+      <h4>Словарные слова (непроверяемая гласная) <span class="badge">2</span></h4>
+      <ul>
+        <li><span class="word">кОрабль</span>, <span class="word">кОрабле</span> — запомнить<span class="explain">словарное слово</span></li>
+        <li><span class="word">сИрота</span>, <span class="word">сИроту</span> — запомнить<span class="explain">словарное слово</span></li>
+        <li><span class="word">пАлуба</span> — запомнить<span class="explain">словарное слово</span></li>
+        <li><span class="word">кАртошка</span> — запомнить<span class="explain">словарное слово</span></li>
+        <li><span class="word">Охрана</span> — запомнить<span class="explain">словарное слово</span></li>
+      </ul>
+    </div>
+
+    <div class="ortho-card">
+      <h4>Гласные после шипящих: ча-ща, жи-ши <span class="badge">3</span></h4>
+      <ul>
+        <li><span class="word">чАяли</span> — <b>ча</b> пишем с буквой «а»<span class="explain">ча-ща с буквой а</span></li>
+        <li><span class="word">душИ</span> — <b>ши</b> пишем с буквой «и»<span class="explain">жи-ши с буквой и</span></li>
+      </ul>
+    </div>
+
+    <div class="ortho-card">
+      <h4>Сочетание «сч» и мягкий знак <span class="badge">4</span></h4>
+      <ul>
+        <li><span class="word">СЧастье</span> — пишем «сч», слышим [щ']<span class="explain">в сочетании «сч» пишется буква «с»</span></li>
+        <li><span class="word">малеНЬкого</span> — ь показывает мягкость<span class="explain">мягкий знак — показатель мягкости</span></li>
+        <li><span class="word">боЛЬшом</span> — ь показывает мягкость<span class="explain">мягкий знак — показатель мягкости</span></li>
+      </ul>
+    </div>
+
+    <div class="ortho-card">
+      <h4>Раздельное написание «не» с глаголами <span class="badge">5</span></h4>
+      <ul>
+        <li><span class="word">не бездельничал</span> — «не» с глаголом раздельно<span class="explain">«не» с глаголами пишется раздельно</span></li>
+        <li><span class="word">не чаяли</span> — «не» с глаголом раздельно<span class="explain">«не» с глаголами пишется раздельно</span></li>
+        <li><span class="word">не получается</span> — «не» с глаголом раздельно<span class="explain">«не» с глаголами пишется раздельно</span></li>
+      </ul>
+    </div>
+
+    <div class="ortho-card">
+      <h4>Раздельное написание предлогов <span class="badge">6</span></h4>
+      <ul>
+        <li><span class="word">на корабле</span> — предлог отдельно<span class="explain">предлоги пишутся раздельно</span></li>
+        <li><span class="word">в училище</span> — предлог отдельно<span class="explain">предлоги пишутся раздельно</span></li>
+        <li><span class="word">на вахте</span> — предлог отдельно<span class="explain">предлоги пишутся раздельно</span></li>
+        <li><span class="word">от радости</span> — предлог отдельно<span class="explain">предлоги пишутся раздельно</span></li>
+        <li><span class="word">за службу</span> — предлог отдельно<span class="explain">предлоги пишутся раздельно</span></li>
+      </ul>
+    </div>
+
+    <div class="ortho-card">
+      <h4>Заглавная буква в именах собственных <span class="badge">7</span></h4>
+      <ul>
+        <li><span class="word">Саша</span> — имя человека<span class="explain">имена пишутся с большой буквы</span></li>
+        <li><span class="word">Василий Васильевич</span> — имя и отчество<span class="explain">имена и отчества — с большой буквы</span></li>
+        <li><span class="word">Нахимовское училище</span> — название<span class="explain">названия пишутся с большой буквы</span></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="btn-row">
+    <button class="btn yellow" onclick="goRoom('room4')">К словам →</button>
+  </div>
+</div>
+
+<!-- ====== КОМНАТА 4 ====== -->
+<div class="room" id="room4">
+  <h2>Комната 4. Соедини слово и его значение</h2>
+  <p style="margin-bottom:18px; color:#9888a8;">
+    Нажми на слово слева, затем на подходящее определение справа. Если пара верна — они подсветятся мятно-зелёным.
+  </p>
+
+  <div class="match-layout">
+    <div class="match-col words" id="wordsCol">
+      <h3>Слова</h3>
+      <div class="match-item" data-key="kreiser">крейсер</div>
+      <div class="match-item" data-key="nahimov">нахимовец</div>
+      <div class="match-item" data-key="vahta">вахта</div>
+      <div class="match-item" data-key="signal">сигнальщик</div>
+      <div class="match-item" data-key="syrota">сирота</div>
+      <div class="match-item" data-key="flot">флаг корабля</div>
+      <div class="match-item" data-key="usynowil">усыновил</div>
+    </div>
+
+    <div class="match-col defs" id="defsCol">
+      <h3>Значения</h3>
+      <div class="match-item" data-key="nahimov">ученик Нахимовского военно-морского училища</div>
+      <div class="match-item" data-key="vahta">дежурство на корабле, во время которого экипаж несёт службу</div>
+      <div class="match-item" data-key="kreiser">большой быстроходный военный корабль</div>
+      <div class="match-item" data-key="usynowil">взял в семью ребёнка, юридически признал его своим сыном</div>
+      <div class="match-item" data-key="signal">матрос, передающий сигналы с помощью флагов</div>
+      <div class="match-item" data-key="syrota">ребёнок, у которого умерли родители</div>
+      <div class="match-item" data-key="flot">главная святыня корабля, символ воинской чести</div>
+    </div>
+  </div>
+
+  <div id="matchStatus"></div>
+
+  <div class="btn-row">
+    <button class="btn" onclick="resetMatch()">🔄 Сбросить</button>
+    <button class="btn yellow" onclick="goRoom('room1')">← В начало</button>
+  </div>
+</div>
+
+<script>
+/* ---------- Переключение комнат ---------- */
+function goRoom(id) {
+  document.querySelectorAll('.room').forEach(r => r.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.rooms-nav button').forEach(b => {
+    b.classList.toggle('active', b.dataset.room === id);
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.querySelectorAll('.rooms-nav button').forEach(btn => {
+  btn.addEventListener('click', () => goRoom(btn.dataset.room));
+});
+
+/* ---------- План: подсказка ---------- */
+function showPlanHint() {
+  const h = document.getElementById('planHint');
+  h.style.display = h.style.display === 'none' ? 'block' : 'none';
+}
+
+/* ---------- Игра на соответствие ---------- */
+let selectedWord = null;
+let selectedDef  = null;
+let matchedCount = 0;
+const totalPairs = 7;
+
+document.querySelectorAll('#wordsCol .match-item').forEach(el => {
+  el.addEventListener('click', () => selectWord(el));
+});
+document.querySelectorAll('#defsCol .match-item').forEach(el => {
+  el.addEventListener('click', () => selectDef(el));
+});
+
+function selectWord(el) {
+  if (el.classList.contains('matched')) return;
+  if (selectedWord) selectedWord.classList.remove('selected');
+  selectedWord = el;
+  el.classList.add('selected');
+  checkPair();
+}
+
+function selectDef(el) {
+  if (el.classList.contains('matched')) return;
+  if (selectedDef) selectedDef.classList.remove('selected');
+  selectedDef = el;
+  el.classList.add('selected');
+  checkPair();
+}
+
+function checkPair() {
+  if (!selectedWord || !selectedDef) return;
+
+  if (selectedWord.dataset.key === selectedDef.dataset.key) {
+    selectedWord.classList.remove('selected');
+    selectedDef.classList.remove('selected');
+    selectedWord.classList.add('matched');
+    selectedDef.classList.add('matched');
+    matchedCount++;
+    selectedWord = null;
+    selectedDef = null;
+
+    if (matchedCount === totalPairs) {
+      document.getElementById('matchStatus').textContent = '🌸 Отлично! Все пары найдены! 🎀';
+    }
+  } else {
+    const w = selectedWord, d = selectedDef;
+    w.classList.add('wrong');
+    d.classList.add('wrong');
+    setTimeout(() => {
+      w.classList.remove('selected', 'wrong');
+      d.classList.remove('selected', 'wrong');
+    }, 500);
+    selectedWord = null;
+    selectedDef = null;
+  }
+}
+
+function resetMatch() {
+  document.querySelectorAll('.match-item').forEach(el => {
+    el.classList.remove('matched', 'selected', 'wrong');
+  });
+  selectedWord = null;
+  selectedDef = null;
+  matchedCount = 0;
+  document.getElementById('matchStatus').textContent = '';
+}
+</script>
+
+</body>
+</html>
