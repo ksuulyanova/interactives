@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌸 Карточки с примерами для 5 класса 🌸</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI', cursive, sans-serif;
+            background: linear-gradient(145deg, #ffe4ec 0%, #ffc0d0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* декоративные бантики */
+        body::before, body::after {
+            content: "🎀";
+            position: absolute;
+            font-size: 80px;
+            opacity: 0.2;
+            transform: rotate(-15deg);
+            pointer-events: none;
+        }
+        body::before { top: 20px; left: 20px; }
+        body::after { bottom: 20px; right: 20px; transform: rotate(15deg); }
+
+        .game-container {
+            width: 100%;
+            max-width: 750px;
+            background: rgba(255, 240, 245, 0.8);
+            backdrop-filter: blur(6px);
+            border-radius: 60px 60px 40px 40px;
+            box-shadow: 0 20px 40px rgba(255, 105, 180, 0.3), 0 0 0 3px #fff9fb, 0 0 0 8px #ffb6c1;
+            padding: 30px 25px 35px;
+            text-align: center;
+            border: 1px solid #ff99aa;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        h1 {
+            font-size: 2.4rem;
+            color: #c71585;
+            text-shadow: 4px 4px 0 #ffe4ec, 6px 6px 0 rgba(255, 182, 193, 0.7);
+            letter-spacing: 2px;
+            margin-top: -10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        h1 span {
+            font-size: 2.8rem;
+        }
+
+        .progress {
+            background: #ffd9e6;
+            border-radius: 50px;
+            padding: 8px 20px;
+            display: inline-block;
+            margin-bottom: 18px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #a13d6b;
+            box-shadow: inset 0 2px 8px rgba(200, 100, 130, 0.2), 0 4px 6px #ffb6c1;
+            border: 1px solid white;
+        }
+
+        .card {
+            background: #fff0f7;
+            border-radius: 45px;
+            padding: 25px 20px 30px;
+            margin: 10px 0 25px;
+            box-shadow: 0 12px 0 #d47a9e, 0 18px 30px rgba(200, 80, 130, 0.4);
+            border: 2px solid white;
+            transition: transform 0.2s ease;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .example-area {
+            font-size: 2.6rem;
+            font-weight: 700;
+            color: #8b3a5e;
+            margin: 5px 0 15px;
+            letter-spacing: 2px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 6px 12px;
+        }
+
+        .column-example {
+            font-family: 'Courier New', 'Lucida Console', monospace;
+            font-size: 1.9rem;
+            line-height: 1.4;
+            background: #fff3f9;
+            padding: 12px 25px;
+            border-radius: 30px;
+            border: 2px dashed #ffa5c3;
+            display: inline-block;
+            text-align: right;
+            white-space: pre;
+            color: #6b2e4a;
+            font-weight: bold;
+            box-shadow: inset 0 0 10px #ffe0eb;
+            margin: 5px 0;
+        }
+
+        .column-example div {
+            display: block;
+            text-align: right;
+            letter-spacing: 4px;
+        }
+
+        .card input {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+            font-size: 2.2rem;
+            width: 200px;
+            text-align: center;
+            padding: 12px 5px;
+            border: 3px solid #ffa5c3;
+            border-radius: 60px;
+            background: #fffbfd;
+            color: #c71585;
+            font-weight: bold;
+            outline: none;
+            box-shadow: 0 6px 0 #d47a9e, inset 0 2px 10px #ffe0eb;
+            transition: 0.1s;
+            margin: 10px 0 5px;
+        }
+
+        .card input:focus {
+            border-color: #ff69b4;
+            background: #fff8fc;
+            box-shadow: 0 6px 0 #b85e82, inset 0 2px 15px #ffb6c1;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .btn {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+            background: #ffb6c1;
+            border: none;
+            border-radius: 40px;
+            padding: 14px 32px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #6b2e4a;
+            box-shadow: 0 8px 0 #c96f8f, 0 10px 15px rgba(200, 80, 120, 0.4);
+            cursor: pointer;
+            transition: 0.1s ease;
+            border: 2px solid #fff6fa;
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 3px 0 #c96f8f, 0 8px 12px rgba(200, 80, 120, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            transform: translateY(5px);
+            box-shadow: 0 3px 0 #c96f8f, 0 8px 12px rgba(200, 80, 120, 0.2);
+            pointer-events: none;
+            filter: grayscale(0.3);
+        }
+
+        .btn-check {
+            background: #ff99b9;
+            box-shadow: 0 8px 0 #b85e82, 0 10px 15px rgba(200, 80, 120, 0.4);
+        }
+
+        .btn-next {
+            background: #ffb0c3;
+            box-shadow: 0 8px 0 #b85e82, 0 10px 15px rgba(200, 80, 120, 0.4);
+        }
+
+        .feedback {
+            min-height: 50px;
+            font-size: 1.7rem;
+            font-weight: bold;
+            margin: 12px 0 5px;
+            color: #b3416b;
+            text-shadow: 0 2px 4px #ffe4ec;
+            transition: 0.2s;
+        }
+
+        .correct-feedback {
+            color: #2e8b57;
+            text-shadow: 0 0 12px #b3ffb3;
+        }
+        .wrong-feedback {
+            color: #d43f6b;
+            text-shadow: 0 0 12px #ffb6c1;
+        }
+
+        .finish-message {
+            background: #ffe4f0;
+            border-radius: 50px;
+            padding: 30px 20px;
+            font-size: 2rem;
+            color: #c71585;
+            line-height: 1.5;
+            border: 3px dashed #ff8da1;
+            margin: 15px 0;
+        }
+
+        .finish-message .big {
+            font-size: 3rem;
+            display: block;
+            margin: 10px 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* для маленьких экранов */
+        @media (max-width: 600px) {
+            .game-container { padding: 20px 12px; }
+            h1 { font-size: 1.8rem; }
+            .example-area { font-size: 1.8rem; }
+            .column-example { font-size: 1.4rem; padding: 10px 15px; }
+            .card input { font-size: 1.8rem; width: 160px; }
+            .btn { font-size: 1.2rem; padding: 12px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container" id="gameContainer">
+    <h1>
+        <span>🌸</span> Примеры для умниц <span>🌸</span>
+    </h1>
+
+    <!-- Блок прогресса -->
+    <div class="progress" id="progressDisplay">Карточка 1 из 30</div>
+
+    <!-- Сама карточка -->
+    <div class="card" id="card">
+        <div id="exampleContent"></div>
+        <input type="text" id="answerInput" placeholder="?" autocomplete="off" inputmode="numeric">
+        <div class="buttons">
+            <button class="btn btn-check" id="checkBtn">✅ Проверить</button>
+            <button class="btn btn-next" id="nextBtn" disabled>➡️ Дальше</button>
+        </div>
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <!-- Сообщение о конце игры -->
+    <div id="finishBlock" class="finish-message hidden">
+        <span class="big">🎉🎀🎉</span>
+        Ты справилась со всеми 30 примерами!<br>
+        <span style="font-size:1.6rem;">Умница! 🌟</span>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ----- ГЕНЕРАЦИЯ 30 ПРИМЕРОВ (согласно заданию) -----
+        const examples = [];
+
+        // 1. Сложение столбиком (5 примеров) — запись столбиком
+        examples.push({ type: 'column', op: '+', a: 345, b: 278, answer: 623 });
+        examples.push({ type: 'column', op: '+', a: 508, b: 249, answer: 757 });
+        examples.push({ type: 'column', op: '+', a: 1267, b: 845, answer: 2112 });
+        examples.push({ type: 'column', op: '+', a: 3040, b: 1879, answer: 4919 }); // с нулём
+        examples.push({ type: 'column', op: '+', a: 999, b: 1, answer: 1000 });    // переход через разряд
+
+        // 2. Вычитание столбиком (5 примеров)
+        examples.push({ type: 'column', op: '−', a: 503, b: 178, answer: 325 });
+        examples.push({ type: 'column', op: '−', a: 800, b: 245, answer: 555 });  // с нулями
+        examples.push({ type: 'column', op: '−', a: 4120, b: 1567, answer: 2553 });
+        examples.push({ type: 'column', op: '−', a: 720, b: 384, answer: 336 });
+        examples.push({ type: 'column', op: '−', a: 6000, b: 2345, answer: 3655 }); // с нулями
+
+        // 3. Умножение: двузначные и трёхзначные (6 примеров)
+        examples.push({ type: 'regular', op: '×', a: 23, b: 45, answer: 1035 });
+        examples.push({ type: 'regular', op: '×', a: 106, b: 7, answer: 742 });
+        examples.push({ type: 'regular', op: '×', a: 34, b: 12, answer: 408 });
+        examples.push({ type: 'regular', op: '×', a: 250, b: 4, answer: 1000 });   // с нулём
+        examples.push({ type: 'regular', op: '×', a: 120, b: 5, answer: 600 });    // с нулём
+        examples.push({ type: 'regular', op: '×', a: 305, b: 3, answer: 915 });    // трёхзначное
+
+        // 4. Умножение с нулями (2 дополнительных, но у нас уже есть 250×4 и 120×5, 
+        //     но нужно ещё, чтобы подчеркнуть. Добавим ещё 2 с нулями в конце числа)
+        examples.push({ type: 'regular', op: '×', a: 40, b: 30, answer: 1200 });   // два нуля
+        examples.push({ type: 'regular', op: '×', a: 200, b: 15, answer: 3000 });  // нули
+
+        // 5. Деление столбиком трёхзначных/четырёхзначных на однозначное (5 примеров)
+        examples.push({ type: 'regular', op: '÷', a: 693, b: 3, answer: 231 });    // трёхзначное
+        examples.push({ type: 'regular', op: '÷', a: 856, b: 4, answer: 214 });
+        examples.push({ type: 'regular', op: '÷', a: 1440, b: 6, answer: 240 });   // четырёхзначное с нулём в ответе
+        examples.push({ type: 'regular', op: '÷', a: 918, b: 9, answer: 102 });    // трёхзначное
+        examples.push({ type: 'regular', op: '÷', a: 2415, b: 5, answer: 483 });   // четырёхзначное
+
+        // 6. Деление с нулями (2 примера)
+        examples.push({ type: 'regular', op: '÷', a: 1200, b: 4, answer: 300 });   // нули
+        examples.push({ type: 'regular', op: '÷', a: 3600, b: 9, answer: 400 });   // нули
+
+        // 7. Деление столбиком (ещё 3, чтобы было ровно 30 и побольше деления)
+        examples.push({ type: 'regular', op: '÷', a: 784, b: 7, answer: 112 });
+        examples.push({ type: 'regular', op: '÷', a: 3045, b: 5, answer: 609 });   // с нулём в середине
+        examples.push({ type: 'regular', op: '÷', a: 2016, b: 8, answer: 252 });   // четырёхзначное
+
+        // Проверка: должно быть 30. (5+5+6+2+5+2+3 = 28? Пересчитаем)
+        // Сложение:5, Вычитание:5, Умножение:6, Умножение с нулями:2, Деление:5, Деление с нулями:2, Доп.деление:3 → 5+5+6+2+5+2+3=28
+        // Добавим ещё 2 примера на деление/умножение с нулями, чтобы точно было 30.
+        examples.push({ type: 'regular', op: '×', a: 50, b: 60, answer: 3000 });  // умножение с нулями
+        examples.push({ type: 'regular', op: '÷', a: 4800, b: 8, answer: 600 });  // деление с нулями
+
+        // Теперь ровно 30. Проверим длину.
+        // Но на всякий случай, если получилось 30, оставим.
+
+        // Убедимся, что все ответы правильные (на всякий случай)
+        // (вручную проверено)
+
+        // Перемешаем карточки? Задание не требует, но можно для разнообразия.
+        // Оставим как есть, но можно и перемешать. Я перемешаю, чтобы интереснее.
+        // Однако столбики должны оставаться столбиками. Перемешаем все.
+        for (let i = examples.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [examples[i], examples[j]] = [examples[j], examples[i]];
+        }
+
+        // ----- СОСТОЯНИЕ ИГРЫ -----
+        let currentIndex = 0;
+        let answered = false;       // ответ на текущую карточку уже дан (верно/неверно)
+        let correctAnswers = 0;     // для статистики (не обязательно, но приятно)
+        let totalAnswered = 0;
+
+        // DOM элементы
+        const progressDisplay = document.getElementById('progressDisplay');
+        const exampleContent = document.getElementById('exampleContent');
+        const answerInput = document.getElementById('answerInput');
+        const checkBtn = document.getElementById('checkBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const feedback = document.getElementById('feedback');
+        const card = document.getElementById('card');
+        const finishBlock = document.getElementById('finishBlock');
+        const gameContainer = document.getElementById('gameContainer');
+
+        // ----- ФУНКЦИИ -----
+        function formatColumnExample(a, b, op) {
+            // Возвращает HTML для красивого столбика
+            const aStr = a.toString();
+            const bStr = b.toString();
+            // Ширина для выравнивания
+            const maxLen = Math.max(aStr.length, bStr.length) + 1; // +1 для знака
+            const aPad = aStr.padStart(maxLen, ' ');
+            const bPad = bStr.padStart(maxLen, ' ');
+            // Заменяем пробелы на &nbsp; для сохранения
+            const aFormatted = aPad.replace(/ /g, '&nbsp;');
+            const bFormatted = bPad.replace(/ /g, '&nbsp;');
+            return `<div class="column-example">
+                <div>${aFormatted}</div>
+                <div>${op}${bFormatted}</div>
+                <div style="border-top: 3px solid #b85e82; margin-top: 5px; padding-top: 8px;">&nbsp;</div>
+            </div>`;
+        }
+
+        function renderCard() {
+            const ex = examples[currentIndex];
+            if (!ex) return;
+
+            // Сброс состояния
+            answered = false;
+            answerInput.value = '';
+            answerInput.disabled = false;
+            checkBtn.disabled = false;
+            nextBtn.disabled = true;
+            feedback.textContent = '';
+            feedback.className = 'feedback';
+            answerInput.focus();
+
+            // Отображение примера
+            if (ex.type === 'column') {
+                // Столбиком
+                exampleContent.innerHTML = formatColumnExample(ex.a, ex.b, ex.op);
+            } else {
+                // Обычная строка
+                let displayOp = ex.op;
+                if (ex.op === '−') displayOp = '−'; // минус
+                exampleContent.innerHTML = `<div class="example-area">${ex.a} ${displayOp} ${ex.b} = ?</div>`;
+            }
+
+            // Обновить прогресс
+            progressDisplay.textContent = `Карточка ${currentIndex + 1} из ${examples.length}`;
+        }
+
+        function checkAnswer() {
+            if (answered) return; // уже ответили
+
+            const ex = examples[currentIndex];
+            const userAnswer = answerInput.value.trim();
+            if (userAnswer === '') {
+                feedback.textContent = '✏️ Введи ответ, пожалуйста!';
+                feedback.className = 'feedback wrong-feedback';
+                return;
+            }
+
+            // Преобразуем в число, но проверим, что это число
+            const numericAnswer = Number(userAnswer);
+            if (isNaN(numericAnswer)) {
+                feedback.textContent = '🔢 Только цифры!';
+                feedback.className = 'feedback wrong-feedback';
+                return;
+            }
+
+            // Проверка
+            if (numericAnswer === ex.answer) {
+                feedback.textContent = '✅ Правильно! Молодец! 🌸';
+                feedback.className = 'feedback correct-feedback';
+                correctAnswers++;
+            } else {
+                feedback.textContent = `❌ Ой! Правильный ответ: ${ex.answer}`;
+                feedback.className = 'feedback wrong-feedback';
+            }
+
+            // Блокируем всё
+            answered = true;
+            answerInput.disabled = true;
+            checkBtn.disabled = true;
+            nextBtn.disabled = false;
+            totalAnswered++;
+
+            // Если это последняя карточка, меняем текст кнопки "Дальше" на "Завершить"
+            if (currentIndex === examples.length - 1) {
+                nextBtn.textContent = '🏁 Завершить';
+            } else {
+                nextBtn.textContent = '➡️ Дальше';
+            }
+        }
+
+        function nextCard() {
+            if (!answered) return; // нельзя перейти, не ответив
+
+            if (currentIndex === examples.length - 1) {
+                // Игра окончена
+                card.classList.add('hidden');
+                finishBlock.classList.remove('hidden');
+                progressDisplay.textContent = `Пройдено! 🎀`;
+                // Можно показать статистику
+                finishBlock.innerHTML = `
+                    <span class="big">🎉🎀🎉</span>
+                    Ты справилась со всеми ${examples.length} примерами!<br>
+                    <span style="font-size:1.6rem;">Умница! 🌟</span>
+                `;
+                return;
+            }
+
+            // Переход к следующей
+            currentIndex++;
+            renderCard();
+            // Если снова не последняя, вернуть текст кнопки
+            nextBtn.textContent = '➡️ Дальше';
+        }
+
+        // ----- ОБРАБОТЧИКИ -----
+        checkBtn.addEventListener('click', checkAnswer);
+        nextBtn.addEventListener('click', nextCard);
+
+        // Обработка Enter в поле ввода
+        answerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (!answered) {
+                    checkAnswer();
+                } else {
+                    // Если уже ответили, Enter может перейти дальше
+                    if (!nextBtn.disabled) nextBtn.click();
+                }
+            }
+        });
+
+        // Запуск: рендер первой карточки
+        renderCard();
+
+        // Небольшая анимация при старте
+        card.style.transform = 'scale(0.98)';
+        setTimeout(() => card.style.transform = 'scale(1)', 100);
+
+        // Для удобства: при вводе ответа сбрасываем фидбек, если начали печатать заново
+        answerInput.addEventListener('input', () => {
+            if (!answered) {
+                feedback.textContent = '';
+                feedback.className = 'feedback';
+            }
+        });
+
+        // Если игра завершена, кнопка "Проверить" скрыта? Оставим.
+        // Но в finishBlock можно добавить кнопку "Начать заново"? Не по заданию, но приятно.
+        // Добавим кнопку "Сыграть ещё" в блок финиша.
+        const finishMessageDiv = document.getElementById('finishBlock');
+        // Если пользователь захочет перезапустить, можно добавить кнопку, но не обязательно.
+        // Сделаем это для удобства.
+        const restartBtn = document.createElement('button');
+        restartBtn.className = 'btn';
+        restartBtn.textContent = '🔄 Сыграть ещё';
+        restartBtn.style.marginTop = '20px';
+        restartBtn.style.background = '#ffb0c3';
+        restartBtn.addEventListener('click', () => {
+            // Перезапуск: перемешаем заново, сбросим индексы
+            currentIndex = 0;
+            correctAnswers = 0;
+            totalAnswered = 0;
+            answered = false;
+            // Перемешаем примеры
+            for (let i = examples.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [examples[i], examples[j]] = [examples[j], examples[i]];
+            }
+            // Показываем карточку
+            card.classList.remove('hidden');
+            finishBlock.classList.add('hidden');
+            nextBtn.textContent = '➡️ Дальше';
+            renderCard();
+            // Фокус
+            answerInput.disabled = false;
+            checkBtn.disabled = false;
+            nextBtn.disabled = true;
+            feedback.textContent = '';
+            feedback.className = 'feedback';
+            progressDisplay.textContent = `Карточка 1 из ${examples.length}`;
+        });
+        finishMessageDiv.appendChild(restartBtn);
+        // Скрываем кнопку рестарта, пока не закончим? Но она внутри finishBlock, который hidden.
+        // Всё ок.
+
+        // Добавим стиль для кнопки рестарта
+        restartBtn.style.marginTop = '20px';
+
+    })();
+</script>
+</body>
+</html>
