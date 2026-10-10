@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Уравнения 4 класс — найди неизвестное (до 1000)</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: linear-gradient(145deg, #f6f9fc 0%, #e2eef9 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #1e3c5c;
+            font-weight: 600;
+            font-size: 1.7rem;
+            margin: 6px 0 4px;
+            text-align: center;
+            text-shadow: 0 2px 3px rgba(255,255,255,0.8);
+        }
+        .subhead {
+            color: #2c5778;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            background: rgba(255,255,255,0.7);
+            padding: 5px 18px;
+            border-radius: 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .progress {
+            font-size: 0.9rem;
+            color: #3b6788;
+            margin-bottom: 10px;
+            font-weight: 600;
+            background: rgba(255,255,255,0.85);
+            padding: 5px 20px;
+            border-radius: 30px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+        .game-container {
+            max-width: 660px;
+            width: 100%;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(8px);
+            border-radius: 36px;
+            padding: 18px 16px 22px;
+            box-shadow: 0 20px 35px rgba(0, 20, 40, 0.15), inset 0 2px 4px rgba(255,255,255,0.8);
+            border: 1px solid rgba(255,255,255,0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .card {
+            background: white;
+            border-radius: 28px;
+            padding: 20px 14px 18px;
+            box-shadow: 0 12px 24px -10px rgba(0, 30, 60, 0.25), 0 0 0 1px rgba(255,255,255,0.9) inset, 0 0 0 2px #d9e6f2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .equation {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: #0b2a44;
+            margin: 2px 0 16px;
+            letter-spacing: 1px;
+            background: #eef5fc;
+            padding: 10px 18px;
+            border-radius: 40px;
+            display: inline-block;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+            text-align: center;
+            max-width: 100%;
+            word-break: break-word;
+            line-height: 1.3;
+        }
+        .slots {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
+            width: 100%;
+        }
+        .slot {
+            width: 88px;
+            height: 70px;
+            border: 2px dashed #9bb7d4;
+            border-radius: 18px;
+            background: #f0f7ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #1e3c5c;
+            text-align: center;
+            line-height: 1.15;
+            padding: 4px;
+            transition: all 0.15s;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.02);
+            word-break: break-word;
+        }
+        .slot.filled {
+            border: 2px solid #2e7d5e;
+            background: #e1f5e8;
+            color: #1a5e3a;
+            font-weight: 700;
+            border-style: solid;
+        }
+        .slot.correct {
+            border-color: #2e7d5e;
+            background: #d4f0e0;
+            border-style: solid;
+        }
+        .slot.incorrect {
+            border-color: #c44536;
+            background: #ffe1dc;
+            color: #a13022;
+            border-style: solid;
+        }
+        .slot.drag-over {
+            background: #cfe4ff;
+            border-color: #2a6eb0;
+            transform: scale(1.04);
+        }
+        .component-pool {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin: 16px 0 4px;
+            padding: 12px 10px;
+            background: #d9e7f5;
+            border-radius: 50px 50px 28px 28px;
+            box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.05), 0 8px 14px rgba(0, 20, 30, 0.1);
+            width: 100%;
+        }
+        .draggable {
+            background: white;
+            padding: 8px 14px;
+            border-radius: 30px;
+            font-weight: 600;
+            color: #1d3f5e;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08), 0 0 0 1px #b8d0e8;
+            cursor: grab;
+            user-select: none;
+            transition: 0.1s;
+            font-size: 0.88rem;
+            letter-spacing: 0.2px;
+            border: 1px solid rgba(255,255,255,0.7);
+            white-space: nowrap;
+        }
+        .draggable:active {
+            cursor: grabbing;
+            opacity: 0.7;
+            transform: scale(0.97);
+        }
+        .draggable.dragging {
+            opacity: 0.4;
+        }
+        .rule-box {
+            margin-top: 16px;
+            background: #fff8e6;
+            border: 2px solid #f0dca0;
+            border-radius: 20px;
+            padding: 12px 16px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.95rem;
+            color: #7a5c10;
+            font-weight: 600;
+            line-height: 1.4;
+            animation: fadeIn 0.4s ease;
+        }
+        .rule-box .rule-icon {
+            font-size: 1.3rem;
+            margin-right: 4px;
+        }
+        .answer-area {
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+        .answer-area label {
+            font-weight: 700;
+            color: #1e3c5c;
+            font-size: 1.1rem;
+        }
+        .answer-input {
+            width: 120px;
+            padding: 12px 14px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-align: center;
+            border: 2px solid #b8d0e8;
+            border-radius: 18px;
+            background: #fafdff;
+            color: #0b2a44;
+            outline: none;
+            transition: 0.15s;
+            font-family: inherit;
+        }
+        .answer-input:focus {
+            border-color: #2a6eb0;
+            box-shadow: 0 0 0 4px rgba(42, 110, 176, 0.15);
+        }
+        .answer-input.correct {
+            border-color: #2e7d5e;
+            background: #e1f5e8;
+            color: #1a5e3a;
+        }
+        .answer-input.incorrect {
+            border-color: #c44536;
+            background: #ffe1dc;
+            color: #a13022;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+            width: 100%;
+        }
+        button {
+            background: #ffffff;
+            border: none;
+            padding: 11px 20px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #1d3f5e;
+            box-shadow: 0 8px 18px -6px rgba(0, 30, 50, 0.25), 0 0 0 1px #cfdef0;
+            cursor: pointer;
+            transition: 0.1s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        button:hover:not(:disabled) {
+            background: #ecf3fa;
+            transform: translateY(-1px);
+        }
+        button:active:not(:disabled) {
+            transform: translateY(2px);
+        }
+        button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .check-btn {
+            background: #1e5a7a;
+            color: white;
+            box-shadow: 0 8px 18px -6px #0e3a55, 0 0 0 1px #2a6f94;
+        }
+        .check-btn:hover:not(:disabled) {
+            background: #236b8f;
+        }
+        .next-btn {
+            background: #2e7d5e;
+            color: white;
+            box-shadow: 0 8px 18px -6px #1a5e3a, 0 0 0 1px #3e9c72;
+        }
+        .next-btn:hover:not(:disabled) {
+            background: #379267;
+        }
+        .reset-btn {
+            background: #fefefe;
+            color: #3a5e7a;
+        }
+        .result-message {
+            text-align: center;
+            margin-top: 12px;
+            font-weight: 600;
+            color: #1e4f6e;
+            min-height: 26px;
+            font-size: 1rem;
+            padding: 6px 16px;
+            border-radius: 40px;
+            display: inline-block;
+            max-width: 100%;
+        }
+        .result-message.good {
+            background: #d4f0e0;
+            color: #1a5e3a;
+        }
+        .result-message.bad {
+            background: #ffe1dc;
+            color: #a13022;
+        }
+        .footer-note {
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: #4f6f8a;
+            text-align: center;
+        }
+        @media (max-width: 520px) {
+            .equation { font-size: 1.3rem; padding: 8px 12px; }
+            .slot { width: 68px; height: 58px; font-size: 0.68rem; }
+            .draggable { font-size: 0.76rem; padding: 6px 10px; }
+            button { font-size: 0.8rem; padding: 8px 14px; }
+            .answer-input { width: 90px; font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+    <h1>🧮 Уравнения 4 класс</h1>
+    <div class="subhead">Счёт в пределах 1000 · Назови компоненты и найди неизвестное</div>
+    <div class="progress" id="progress">Карточка 1 из 28</div>
+
+    <div class="game-container">
+        <div id="cardArea"></div>
+        <div class="component-pool" id="componentPool"></div>
+
+        <div id="ruleArea"></div>
+
+        <div class="answer-area" id="answerArea" style="display:none;">
+            <label for="answerInput">х =</label>
+            <input type="text" id="answerInput" class="answer-input" inputmode="numeric" autocomplete="off" placeholder="?">
+        </div>
+
+        <div class="controls">
+            <button class="reset-btn" id="resetBtn">🔄 Сбросить</button>
+            <button class="check-btn" id="checkBtn">✅ Проверить</button>
+            <button class="next-btn" id="nextBtn" disabled>➡️ Следующая</button>
+        </div>
+        <div id="resultMessage" class="result-message"></div>
+    </div>
+    <div class="footer-note">Перетаскивай названия мышкой или пальцем</div>
+
+    <script>
+        (function() {
+            // ---- Уравнения (счёт в пределах 1000) ----
+            // correct[] — ожидаемые названия компонентов (по одному на каждый элемент)
+            // answer — значение неизвестного x
+            const equationsData = [
+                // ================= СЛОЖЕНИЕ (6 карточек) =================
+                // два слагаемых
+                { eq: 'x + 148 = 352',  correct: ['слагаемое', 'слагаемое', 'сумма'],       rule: 'Чтобы найти неизвестное слагаемое, нужно из суммы вычесть известное слагаемое.', answer: 204 },
+                { eq: '275 + x = 641',  correct: ['слагаемое', 'слагаемое', 'сумма'],       rule: 'Чтобы найти неизвестное слагаемое, нужно из суммы вычесть известное слагаемое.', answer: 366 },
+                // ТРИ слагаемых
+                { eq: 'x + 124 + 236 = 500', correct: ['слагаемое', 'слагаемое', 'слагаемое', 'сумма'], rule: 'Чтобы найти неизвестное слагаемое, нужно из суммы вычесть все известные слагаемые.', answer: 140 },
+                { eq: '215 + x + 138 = 600', correct: ['слагаемое', 'слагаемое', 'слагаемое', 'сумма'], rule: 'Чтобы найти неизвестное слагаемое, нужно из суммы вычесть все известные слагаемые.', answer: 247 },
+                { eq: '180 + 275 + x = 700', correct: ['слагаемое', 'слагаемое', 'слагаемое', 'сумма'], rule: 'Чтобы найти неизвестное слагаемое, нужно из суммы вычесть все известные слагаемые.', answer: 245 },
+                // ЧЕТЫРЕ слагаемых
+                { eq: 'x + 120 + 230 + 150 = 800', correct: ['слагаемое', 'слагаемое', 'слагаемое', 'слагаемое', 'сумма'], rule: 'Чтобы найти неизвестное слагаемое, нужно из суммы вычесть все известные слагаемые.', answer: 300 },
+
+                // ================= ВЫЧИТАНИЕ (6 карточек) =================
+                { eq: 'x - 254 = 386',  correct: ['уменьшаемое', 'вычитаемое', 'разность'], rule: 'Чтобы найти неизвестное уменьшаемое, нужно к разности прибавить вычитаемое.', answer: 640 },
+                { eq: '712 - x = 348',  correct: ['уменьшаемое', 'вычитаемое', 'разность'], rule: 'Чтобы найти неизвестное вычитаемое, нужно из уменьшаемого вычесть разность.', answer: 364 },
+                { eq: 'x - 178 = 425',  correct: ['уменьшаемое', 'вычитаемое', 'разность'], rule: 'Чтобы найти неизвестное уменьшаемое, нужно к разности прибавить вычитаемое.', answer: 603 },
+                { eq: '900 - x = 467',  correct: ['уменьшаемое', 'вычитаемое', 'разность'], rule: 'Чтобы найти неизвестное вычитаемое, нужно из уменьшаемого вычесть разность.', answer: 433 },
+                { eq: 'x - 396 = 208',  correct: ['уменьшаемое', 'вычитаемое', 'разность'], rule: 'Чтобы найти неизвестное уменьшаемое, нужно к разности прибавить вычитаемое.', answer: 604 },
+                { eq: '825 - x = 519',  correct: ['уменьшаемое', 'вычитаемое', 'разность'], rule: 'Чтобы найти неизвестное вычитаемое, нужно из уменьшаемого вычесть разность.', answer: 306 },
+
+                // ================= УМНОЖЕНИЕ (6 карточек) =================
+                // два множителя
+                { eq: 'x · 7 = 84',   correct: ['множитель', 'множитель', 'произведение'], rule: 'Чтобы найти неизвестный множитель, нужно произведение разделить на известный множитель.', answer: 12 },
+                { eq: '9 · x = 108',  correct: ['множитель', 'множитель', 'произведение'], rule: 'Чтобы найти неизвестный множитель, нужно произведение разделить на известный множитель.', answer: 12 },
+                { eq: 'x · 12 = 144', correct: ['множитель', 'множитель', 'произведение'], rule: 'Чтобы найти неизвестный множитель, нужно произведение разделить на известный множитель.', answer: 12 },
+                // ТРИ множителя
+                { eq: 'x · 3 · 4 = 144', correct: ['множитель', 'множитель', 'множитель', 'произведение'], rule: 'Чтобы найти неизвестный множитель, нужно произведение разделить на все известные множители.', answer: 12 },
+                { eq: '2 · x · 8 = 128', correct: ['множитель', 'множитель', 'множитель', 'произведение'], rule: 'Чтобы найти неизвестный множитель, нужно произведение разделить на все известные множители.', answer: 8 },
+                { eq: '5 · 6 · x = 210', correct: ['множитель', 'множитель', 'множитель', 'произведение'], rule: 'Чтобы найти неизвестный множитель, нужно произведение разделить на все известные множители.', answer: 7 },
+
+                // ================= ДЕЛЕНИЕ (6 карточек) =================
+                { eq: 'x : 8 = 24',   correct: ['делимое', 'делитель', 'частное'], rule: 'Чтобы найти неизвестное делимое, нужно частное умножить на делитель.', answer: 192 },
+                { eq: '360 : x = 9',  correct: ['делимое', 'делитель', 'частное'], rule: 'Чтобы найти неизвестный делитель, нужно делимое разделить на частное.', answer: 40 },
+                { eq: 'x : 7 = 35',   correct: ['делимое', 'делитель', 'частное'], rule: 'Чтобы найти неизвестное делимое, нужно частное умножить на делитель.', answer: 245 },
+                { eq: '420 : x = 6',  correct: ['делимое', 'делитель', 'частное'], rule: 'Чтобы найти неизвестный делитель, нужно делимое разделить на частное.', answer: 70 },
+                { eq: 'x : 12 = 15',  correct: ['делимое', 'делитель', 'частное'], rule: 'Чтобы найти неизвестное делимое, нужно частное умножить на делитель.', answer: 180 },
+                { eq: '630 : x = 7',  correct: ['делимое', 'делитель', 'частное'], rule: 'Чтобы найти неизвестный делитель, нужно делимое разделить на частное.', answer: 90 },
+
+                // ================= СМЕШАННЫЕ (4 карточки) =================
+                // сложение + умножение
+                { eq: 'x + 12 · 5 = 145',  correct: ['слагаемое', 'произведение', 'сумма'], rule: 'Сначала находят значение произведения, потом из суммы вычитают известное слагаемое.', answer: 85 },
+                { eq: '8 · 9 + x = 250',   correct: ['произведение', 'слагаемое', 'сумма'], rule: 'Сначала находят значение произведения, потом из суммы вычитают известное слагаемое.', answer: 178 },
+                // сложение + деление
+                { eq: 'x + 240 : 6 = 180', correct: ['слагаемое', 'частное', 'сумма'],       rule: 'Сначала находят значение частного, потом из суммы вычитают известное слагаемое.', answer: 140 },
+                { eq: '350 : 7 + x = 200', correct: ['частное', 'слагаемое', 'сумма'],       rule: 'Сначала находят значение частного, потом из суммы вычитают известное слагаемое.', answer: 150 }
+            ];
+
+            // все уникальные названия компонентов для пула
+            const allComponentNames = [
+                'слагаемое', 'сумма',
+                'уменьшаемое', 'вычитаемое', 'разность',
+                'множитель', 'произведение',
+                'делимое', 'делитель', 'частное'
+            ];
+
+            // ---- состояние ----
+            let currentIndex = 0;
+            let currentSlots = [];
+            let draggedText = '';
+            let draggedElement = null;
+            let componentsSolved = false;
+            let answerSolved = false;
+
+            // DOM
+            const cardArea = document.getElementById('cardArea');
+            const componentPool = document.getElementById('componentPool');
+            const ruleArea = document.getElementById('ruleArea');
+            const answerArea = document.getElementById('answerArea');
+            const answerInput = document.getElementById('answerInput');
+            const progressEl = document.getElementById('progress');
+            const resultMessage = document.getElementById('resultMessage');
+            const resetBtn = document.getElementById('resetBtn');
+            const checkBtn = document.getElementById('checkBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            const shuffledNames = [...allComponentNames].sort(() => Math.random() - 0.5);
+
+            // ---- отрисовка карточки ----
+            function renderCard() {
+                const data = equationsData[currentIndex];
+                currentSlots = new Array(data.correct.length).fill(null);
+                componentsSolved = false;
+                answerSolved = false;
+
+                progressEl.textContent = `Карточка ${currentIndex + 1} из ${equationsData.length}`;
+
+                cardArea.innerHTML = '';
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                cardEl.id = 'currentCard';
+
+                const eqEl = document.createElement('div');
+                eqEl.className = 'equation';
+                eqEl.textContent = data.eq;
+                cardEl.appendChild(eqEl);
+
+                const slotsContainer = document.createElement('div');
+                slotsContainer.className = 'slots';
+
+                for (let i = 0; i < data.correct.length; i++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'slot';
+                    slot.dataset.slotIndex = i;
+                    slot.textContent = '?';
+
+                    slot.addEventListener('dragover', handleDragOver);
+                    slot.addEventListener('dragleave', handleDragLeave);
+                    slot.addEventListener('drop', handleDrop);
+
+                    slotsContainer.appendChild(slot);
+                }
+                cardEl.appendChild(slotsContainer);
+                cardArea.appendChild(cardEl);
+
+                ruleArea.innerHTML = '';
+                answerArea.style.display = 'none';
+                answerInput.value = '';
+                answerInput.className = 'answer-input';
+                answerInput.disabled = false;
+
+                checkBtn.disabled = false;
+                nextBtn.disabled = true;
+                resultMessage.textContent = '';
+                resultMessage.className = 'result-message';
+            }
+
+            // ---- пул компонентов ----
+            function renderPool() {
+                componentPool.innerHTML = '';
+                shuffledNames.forEach(name => {
+                    const dragEl = document.createElement('div');
+                    dragEl.className = 'draggable';
+                    dragEl.textContent = name;
+                    dragEl.draggable = true;
+                    dragEl.addEventListener('dragstart', handleDragStart);
+                    dragEl.addEventListener('dragend', handleDragEnd);
+                    componentPool.appendChild(dragEl);
+                });
+            }
+
+            // ---- drag & drop ----
+            function handleDragStart(e) {
+                if (componentsSolved) { e.preventDefault(); return; }
+                draggedElement = this;
+                draggedText = this.textContent;
+                this.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', draggedText);
+                e.dataTransfer.effectAllowed = 'move';
+            }
+
+            function handleDragEnd() {
+                this.classList.remove('dragging');
+                document.querySelectorAll('.slot.drag-over').forEach(s => s.classList.remove('drag-over'));
+            }
+
+            function handleDragOver(e) {
+                e.preventDefault();
+                if (componentsSolved) return;
+                if (!this.classList.contains('filled')) {
+                    e.dataTransfer.dropEffect = 'move';
+                    this.classList.add('drag-over');
+                }
+            }
+
+            function handleDragLeave() {
+                this.classList.remove('drag-over');
+            }
+
+            function handleDrop(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+
+                if (componentsSolved) return;
+                if (this.classList.contains('filled')) return;
+                if (!draggedText) return;
+
+                const slotIndex = parseInt(this.dataset.slotIndex, 10);
+                currentSlots[slotIndex] = draggedText;
+                this.textContent = draggedText;
+                this.classList.add('filled');
+
+                if (draggedElement) {
+                    draggedElement.classList.remove('dragging');
+                    draggedElement = null;
+                }
+                draggedText = '';
+
+                document.querySelectorAll('.slot.correct, .slot.incorrect').forEach(s => {
+                    s.classList.remove('correct', 'incorrect');
+                });
+                resultMessage.textContent = '';
+                resultMessage.className = 'result-message';
+                checkBtn.disabled = false;
+                nextBtn.disabled = true;
+                componentsSolved = false;
+            }
+
+            // ---- проверка компонентов ----
+            function checkComponents() {
+                const data = equationsData[currentIndex];
+                for (let i = 0; i < currentSlots.length; i++) {
+                    if (!currentSlots[i]) {
+                        resultMessage.textContent = '❌ Заполни все поля с названиями компонентов!';
+                        resultMessage.className = 'result-message bad';
+                        return false;
+                    }
+                }
+
+                const cardEl = document.getElementById('currentCard');
+                const slotEls = cardEl.querySelectorAll('.slot');
+                let allCorrect = true;
+
+                for (let i = 0; i < currentSlots.length; i++) {
+                    const slotEl = slotEls[i];
+                    slotEl.classList.remove('correct', 'incorrect');
+                    if (currentSlots[i] === data.correct[i]) {
+                        slotEl.classList.add('correct');
+                    } else {
+                        slotEl.classList.add('incorrect');
+                        allCorrect = false;
+                    }
+                }
+
+                if (allCorrect) {
+                    componentsSolved = true;
+                    resultMessage.textContent = '✅ Компоненты названы верно! Теперь найди неизвестное число.';
+                    resultMessage.className = 'result-message good';
+                    showRuleAndAnswer(data);
+                    return true;
+                } else {
+                    resultMessage.textContent = '⚠️ Есть ошибки в названиях. Красным — неверные. Попробуй ещё!';
+                    resultMessage.className = 'result-message bad';
+                    return false;
+                }
+            }
+
+            function showRuleAndAnswer(data) {
+                ruleArea.innerHTML = `<div class="rule-box"><span class="rule-icon">💡</span> ${data.rule}</div>`;
+                answerArea.style.display = 'flex';
+                answerInput.focus();
+            }
+
+            // ---- проверка ответа ----
+            function checkAnswer() {
+                const data = equationsData[currentIndex];
+                const userAnswer = answerInput.value.trim();
+
+                if (userAnswer === '') {
+                    resultMessage.textContent = '❌ Впиши число в поле ответа!';
+                    resultMessage.className = 'result-message bad';
+                    return;
+                }
+
+                const num = Number(userAnswer);
+                if (isNaN(num)) {
+                    resultMessage.textContent = '❌ Введи число!';
+                    resultMessage.className = 'result-message bad';
+                    answerInput.classList.add('incorrect');
+                    return;
+                }
+
+                answerInput.classList.remove('correct', 'incorrect');
+
+                if (num === data.answer) {
+                    answerInput.classList.add('correct');
+                    answerInput.disabled = true;
+                    answerSolved = true;
+                    resultMessage.textContent = `🎉 Правильно! х = ${data.answer}`;
+                    resultMessage.className = 'result-message good';
+                    checkBtn.disabled = true;
+                    nextBtn.disabled = false;
+                } else {
+                    answerInput.classList.add('incorrect');
+                    resultMessage.textContent = '⚠️ Неверно. Попробуй ещё раз, вспомни правило.';
+                    resultMessage.className = 'result-message bad';
+                }
+            }
+
+            function onCheck() {
+                if (!componentsSolved) {
+                    checkComponents();
+                } else if (!answerSolved) {
+                    checkAnswer();
+                }
+            }
+
+            function nextCard() {
+                if (currentIndex < equationsData.length - 1) {
+                    currentIndex++;
+                    renderCard();
+                } else {
+                    cardArea.innerHTML = `
+                        <div class="card" style="text-align:center;">
+                            <div style="font-size:3rem; margin-bottom:8px;">🏆</div>
+                            <div style="font-size:1.3rem; font-weight:700; color:#1a5e3a; margin-bottom:6px;">
+                                Все карточки пройдены!
+                            </div>
+                            <div style="color:#3b6788; font-size:0.98rem;">
+                                Ты научился находить неизвестное число до 1000!
+                            </div>
+                        </div>
+                    `;
+                    progressEl.textContent = 'Готово!';
+                    ruleArea.innerHTML = '';
+                    answerArea.style.display = 'none';
+                    checkBtn.disabled = true;
+                    nextBtn.disabled = true;
+                    resultMessage.textContent = '';
+                    resultMessage.className = 'result-message';
+                }
+            }
+
+            function resetCurrent() {
+                renderCard();
+            }
+
+            function initGame() {
+                currentIndex = 0;
+                renderPool();
+                renderCard();
+
+                resetBtn.addEventListener('click', resetCurrent);
+                checkBtn.addEventListener('click', onCheck);
+                nextBtn.addEventListener('click', nextCard);
+            }
+
+            document.addEventListener('dragover', (e) => e.preventDefault());
+            document.addEventListener('drop', (e) => e.preventDefault());
+
+            initGame();
+        })();
+    </script>
+</body>
+</html>
