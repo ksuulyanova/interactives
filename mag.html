@@ -1,0 +1,2456 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Кассир • Магазин сладостей</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+
+    body {
+        min-height: 100vh;
+        background-image: url('https://i.pinimg.com/1200x/ce/db/37/cedb378844780f4b08bfcb0e3e2d1f86.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.25);
+        padding: 20px;
+        transition: background-image 0.8s ease, box-shadow 0.8s ease;
+    }
+    body.shift-active {
+        background-image: url('https://i.pinimg.com/1200x/eb/de/f1/ebdef1bf4dd0d56ed0326a531273d1fe.jpg');
+        box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.15);
+    }
+
+    /* ===== Общие карточки ===== */
+    .start-card, .records-card, .rules-card {
+        background: linear-gradient(160deg, rgba(255, 253, 245, 0.98), rgba(245, 236, 212, 0.98));
+        border: 5px solid #b45f3b;
+        border-radius: 32px;
+        padding: 36px 40px;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 0 3px #f7d9aa inset;
+        text-align: center;
+    }
+
+    /* ===== ЭКРАН 1: Приветствие ===== */
+    .welcome-screen {
+        max-width: 700px;
+        margin: 60px auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 34px;
+        animation: fadeIn 0.8s ease;
+    }
+    .welcome-title {
+        font-size: 3rem;
+        color: #fff;
+        text-align: center;
+        text-shadow: 0 4px 12px rgba(0,0,0,0.7), 0 0 30px rgba(255, 200, 100, 0.6);
+        letter-spacing: 2px;
+        font-weight: 900;
+        line-height: 1.2;
+        animation: titleGlow 3s ease-in-out infinite alternate;
+    }
+    .welcome-title .sub {
+        display: block;
+        font-size: 1.3rem;
+        color: #ffe4b5;
+        margin-top: 12px;
+        letter-spacing: 4px;
+        font-weight: 600;
+    }
+    .start-btn {
+        background: linear-gradient(145deg, #f0b87b, #e09b4a);
+        color: #3b1e0a;
+        border: 4px solid #ffefd0;
+        border-radius: 60px;
+        padding: 22px 70px;
+        font-size: 2rem;
+        font-weight: 900;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        cursor: pointer;
+        box-shadow: 0 14px 0 #8b5a2b, 0 16px 30px rgba(0,0,0,0.55);
+        transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
+    }
+    .start-btn:hover {
+        background: linear-gradient(145deg, #ffcb8e, #f0a955);
+        transform: scale(1.05);
+    }
+    .start-btn:active {
+        transform: translateY(8px);
+        box-shadow: 0 6px 0 #8b5a2b, 0 16px 30px rgba(0,0,0,0.55);
+    }
+
+    /* ===== ЭКРАН 2: Правила ===== */
+    .rules-screen {
+        max-width: 700px;
+        margin: 40px auto;
+        animation: fadeIn 0.6s ease;
+    }
+    .rules-card h2 {
+        font-size: 2rem;
+        color: #a34f2b;
+        margin-bottom: 16px;
+        text-shadow: 2px 2px 0 #f0d5b0;
+        letter-spacing: 1px;
+        border-bottom: 3px dashed #d9a066;
+        padding-bottom: 12px;
+    }
+    .rules-card p {
+        font-size: 1.15rem;
+        line-height: 1.6;
+        margin-bottom: 16px;
+        font-weight: 500;
+        color: #3e2c1b;
+    }
+    .rules-card .highlight {
+        background: #ffe4b5;
+        padding: 4px 14px;
+        border-radius: 40px;
+        display: inline-block;
+        font-weight: 700;
+        color: #7b3f00;
+        margin: 6px 0;
+        border: 1px solid #dfa86a;
+    }
+    .rules-card ul {
+        text-align: left;
+        margin: 18px 0 22px 20px;
+        font-size: 1.05rem;
+        line-height: 1.7;
+        list-style-type: '🍬 ';
+        color: #4a3a24;
+    }
+    .rules-card li { margin-bottom: 8px; padding-left: 8px; }
+    .rules-emoji-row {
+        font-size: 2.2rem;
+        letter-spacing: 8px;
+        margin: 14px 0 20px;
+        animation: stickerPop 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+    }
+    .shift-begin-btn {
+        background: linear-gradient(145deg, #b3e0c9, #8ecfb0);
+        color: #1e4d3a;
+        border: 3px solid #d9f0e3;
+        border-radius: 60px;
+        padding: 16px 50px;
+        font-size: 1.4rem;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        box-shadow: 0 10px 0 #2f6d52, 0 10px 20px rgba(0,0,0,0.4);
+        transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
+        margin-top: 10px;
+    }
+    .shift-begin-btn:hover {
+        background: linear-gradient(145deg, #c6ecd8, #a0dcbf);
+        transform: scale(1.03);
+    }
+    .shift-begin-btn:active {
+        transform: translateY(6px);
+        box-shadow: 0 4px 0 #2f6d52, 0 10px 20px rgba(0,0,0,0.4);
+    }
+
+    /* ===== ЭКРАН 3: Форма игрока + рекорды ===== */
+    .player-screen {
+        max-width: 780px;
+        margin: 30px auto;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        animation: fadeIn 0.8s ease;
+    }
+
+    .start-card h1 {
+        font-size: 2rem;
+        color: #a34f2b;
+        margin-bottom: 10px;
+        letter-spacing: 1px;
+        text-shadow: 2px 2px 0 #f0d5b0;
+        font-weight: 800;
+    }
+    .start-card .subtitle {
+        font-size: 1.05rem;
+        color: #6b5c3e;
+        margin-bottom: 26px;
+        line-height: 1.5;
+    }
+
+    .form-group { margin-bottom: 24px; text-align: left; }
+    .form-group label {
+        display: block;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #7b3f00;
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+    }
+    .form-group label .label-emoji { font-size: 1.3rem; margin-right: 6px; }
+
+    .name-input {
+        width: 100%;
+        padding: 16px 20px;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #422b18;
+        background: #fffef9;
+        border: 3px solid #d9c9a0;
+        border-radius: 16px;
+        outline: none;
+        text-align: center;
+        font-family: 'Courier New', monospace;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .name-input::placeholder { color: #c9b88f; font-style: italic; }
+    .name-input:focus {
+        border-color: #f0b429;
+        box-shadow: 0 0 0 4px rgba(240, 180, 41, 0.3);
+        background: #fffbe8;
+    }
+
+    .character-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+    .character-option {
+        background: #fffef9;
+        border: 3px solid #d9c9a0;
+        border-radius: 20px;
+        padding: 20px 12px 16px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .character-option:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+        border-color: #f0b429;
+    }
+    .character-option.selected {
+        border-color: #4a9c5e;
+        background: linear-gradient(160deg, #e8f6ec, #d0ebd9);
+        box-shadow: 0 0 0 4px rgba(74, 156, 94, 0.25), 0 12px 24px rgba(0,0,0,0.15);
+        transform: translateY(-4px);
+    }
+    .character-option.selected::after {
+        content: '✓';
+        position: absolute;
+        top: 8px; right: 10px;
+        width: 28px; height: 28px;
+        background: #4a9c5e;
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        font-weight: 900;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+        animation: checkPop 0.3s ease;
+    }
+    .character-option .char-emoji {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 8px;
+        line-height: 1;
+        transition: transform 0.2s;
+    }
+    .character-option:hover .char-emoji { transform: scale(1.15); }
+    .character-option.selected .char-emoji { transform: scale(1.1); }
+    .character-option .char-label {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #4a3a24;
+        letter-spacing: 0.5px;
+    }
+    .character-option .char-sub { font-size: 0.8rem; color: #8a7a5c; margin-top: 4px; }
+
+    .begin-btn {
+        width: 100%;
+        padding: 20px;
+        font-size: 1.4rem;
+        font-weight: 900;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #fff;
+        background: linear-gradient(145deg, #e76f51, #c9532f);
+        border: 4px solid #ffd9c9;
+        border-radius: 18px;
+        cursor: pointer;
+        box-shadow: 0 10px 0 #8b3a1f, 0 12px 24px rgba(0,0,0,0.35);
+        transition: transform 0.15s, box-shadow 0.2s;
+        margin-top: 10px;
+    }
+    .begin-btn:hover:not(:disabled) {
+        background: linear-gradient(145deg, #f07f61, #d9633f);
+        transform: scale(1.02);
+    }
+    .begin-btn:active:not(:disabled) { transform: translateY(6px); box-shadow: 0 4px 0 #8b3a1f; }
+    .begin-btn:disabled {
+        background: #bdb3a0;
+        box-shadow: 0 10px 0 #7a7062;
+        cursor: not-allowed;
+    }
+
+    .back-link {
+        display: block;
+        margin: 14px auto 0;
+        background: transparent;
+        border: none;
+        color: #8a7a5c;
+        font-size: 0.9rem;
+        cursor: pointer;
+        text-decoration: underline;
+        font-weight: 600;
+        transition: color 0.2s;
+    }
+    .back-link:hover { color: #a34f2b; }
+
+    /* ===== Таблица рекордов ===== */
+    .records-card { padding: 24px 30px; text-align: left; }
+    .records-card h2 {
+        font-size: 1.5rem;
+        color: #a34f2b;
+        margin-bottom: 14px;
+        text-align: center;
+        letter-spacing: 1px;
+        border-bottom: 3px dashed #d9a066;
+        padding-bottom: 10px;
+    }
+    .records-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .records-list li {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        background: #fffef9;
+        border-radius: 14px;
+        border: 1.5px solid #ece0c2;
+        font-size: 1rem;
+        transition: transform 0.2s;
+    }
+    .records-list li:hover { transform: translateX(4px); }
+    .records-list li.gold {
+        background: linear-gradient(135deg, #fff5d6, #ffe4a0);
+        border-color: #f0b429;
+        box-shadow: 0 4px 12px rgba(240, 180, 41, 0.3);
+    }
+    .records-list .place {
+        font-size: 1.2rem;
+        font-weight: 900;
+        color: #a34f2b;
+        min-width: 32px;
+        text-align: center;
+    }
+    .records-list .rec-avatar {
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(145deg, #ffe4b5, #f0b429);
+        border: 2px solid #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    }
+    .records-list .rec-name { flex: 1; font-weight: 700; color: #4a3a24; }
+    .records-list .rec-amount {
+        font-weight: 800;
+        color: #2d6a4f;
+        background: #e8f6ec;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.95rem;
+        white-space: nowrap;
+    }
+    .records-list .rec-amount.negative { color: #a32635; background: #fde8ea; }
+    .records-empty {
+        text-align: center;
+        color: #8a7a5c;
+        font-style: italic;
+        padding: 16px;
+        background: #fffef9;
+        border-radius: 14px;
+        border: 2px dashed #e8d9b5;
+    }
+    .records-clear-btn {
+        display: block;
+        margin: 14px auto 0;
+        background: transparent;
+        border: 2px dashed #d9a066;
+        color: #a34f2b;
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .records-clear-btn:hover { background: #ffe4b5; border-style: solid; }
+
+    /* ===== Звонок ===== */
+    .bell-container {
+        position: fixed;
+        top: 25px; right: 25px;
+        z-index: 100;
+        cursor: pointer;
+        animation: bellSlideIn 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+    }
+    .bell-icon {
+        width: 80px; height: 80px;
+        background: linear-gradient(145deg, #ffd966, #f0b429);
+        border: 4px solid #fff3d6;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2.4rem;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.45), 0 0 0 4px rgba(255,220,120,0.4);
+        animation: bellRing 1.5s ease-in-out infinite;
+        position: relative;
+        transition: transform 0.2s;
+    }
+    .bell-icon:hover { transform: scale(1.1); }
+    .bell-badge {
+        position: absolute; top: -6px; right: -6px;
+        background: #e63946; color: #fff;
+        font-size: 1.1rem; font-weight: 800;
+        width: 32px; height: 32px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        border: 3px solid #fff;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+        animation: badgePulse 1s ease-in-out infinite;
+    }
+
+    /* ===== Верхняя панель ===== */
+    .top-bar {
+        position: fixed;
+        top: 25px; left: 25px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        z-index: 90;
+        flex-wrap: wrap;
+        max-width: 62%;
+    }
+    .player-badge {
+        background: rgba(255, 248, 235, 0.97);
+        border: 3px solid #4a9c5e;
+        border-radius: 50px;
+        padding: 5px 16px 5px 6px;
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #2d6a4f;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .player-badge .player-avatar {
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(145deg, #ffe4b5, #f0b429);
+        border: 2px solid #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    }
+    .level-badge {
+        background: linear-gradient(145deg, #a34f2b, #7b3f00);
+        color: #fff;
+        border: 3px solid #ffd9a0;
+        border-radius: 50px;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        font-weight: 800;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .level-badge .level-num {
+        background: #ffd966;
+        color: #7b3f00;
+        border-radius: 50%;
+        width: 26px; height: 26px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        font-weight: 900;
+    }
+    .level-badge.bump { animation: levelBadgePop 0.6s ease; }
+
+    .coins-display {
+        background: rgba(255, 248, 235, 0.97);
+        border: 3px solid #f0b429;
+        border-radius: 50px;
+        padding: 8px 16px;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #7b3f00;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        transition: color 0.3s, border-color 0.3s, background 0.3s;
+    }
+    .coins-display.negative {
+        color: #e63946;
+        border-color: #e63946;
+        background: #fde8ea;
+    }
+    .coins-display.bump { animation: coinsBump 0.4s ease; }
+    .close-shift-btn {
+        background: linear-gradient(145deg, #6a8caf, #4a6d8f);
+        color: #fff;
+        border: 3px solid #cfe2f3;
+        border-radius: 50px;
+        padding: 8px 18px;
+        font-size: 0.9rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        box-shadow: 0 6px 0 #2f4d68;
+        transition: transform 0.15s, box-shadow 0.2s;
+        text-transform: uppercase;
+    }
+    .close-shift-btn:hover { transform: scale(1.04); }
+    .close-shift-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #2f4d68; }
+
+    .sound-toggle {
+        background: rgba(255, 248, 235, 0.97);
+        border: 3px solid #f0b429;
+        border-radius: 50%;
+        width: 42px; height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        cursor: pointer;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+        transition: transform 0.2s;
+    }
+    .sound-toggle:hover { transform: scale(1.08); }
+    .sound-toggle.muted { opacity: 0.55; }
+
+    /* ===== Прогресс ===== */
+    .progress-panel {
+        position: fixed;
+        top: 100px; left: 25px;
+        background: rgba(255, 248, 235, 0.97);
+        border: 3px solid #f0b429;
+        border-radius: 50px;
+        padding: 8px 18px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #7b3f00;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+        z-index: 90;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .progress-panel .progress-dots { display: flex; gap: 5px; }
+    .progress-panel .dot {
+        width: 12px; height: 12px;
+        border-radius: 50%;
+        background: #e0d5b8;
+        border: 2px solid #c9b88f;
+        transition: all 0.3s;
+    }
+    .progress-panel .dot.filled {
+        background: #4a9c5e;
+        border-color: #2d6a4f;
+        box-shadow: 0 0 8px rgba(74, 156, 94, 0.6);
+        transform: scale(1.15);
+    }
+
+    /* ===== Игровая зона ===== */
+    .game-area {
+        display: none;
+        grid-template-columns: 1fr 360px;
+        gap: 24px;
+        max-width: 1200px;
+        margin: 130px auto 40px;
+        align-items: start;
+    }
+    .game-area.active { display: grid; }
+
+    /* ===== Чек ===== */
+    .receipt {
+        background: #fffdf5;
+        border-radius: 8px 8px 24px 24px;
+        padding: 44px 30px 26px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px #e8d9b5;
+        position: relative;
+        font-family: 'Courier New', monospace;
+        clip-path: polygon(
+            0 12px, 4% 0, 8% 12px, 12% 0, 16% 12px, 20% 0, 24% 12px, 28% 0,
+            32% 12px, 36% 0, 40% 12px, 44% 0, 48% 12px, 52% 0, 56% 12px, 60% 0,
+            64% 12px, 68% 0, 72% 12px, 76% 0, 80% 12px, 84% 0, 88% 12px, 92% 0,
+            96% 12px, 100% 0, 100% 100%, 0 100%
+        );
+        animation: receiptDrop 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+    }
+    .receipt h2 {
+        font-size: 1.6rem;
+        text-align: center;
+        color: #a34f2b;
+        margin-bottom: 6px;
+        letter-spacing: 2px;
+    }
+    .receipt .shop-name {
+        text-align: center;
+        font-size: 0.95rem;
+        color: #8a7a5c;
+        margin-bottom: 22px;
+        letter-spacing: 2px;
+    }
+    .receipt .cashier-line {
+        text-align: center;
+        font-size: 0.85rem;
+        color: #8a7a5c;
+        margin-bottom: 14px;
+        font-family: 'Courier New', monospace;
+    }
+    .receipt .cashier-line strong { color: #a34f2b; font-weight: 800; }
+
+    .task-banner {
+        background: linear-gradient(135deg, #ffe4b5, #f7c35c);
+        border: 3px dashed #b45f3b;
+        border-radius: 16px;
+        padding: 14px 18px;
+        margin-bottom: 18px;
+        text-align: center;
+        font-family: 'Segoe UI', sans-serif;
+    }
+    .task-banner .task-label {
+        display: block;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: #7b3f00;
+        margin-bottom: 4px;
+    }
+    .task-banner .task-text {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #422b18;
+    }
+
+    .receipt-row {
+        display: grid;
+        grid-template-columns: 70px 1fr 90px 130px;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 6px;
+        border-bottom: 1px dashed #ece0c2;
+        font-family: 'Segoe UI', sans-serif;
+    }
+    .receipt-row:last-of-type { border-bottom: none; }
+
+    .product-sticker {
+        width: 64px; height: 64px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2.2rem;
+        box-shadow: 0 6px 14px rgba(0,0,0,0.25), inset 0 -4px 8px rgba(0,0,0,0.15);
+        border: 3px solid #fff;
+        flex-shrink: 0;
+        animation: stickerPop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+    }
+
+    .product-info .product-name { font-weight: 800; font-size: 1.05rem; color: #3e2c1b; }
+
+    .qty-block { text-align: center; }
+    .qty-block .qty-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: #8a7a5c;
+        letter-spacing: 1px;
+    }
+    .qty-block .qty-value { font-size: 1.15rem; font-weight: 800; color: #4a3a24; }
+    .qty-block .qty-value.unknown { color: #e63946; font-size: 1.4rem; }
+
+    .answer-field { position: relative; }
+    .answer-field .field-label {
+        position: absolute;
+        top: -8px; left: 8px;
+        background: #fffdf5;
+        padding: 0 6px;
+        font-size: 0.7rem;
+        color: #8a7a5c;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-family: 'Courier New', monospace;
+        border-radius: 4px;
+    }
+    /* Поля ввода БЕЗ стрелочек */
+    .answer-field input {
+        width: 100%;
+        padding: 12px 12px 10px;
+        font-family: 'Courier New', monospace;
+        font-size: 1.2rem;
+        font-weight: 800;
+        text-align: center;
+        border: 2.5px solid #d9c9a0;
+        border-radius: 12px;
+        background: #fffef9;
+        color: #3e2c1b;
+        outline: none;
+        transition: border-color 0.2s, background 0.2s;
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+    .answer-field input::-webkit-outer-spin-button,
+    .answer-field input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    .answer-field input:focus {
+        border-color: #f0b429;
+        background: #fffbe8;
+        box-shadow: 0 0 0 3px rgba(240, 180, 41, 0.3);
+    }
+    .answer-field input.correct { border-color: #4a9c5e; background: #e8f6ec; }
+    .answer-field input.wrong { border-color: #e63946; background: #fde8ea; animation: shake 0.4s; }
+    .answer-field input.needs-fill { border-color: #f0b429; background: #fff5d6; animation: pulseField 0.6s ease; }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding: 14px 16px;
+        background: #f5ecd4;
+        border-radius: 14px;
+        border: 2px solid #e8d9b5;
+    }
+    .total-row label { font-size: 1.15rem; font-weight: 800; color: #7b3f00; letter-spacing: 1px; }
+    .total-row .answer-field { width: 160px; }
+
+    .checkout-btn {
+        display: block;
+        width: 100%;
+        margin-top: 20px;
+        padding: 16px;
+        font-size: 1.3rem;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #fff;
+        background: linear-gradient(145deg, #e76f51, #c9532f);
+        border: 3px solid #ffd9c9;
+        border-radius: 14px;
+        cursor: pointer;
+        box-shadow: 0 8px 0 #8b3a1f, 0 10px 20px rgba(0,0,0,0.3);
+        transition: transform 0.15s, box-shadow 0.2s;
+    }
+    .checkout-btn:hover:not(:disabled) { background: linear-gradient(145deg, #f07f61, #d9633f); transform: scale(1.02); }
+    .checkout-btn:active:not(:disabled) { transform: translateY(5px); box-shadow: 0 3px 0 #8b3a1f; }
+    .checkout-btn:disabled { background: #bdb3a0; box-shadow: 0 8px 0 #7a7062; cursor: not-allowed; }
+
+    /* ===== Панель кассира ===== */
+    .cashier-panel {
+        background: rgba(255, 248, 235, 0.97);
+        border: 4px solid #f0b429;
+        border-radius: 24px;
+        padding: 22px 20px;
+        box-shadow: 0 16px 30px rgba(0,0,0,0.45), 0 0 0 2px #fff3d6 inset;
+        position: sticky;
+        top: 20px;
+    }
+    .cashier-panel h3 {
+        font-size: 1.2rem;
+        color: #a34f2b;
+        text-align: center;
+        margin-bottom: 6px;
+        letter-spacing: 1px;
+    }
+    .cashier-panel .subtitle {
+        text-align: center;
+        font-size: 0.8rem;
+        color: #8a7a5c;
+        margin-bottom: 16px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+    .price-list { display: grid; grid-template-columns: 1fr; gap: 10px; list-style: none; }
+    .price-list li {
+        display: flex; align-items: center; gap: 12px;
+        padding: 8px 12px 8px 8px;
+        background: #fffef9;
+        border-radius: 16px;
+        border: 1.5px solid #ece0c2;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .price-list li:hover { transform: translateX(-4px); box-shadow: -4px 4px 12px rgba(0,0,0,0.1); }
+    .price-list .mini-sticker {
+        width: 46px; height: 46px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.6rem;
+        border: 2px solid #fff;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        flex-shrink: 0;
+    }
+    .price-list .p-name { font-weight: 700; color: #4a3a24; font-size: 0.95rem; flex: 1; }
+    .price-list .p-price {
+        font-weight: 800; color: #a34f2b;
+        background: #ffe4b5;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 1rem;
+        border: 1px solid #dfa86a;
+        white-space: nowrap;
+    }
+
+    /* ===== Тост ===== */
+    .toast {
+        position: fixed;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%) scale(0.8);
+        background: #fff;
+        padding: 30px 45px;
+        border-radius: 24px;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+        font-size: 1.4rem;
+        font-weight: 700;
+        text-align: center;
+        z-index: 500;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s, transform 0.3s;
+        max-width: 440px;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    .toast.success { border: 4px solid #4a9c5e; color: #2d6a4f; }
+    .toast.error { border: 4px solid #e63946; color: #a32635; }
+    .toast.info { border: 4px solid #f0b429; color: #7b3f00; }
+    .toast .emoji { font-size: 3rem; display: block; margin-bottom: 10px; }
+
+    /* ===== Недовольный клиент ===== */
+    .angry-customer-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        z-index: 400;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .angry-customer-overlay.show { display: flex; animation: fadeIn 0.3s ease; }
+    .angry-customer {
+        background: linear-gradient(160deg, #fff0f0, #ffe0e0);
+        border: 5px solid #e63946;
+        border-radius: 32px;
+        padding: 30px 36px;
+        max-width: 460px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+        animation: angryShake 0.5s ease, popIn 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+    }
+    .angry-customer .angry-emoji {
+        font-size: 5rem;
+        display: block;
+        margin-bottom: 10px;
+        animation: angryHeadShake 0.6s ease infinite alternate;
+    }
+    .angry-customer .speech {
+        background: #fff;
+        border: 3px dashed #e63946;
+        border-radius: 20px;
+        padding: 16px 20px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #a32635;
+        margin: 14px 0 18px;
+        line-height: 1.5;
+    }
+    .angry-customer .penalty {
+        background: #e63946;
+        color: #fff;
+        font-size: 1.4rem;
+        font-weight: 800;
+        padding: 12px 20px;
+        border-radius: 16px;
+        margin-bottom: 18px;
+        letter-spacing: 0.5px;
+        box-shadow: 0 6px 0 #8b1e2b;
+    }
+    .angry-customer .penalty .amount { font-size: 1.7rem; display: inline-block; }
+    .angry-customer .accept-btn {
+        background: linear-gradient(145deg, #6a8caf, #4a6d8f);
+        color: #fff;
+        border: 3px solid #cfe2f3;
+        border-radius: 50px;
+        padding: 14px 40px;
+        font-size: 1.15rem;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 8px 0 #2f4d68;
+        transition: transform 0.15s, box-shadow 0.2s;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .angry-customer .accept-btn:hover { transform: scale(1.04); }
+    .angry-customer .accept-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #2f4d68; }
+
+    /* ===== Письмо ===== */
+    .letter-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(30, 20, 10, 0.75);
+        backdrop-filter: blur(5px);
+        z-index: 550;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .letter-overlay.show { display: flex; animation: fadeIn 0.4s ease; }
+    .letter {
+        background: linear-gradient(160deg, #fffdf5, #f5e9c8);
+        border: 4px solid #b45f3b;
+        border-radius: 20px;
+        padding: 36px 40px 30px;
+        max-width: 520px;
+        width: 100%;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 0 3px #f7d9aa inset;
+        animation: letterPop 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+        position: relative;
+        text-align: center;
+    }
+    .letter::before {
+        content: '';
+        position: absolute;
+        top: 18px; left: 30px; right: 30px;
+        height: 2px;
+        background: repeating-linear-gradient(90deg, transparent 0 8px, #d9a066 8px 16px);
+    }
+    .letter .stamp {
+        position: absolute;
+        top: 10px; right: 20px;
+        font-size: 3rem;
+        transform: rotate(-15deg);
+        filter: drop-shadow(0 3px 4px rgba(0,0,0,0.3));
+        animation: stampSpin 1s ease;
+    }
+    .letter .letter-header {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        color: #8a7a5c;
+        letter-spacing: 3px;
+        margin-bottom: 8px;
+        margin-top: 8px;
+    }
+    .letter h2 {
+        font-size: 1.7rem;
+        color: #a34f2b;
+        margin-bottom: 16px;
+        letter-spacing: 1px;
+        text-shadow: 2px 2px 0 #f0d5b0;
+    }
+    .letter .letter-greeting {
+        font-size: 1.15rem;
+        color: #7b3f00;
+        font-weight: 800;
+        margin-bottom: 10px;
+        text-align: left;
+    }
+    .letter .letter-body {
+        font-size: 1.05rem;
+        color: #4a3a24;
+        line-height: 1.7;
+        margin-bottom: 20px;
+        text-align: left;
+        background: rgba(255, 248, 235, 0.7);
+        border-left: 4px solid #d9a066;
+        padding: 16px 18px;
+        border-radius: 8px;
+    }
+    .letter .letter-body strong { color: #7b3f00; }
+    .letter .letter-sign {
+        font-style: italic;
+        color: #8a7a5c;
+        font-size: 1rem;
+        margin-bottom: 20px;
+        text-align: right;
+    }
+    .letter .level-up-info {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 22px;
+        background: #f5ecd4;
+        border: 2px dashed #b45f3b;
+        border-radius: 16px;
+        padding: 14px 18px;
+    }
+    .letter .level-up-info .info-item { text-align: center; }
+    .letter .level-up-info .info-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: #8a7a5c;
+        letter-spacing: 1px;
+    }
+    .letter .level-up-info .info-value { font-size: 1.5rem; font-weight: 800; color: #a34f2b; }
+    .letter .accept-level-btn {
+        background: linear-gradient(145deg, #f0b87b, #e09b4a);
+        color: #3b1e0a;
+        border: 3px solid #ffefd0;
+        border-radius: 50px;
+        padding: 14px 40px;
+        font-size: 1.15rem;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 8px 0 #8b5a2b;
+        transition: transform 0.15s, box-shadow 0.2s;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .letter .accept-level-btn:hover { transform: scale(1.04); }
+    .letter .accept-level-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #8b5a2b; }
+
+    /* ===== Итог смены ===== */
+    .shift-summary {
+        position: fixed;
+        inset: 0;
+        background: rgba(30, 20, 10, 0.85);
+        backdrop-filter: blur(6px);
+        z-index: 600;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        overflow-y: auto;
+    }
+    .shift-summary.show { display: flex; animation: fadeIn 0.4s ease; }
+    .summary-card {
+        background: linear-gradient(160deg, #fffdf5, #f5ecd4);
+        border: 5px solid #f0b429;
+        border-radius: 32px;
+        padding: 32px 36px;
+        max-width: 540px;
+        width: 100%;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 0 4px #fff3d6 inset;
+        animation: popIn 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.3);
+        text-align: center;
+        margin: auto;
+    }
+    .summary-card .summary-avatar {
+        width: 90px; height: 90px;
+        border-radius: 50%;
+        background: linear-gradient(145deg, #ffe4b5, #f0b429);
+        border: 4px solid #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        margin: 0 auto 12px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+    .summary-card h2 {
+        font-size: 1.7rem;
+        color: #a34f2b;
+        margin-bottom: 4px;
+        letter-spacing: 1px;
+    }
+    .summary-card .summary-sub {
+        font-size: 1rem;
+        color: #8a7a5c;
+        margin-bottom: 20px;
+        letter-spacing: 1px;
+    }
+    .summary-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+    .stat-box {
+        background: #fffef9;
+        border: 2px solid #e8d9b5;
+        border-radius: 16px;
+        padding: 12px 10px;
+        text-align: center;
+    }
+    .stat-box .stat-emoji { font-size: 1.6rem; display: block; margin-bottom: 4px; }
+    .stat-box .stat-value {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #4a3a24;
+        display: block;
+        line-height: 1.1;
+    }
+    .stat-box .stat-label {
+        font-size: 0.7rem;
+        color: #8a7a5c;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 4px;
+        display: block;
+    }
+    .stat-box.good { border-color: #4a9c5e; background: #e8f6ec; }
+    .stat-box.good .stat-value { color: #2d6a4f; }
+    .stat-box.bad { border-color: #e63946; background: #fde8ea; }
+    .stat-box.bad .stat-value { color: #a32635; }
+    .stat-box.neutral { border-color: #6a8caf; background: #eaf2fa; }
+    .stat-box.neutral .stat-value { color: #2f4d68; }
+    .stat-box.gold { border-color: #f0b429; background: #fff5d6; }
+    .stat-box.gold .stat-value { color: #a34f2b; }
+
+    .summary-result {
+        background: #f5ecd4;
+        border: 3px dashed #b45f3b;
+        border-radius: 18px;
+        padding: 16px;
+        margin-bottom: 18px;
+    }
+    .summary-result .result-label {
+        font-size: 0.85rem;
+        color: #7b3f00;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 6px;
+    }
+    .summary-result .result-value { font-size: 1.9rem; font-weight: 800; }
+    .summary-result .result-value.positive { color: #2d6a4f; }
+    .summary-result .result-value.negative { color: #a32635; }
+    .summary-result .result-message {
+        font-size: 0.95rem;
+        color: #6b5c3e;
+        margin-top: 8px;
+        line-height: 1.4;
+    }
+
+    .summary-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .summary-card .restart-btn, .summary-card .finish-btn {
+        flex: 1;
+        min-width: 160px;
+        border-radius: 50px;
+        padding: 14px 24px;
+        font-size: 1.05rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.2s;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .summary-card .restart-btn {
+        background: linear-gradient(145deg, #f0b87b, #e09b4a);
+        color: #3b1e0a;
+        border: 3px solid #ffefd0;
+        box-shadow: 0 8px 0 #8b5a2b;
+    }
+    .summary-card .restart-btn:hover { transform: scale(1.04); }
+    .summary-card .restart-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #8b5a2b; }
+
+    .summary-card .finish-btn {
+        background: linear-gradient(145deg, #6a8caf, #4a6d8f);
+        color: #fff;
+        border: 3px solid #cfe2f3;
+        box-shadow: 0 8px 0 #2f4d68;
+    }
+    .summary-card .finish-btn:hover { transform: scale(1.04); }
+    .summary-card .finish-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #2f4d68; }
+
+    /* ===== Анимации ===== */
+    @keyframes titleGlow {
+        from { text-shadow: 0 4px 12px rgba(0,0,0,0.7), 0 0 30px rgba(255, 200, 100, 0.6); }
+        to { text-shadow: 0 4px 12px rgba(0,0,0,0.7), 0 0 50px rgba(255, 220, 130, 0.9); }
+    }
+    @keyframes bellSlideIn { from { opacity:0; transform: translateX(120px) rotate(45deg);} to { opacity:1; transform: translateX(0) rotate(0);} }
+    @keyframes bellRing { 0%,100%{transform:rotate(0);} 10%{transform:rotate(15deg);} 20%{transform:rotate(-15deg);} 30%{transform:rotate(12deg);} 40%{transform:rotate(-12deg);} 50%{transform:rotate(8deg);} 60%{transform:rotate(-8deg);} 70%{transform:rotate(0);} }
+    @keyframes badgePulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.18);} }
+    @keyframes receiptDrop { from { opacity:0; transform: translateY(-30px) rotate(-2deg);} to { opacity:1; transform: translateY(0) rotate(0);} }
+    @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+    @keyframes stickerPop { 0%{transform:scale(0);} 70%{transform:scale(1.15);} 100%{transform:scale(1);} }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+    @keyframes popIn { from { opacity:0; transform: scale(0.85); } to { opacity:1; transform: scale(1); } }
+    @keyframes letterPop {
+        0% { opacity: 0; transform: translateY(-40px) scale(0.85) rotate(-3deg); }
+        60% { transform: translateY(8px) scale(1.02) rotate(1deg); }
+        100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+    }
+    @keyframes stampSpin {
+        0% { transform: rotate(-15deg) scale(3); opacity: 0; }
+        60% { transform: rotate(-15deg) scale(1.1); opacity: 1; }
+        100% { transform: rotate(-15deg) scale(1); opacity: 1; }
+    }
+    @keyframes angryShake {
+        0%,100% { transform: translateX(0); }
+        20% { transform: translateX(-10px); }
+        40% { transform: translateX(10px); }
+        60% { transform: translateX(-8px); }
+        80% { transform: translateX(8px); }
+    }
+    @keyframes angryHeadShake {
+        from { transform: rotate(-8deg); }
+        to { transform: rotate(8deg); }
+    }
+    @keyframes levelBadgePop {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.25); }
+        100% { transform: scale(1); }
+    }
+    @keyframes checkPop {
+        0% { transform: scale(0); }
+        70% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+    @keyframes coinsBump {
+        0%,100% { transform: scale(1); }
+        50% { transform: scale(1.15); }
+    }
+    @keyframes pulseField {
+        0%,100% { box-shadow: 0 0 0 0 rgba(240,180,41,0.6); }
+        50% { box-shadow: 0 0 0 6px rgba(240,180,41,0); }
+    }
+
+    /* ===== Адаптивность ===== */
+    @media (max-width: 1000px) {
+        .game-area { grid-template-columns: 1fr; }
+        .cashier-panel { position: static; }
+        .top-bar { max-width: 75%; }
+    }
+    @media (max-width: 700px) {
+        .start-card, .records-card, .rules-card { padding: 22px 18px; }
+        .start-card h1 { font-size: 1.5rem; }
+        .welcome-title { font-size: 2rem; }
+        .welcome-title .sub { font-size: 1rem; }
+        .start-btn { font-size: 1.5rem; padding: 18px 48px; }
+        .character-grid { gap: 10px; }
+        .character-option { padding: 14px 6px 10px; }
+        .character-option .char-emoji { font-size: 2.8rem; }
+        .character-option .char-label { font-size: 0.85rem; }
+        .character-option .char-sub { font-size: 0.7rem; }
+        .records-card h2 { font-size: 1.2rem; }
+        .records-list li { padding: 8px 10px; font-size: 0.9rem; }
+        .rules-card h2 { font-size: 1.5rem; }
+        .rules-card p, .rules-card ul { font-size: 0.95rem; }
+    }
+    @media (max-width: 600px) {
+        body { padding: 10px; }
+        .bell-icon { width: 60px; height: 60px; font-size: 1.8rem; }
+        .coins-display { font-size: 0.85rem; padding: 6px 12px; }
+        .close-shift-btn { font-size: 0.7rem; padding: 5px 10px; }
+        .level-badge { font-size: 0.7rem; padding: 5px 10px; }
+        .level-badge .level-num { width: 20px; height: 20px; font-size: 0.8rem; }
+        .player-badge { font-size: 0.75rem; padding: 4px 10px 4px 5px; }
+        .player-badge .player-avatar { width: 28px; height: 28px; font-size: 1.1rem; }
+        .sound-toggle { width: 36px; height: 36px; font-size: 1rem; }
+        .top-bar { gap: 4px; }
+        .progress-panel { font-size: 0.7rem; padding: 6px 10px; top: 100px; }
+        .progress-panel .dot { width: 10px; height: 10px; }
+        .receipt { padding: 30px 14px 20px; }
+        .receipt-row { grid-template-columns: 50px 1fr 70px 100px; gap: 6px; padding: 10px 2px; }
+        .product-sticker { width: 46px; height: 46px; font-size: 1.6rem; border-width: 2px; }
+        .product-info .product-name { font-size: 0.9rem; }
+        .answer-field input { font-size: 1rem; padding: 8px 6px; }
+        .checkout-btn { font-size: 1.05rem; padding: 14px; }
+        .summary-stats { grid-template-columns: 1fr 1fr; gap: 8px; }
+        .stat-box .stat-value { font-size: 1.2rem; }
+        .summary-card { padding: 20px 16px; }
+        .summary-card h2 { font-size: 1.3rem; }
+        .angry-customer { padding: 22px 20px; }
+        .angry-customer .angry-emoji { font-size: 4rem; }
+        .letter { padding: 24px 20px; }
+        .letter h2 { font-size: 1.4rem; }
+        .letter .letter-body { font-size: 0.95rem; padding: 12px 14px; }
+        .letter .stamp { font-size: 2.2rem; right: 10px; }
+    }
+</style>
+</head>
+<body>
+
+<!-- ===== ЭКРАН 1: ПРИВЕТСТВИЕ ===== -->
+<div class="welcome-screen" id="welcomeScreen">
+    <h1 class="welcome-title">
+        🍭 Магазин сладостей 🍭
+        <span class="sub">ИГРА-ТРЕНАЖЁР «КАССИР»</span>
+    </h1>
+    <button class="start-btn" id="startButton">▶ Начать</button>
+</div>
+
+<!-- ===== ЭКРАН 2: ПРАВИЛА ===== -->
+<div class="rules-screen" id="rulesScreen" style="display:none;">
+    <div class="rules-card">
+        <h2>📋 Правила игры</h2>
+        <p>
+            <span class="highlight">👩‍🍳 Добро пожаловать!</span><br>
+            Сегодня ты — <strong>кассир</strong> в магазине сладостей.
+        </p>
+        <p>
+            🎯 Твоя задача — обслуживать клиентов и правильно считать
+            <strong>цену, количество и стоимость</strong>.
+        </p>
+        <ul>
+            <li>Каждый покупатель называет, сколько сладостей он хочет купить.</li>
+            <li>Ты должен посмотреть в <strong>прайс-лист</strong> справа, найти цену товара и посчитать стоимость: <em>Цена × Количество = Стоимость</em>.</li>
+            <li>Иногда нужно найти <strong>количество</strong> или <strong>цену</strong> — внимательно читай задание!</li>
+            <li>Вводи ответ с клавиатуры — только цифры.</li>
+            <li>За правильный чек получаешь <strong>монеты</strong>. За ошибку — <strong>штраф</strong> из своей копилки!</li>
+        </ul>
+        <div class="rules-emoji-row">🍬 🍫 🧁 🍩 🍭</div>
+        <p style="font-size: 1rem; color: #6b5c3e;">
+            💰 Чем больше правильных ответов, тем выше уровень и больше монет!
+        </p>
+        <button class="shift-begin-btn" id="shiftBeginBtn">🔄 Начать смену</button>
+    </div>
+</div>
+
+<!-- ===== ЭКРАН 3: ФОРМА ИГРОКА + РЕКОРДЫ ===== -->
+<div class="player-screen" id="playerScreen" style="display:none;">
+    <div class="start-card">
+        <h1>🍭 Знакомство 🍭</h1>
+        <div class="subtitle">Давай познакомимся перед началом смены!</div>
+
+        <div class="form-group">
+            <label for="nameInput"><span class="label-emoji">✏️</span> Как тебя зовут?</label>
+            <input type="text" class="name-input" id="nameInput" placeholder="Введи своё имя" maxlength="20" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+            <label><span class="label-emoji">🎭</span> За кого будешь играть?</label>
+            <div class="character-grid" id="characterGrid">
+                <div class="character-option" data-character="girl" data-emoji="👧">
+                    <span class="char-emoji">👧</span>
+                    <div class="char-label">Девочка</div>
+                    <div class="char-sub">Аккуратная и умная</div>
+                </div>
+                <div class="character-option" data-character="boy" data-emoji="👦">
+                    <span class="char-emoji">👦</span>
+                    <div class="char-label">Мальчик</div>
+                    <div class="char-sub">Быстрый и смелый</div>
+                </div>
+                <div class="character-option" data-character="granny" data-emoji="👵">
+                    <span class="char-emoji">👵</span>
+                    <div class="char-label">Старушка</div>
+                    <div class="char-sub">Мудрая и опытная</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="begin-btn" id="beginBtn" disabled>▶ Начать работу</button>
+        <button class="back-link" id="backToRulesBtn">← Вернуться к правилам</button>
+    </div>
+
+    <div class="records-card">
+        <h2>🏆 Таблица рекордов</h2>
+        <ul class="records-list" id="recordsList"></ul>
+        <button class="records-clear-btn" id="clearRecordsBtn" style="display:none;">🗑 Очистить рекорды</button>
+    </div>
+</div>
+
+<!-- ===== ВЕРХНЯЯ ПАНЕЛЬ ===== -->
+<div class="top-bar" id="topBar" style="display:none;">
+    <div class="player-badge" id="playerBadge">
+        <div class="player-avatar" id="playerAvatar">👧</div>
+        <span id="playerNameLabel">Имя</span>
+    </div>
+    <div class="level-badge" id="levelBadge">
+        Уровень <span class="level-num" id="levelNum">1</span>
+    </div>
+    <div class="coins-display" id="coinsDisplay">💰 Монеты: 0</div>
+    <div class="sound-toggle" id="soundToggle" title="Звук вкл/выкл">🔊</div>
+    <button class="close-shift-btn" id="closeShiftBtn">🔒 Закрыть смену</button>
+</div>
+
+<div class="progress-panel" id="progressPanel" style="display:none;">
+    <span>До след. уровня:</span>
+    <div class="progress-dots" id="progressDots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+    </div>
+</div>
+
+<div class="bell-container" id="bellContainer" style="display:none;" title="Покупатель ждёт!">
+    <div class="bell-icon" id="bellIcon">
+        🔔
+        <span class="bell-badge" id="bellBadge">1</span>
+    </div>
+</div>
+
+<!-- ===== ИГРОВАЯ ЗОНА ===== -->
+<div class="game-area" id="gameArea">
+    <div class="receipt" id="receipt">
+        <div class="task-banner">
+            <span class="task-label">🎯 Задание</span>
+            <span class="task-text" id="taskText">Посчитай стоимость покупки</span>
+        </div>
+
+        <h2>🧾 ЧЕК</h2>
+        <div class="shop-name">МАГАЗИН СЛАДОСТЕЙ «СЛАДКАЯ ЖИЗНЬ»</div>
+        <div class="cashier-line">Кассир: <strong id="cashierNameInReceipt">—</strong></div>
+
+        <div id="receiptBody"></div>
+
+        <div class="total-row" id="totalRow">
+            <label id="totalLabel">ИТОГО:</label>
+            <div class="answer-field">
+                <input type="text" inputmode="numeric" id="totalInput" placeholder="?" autocomplete="off">
+            </div>
+        </div>
+
+        <button class="checkout-btn" id="checkoutBtn">✅ Пробить чек</button>
+    </div>
+
+    <aside class="cashier-panel">
+        <h3>📋 ПРАЙС-ЛИСТ</h3>
+        <div class="subtitle">Ассортимент магазина</div>
+        <ul class="price-list" id="priceList"></ul>
+    </aside>
+</div>
+
+<!-- ===== НЕДОВОЛЬНЫЙ КЛИЕНТ ===== -->
+<div class="angry-customer-overlay" id="angryOverlay">
+    <div class="angry-customer">
+        <span class="angry-emoji" id="angryEmoji">😡</span>
+        <div class="speech" id="angrySpeech">Это неправильно! Я не буду это покупать!</div>
+        <div class="penalty">
+            Штраф: <span class="amount" id="penaltyAmount">-5</span> 💰
+        </div>
+        <button class="accept-btn" id="acceptPenaltyBtn">Принять штраф</button>
+    </div>
+</div>
+
+<!-- ===== ПИСЬМО ===== -->
+<div class="letter-overlay" id="letterOverlay">
+    <div class="letter">
+        <div class="stamp" id="letterStamp">📬</div>
+        <div class="letter-header">Почта магазина «Сладкая жизнь»</div>
+        <div class="letter-greeting" id="letterGreeting">Здравствуй, кассир!</div>
+        <h2 id="letterTitle">Магазин набирает популярность!</h2>
+        <div class="letter-body" id="letterBody"></div>
+        <div class="letter-sign" id="letterSign">— Администрация магазина</div>
+
+        <div class="level-up-info">
+            <div class="info-item">
+                <div class="info-label">Уровень</div>
+                <div class="info-value" id="newLevelNum">2</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Что нового</div>
+                <div class="info-value" id="newLevelFeature" style="font-size: 0.95rem; color: #7b3f00;">
+                    Сложнее заказы
+                </div>
+            </div>
+        </div>
+
+        <button class="accept-level-btn" id="acceptLevelBtn">Продолжить смену →</button>
+    </div>
+</div>
+
+<!-- ===== ИТОГ СМЕНЫ ===== -->
+<div class="shift-summary" id="shiftSummary">
+    <div class="summary-card">
+        <div class="summary-avatar" id="summaryAvatar">👧</div>
+        <h2 id="summaryTitle">СМЕНА ЗАКРЫТА</h2>
+        <div class="summary-sub" id="summarySub">Итоги рабочего дня</div>
+
+        <div class="summary-stats">
+            <div class="stat-box neutral">
+                <span class="stat-emoji">🧑‍🤝‍🧑</span>
+                <span class="stat-value" id="statServed">0</span>
+                <span class="stat-label">Обслужено</span>
+            </div>
+            <div class="stat-box good">
+                <span class="stat-emoji">😊</span>
+                <span class="stat-value" id="statHappy">0</span>
+                <span class="stat-label">Довольных</span>
+            </div>
+            <div class="stat-box bad">
+                <span class="stat-emoji">😡</span>
+                <span class="stat-value" id="statAngry">0</span>
+                <span class="stat-label">Недовольных</span>
+            </div>
+            <div class="stat-box good">
+                <span class="stat-emoji">💰</span>
+                <span class="stat-value" id="statEarned">0</span>
+                <span class="stat-label">Заработано</span>
+            </div>
+            <div class="stat-box gold">
+                <span class="stat-emoji">⭐</span>
+                <span class="stat-value" id="statLevel">1</span>
+                <span class="stat-label">Достигнут ур.</span>
+            </div>
+            <div class="stat-box neutral">
+                <span class="stat-emoji">📉</span>
+                <span class="stat-value" id="statPenalties">0</span>
+                <span class="stat-label">Штрафов</span>
+            </div>
+        </div>
+
+        <div class="summary-result">
+            <div class="result-label">Итог смены</div>
+            <div class="result-value" id="finalBalance">0 ₽</div>
+            <div class="result-message" id="finalMessage"></div>
+        </div>
+
+        <div class="summary-buttons">
+            <button class="restart-btn" id="restartBtn">🔄 Ещё смена</button>
+            <button class="finish-btn" id="finishBtn">🏠 На главную</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+    // ============================================================
+    // ================ ЗВУКОВОЙ ДВИЖОК ===========================
+    // ============================================================
+    const Sound = (function() {
+        let audioCtx = null;
+        let enabled = true;
+
+        function init() {
+            if (!audioCtx) {
+                try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+                catch (e) { enabled = false; }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playTone(freq, duration, type = 'sine', volume = 0.15, startTime = 0) {
+            if (!enabled) return;
+            init();
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime + startTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, now);
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(volume, now + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + duration);
+        }
+
+        function playMelody(notes, type = 'sine', volume = 0.12) {
+            if (!enabled) return;
+            notes.forEach(n => playTone(n.freq, n.dur, type, volume, n.delay || 0));
+        }
+
+        return {
+            init,
+            bell() { playTone(880, 0.4, 'sine', 0.18, 0); playTone(1100, 0.5, 'sine', 0.15, 0.15); },
+            cashRegister() {
+                playMelody([
+                    { freq: 1320, dur: 0.12, delay: 0 },
+                    { freq: 1760, dur: 0.18, delay: 0.08 },
+                    { freq: 2093, dur: 0.25, delay: 0.16 }
+                ], 'square', 0.10);
+            },
+            coins() {
+                playMelody([
+                    { freq: 2093, dur: 0.08, delay: 0 },
+                    { freq: 2637, dur: 0.08, delay: 0.06 },
+                    { freq: 3136, dur: 0.12, delay: 0.12 }
+                ], 'triangle', 0.12);
+            },
+            grumble() {
+                playMelody([
+                    { freq: 110, dur: 0.25, delay: 0 },
+                    { freq: 98, dur: 0.30, delay: 0.15 },
+                    { freq: 87, dur: 0.40, delay: 0.35 }
+                ], 'sawtooth', 0.14);
+            },
+            penalty() {
+                playMelody([
+                    { freq: 440, dur: 0.20, delay: 0 },
+                    { freq: 349, dur: 0.20, delay: 0.15 },
+                    { freq: 262, dur: 0.35, delay: 0.30 }
+                ], 'triangle', 0.14);
+            },
+            levelUp() {
+                playMelody([
+                    { freq: 523, dur: 0.15, delay: 0 },
+                    { freq: 659, dur: 0.15, delay: 0.12 },
+                    { freq: 784, dur: 0.15, delay: 0.24 },
+                    { freq: 1047, dur: 0.4, delay: 0.36 }
+                ], 'sine', 0.14);
+            },
+            errorBuzz() { playTone(180, 0.25, 'square', 0.10, 0); },
+            click() { playTone(660, 0.06, 'sine', 0.10, 0); },
+            setEnabled(v) { enabled = v; }
+        };
+    })();
+
+    // ============================================================
+    // ================ ПРОДУКТЫ И УРОВНИ ========================
+    // ============================================================
+    const PRODUCTS = {
+        candy:     { name: 'Карамелька',  emoji: '🍬', color: '#ffb6d5' },
+        chocolate: { name: 'Шоколадка',   emoji: '🍫', color: '#c9a37a' },
+        cake:      { name: 'Пирожное',    emoji: '🧁', color: '#ffd9a0' },
+        cookie:    { name: 'Печенье',     emoji: '🍪', color: '#e0b88a' },
+        lollipop:  { name: 'Леденец',     emoji: '🍭', color: '#ffc4e1' },
+        donut:     { name: 'Пончик',      emoji: '🍩', color: '#f7b6a0' },
+        cupcake:   { name: 'Капкейк',     emoji: '🍰', color: '#ffe0a0' },
+        icecream:  { name: 'Мороженое',   emoji: '🍦', color: '#c4e5ff' }
+    };
+    const PRODUCT_KEYS = Object.keys(PRODUCTS);
+
+    const LEVELS = [
+        { num: 1, name: 'Новичок', prices: [5, 10, 15, 20], maxItems: 3, taskTypes: ['sum'], reward: 10, penalty: 5 },
+        { num: 2, name: 'Популярность растёт', prices: [5, 6, 7, 8, 10, 12, 15], maxItems: 3, taskTypes: ['sum', 'sum', 'qty'], reward: 12, penalty: 8 },
+        { num: 3, name: 'Сладкое безумие', prices: [5, 6, 7, 8, 9, 12, 13, 15, 18], maxItems: 4, taskTypes: ['sum', 'sum', 'qty', 'price'], reward: 15, penalty: 12 },
+        { num: 4, name: 'Легендарный кассир', prices: [7, 8, 9, 11, 13, 14, 16, 18, 20, 25], maxItems: 5, taskTypes: ['sum', 'qty', 'price', 'mixed'], reward: 20, penalty: 18 }
+    ];
+
+    const LETTERS = [
+        {
+            title: '📬 Магазин набирает популярность!',
+            body: 'Мы заметили, что ты отлично справляешься со своей работой! За последние 3 клиента — <strong>ни одной ошибки</strong>.<br><br>Слух о нашем магазине разлетелся по всему городу. Людей становится всё больше, а вместе с ними — и <strong>сложнее заказы</strong>. Теперь покупатели берут больше сладостей и задают каверзные вопросы!<br><br>Готов к новым испытаниям?',
+            sign: '— Администрация магазина',
+            feature: 'Появились задания с количеством'
+        },
+        {
+            title: '📬 Очередь до самой улицы!',
+            body: 'Ух ты! О нашем магазине написали в местной газете!<br><br>Очередь растянулась до самой улицы. Люди приходят целыми семьями, заказывают сразу <strong>много всего</strong>, и просят посчитать не только стоимость, но и <strong>цену</strong> и <strong>количество</strong>.<br><br>Ты справишься? Мы верим в тебя!',
+            sign: '— Твоя команда',
+            feature: 'Новые типы заданий'
+        },
+        {
+            title: '📬 Ты — звезда магазина!',
+            body: 'Невозможно поверить! Тебя рекомендуют всем друзьям и знакомым!<br><br>Наш магазин стал самым популярным в городе. Покупатели приходят с <strong>огромными заказами</strong> и задачами на все типы расчётов.<br><br>Ты — легендарный кассир! Покажи, на что ты способен!',
+            sign: '— Восхищённая администрация',
+            feature: 'Максимальная сложность'
+        }
+    ];
+
+    // ============================================================
+    // ================ LOCALSTORAGE ==============================
+    // ============================================================
+    const STORAGE_KEYS = {
+        player: 'cashier_player',
+        records: 'cashier_records',
+        sound: 'cashier_sound'
+    };
+
+    function savePlayer(name, char, emoji) {
+        try { localStorage.setItem(STORAGE_KEYS.player, JSON.stringify({ name, char, emoji })); } catch (e) {}
+    }
+    function loadPlayer() {
+        try { const d = localStorage.getItem(STORAGE_KEYS.player); return d ? JSON.parse(d) : null; } catch (e) { return null; }
+    }
+    function loadRecords() {
+        try { const d = localStorage.getItem(STORAGE_KEYS.records); return d ? JSON.parse(d) : []; } catch (e) { return []; }
+    }
+    function saveRecords(r) {
+        try { localStorage.setItem(STORAGE_KEYS.records, JSON.stringify(r)); } catch (e) {}
+    }
+    function loadSoundPref() {
+        try { const v = localStorage.getItem(STORAGE_KEYS.sound); return v === null ? true : v === 'true'; } catch (e) { return true; }
+    }
+    function saveSoundPref(v) {
+        try { localStorage.setItem(STORAGE_KEYS.sound, String(v)); } catch (e) {}
+    }
+
+    // ============================================================
+    // ================ СОСТОЯНИЕ =================================
+    // ============================================================
+    let playerName = '';
+    let playerEmoji = '👧';
+    let playerChar = 'girl';
+
+    let coins = 0;
+    let currentLevel = 1;
+    let correctStreak = 0;
+    let stats = { served: 0, happy: 0, angry: 0, earned: 0, penalties: 0 };
+    let currentTask = null;
+    let shiftRecorded = false;
+
+    // ============================================================
+    // ================ DOM =======================================
+    // ============================================================
+    const welcomeScreen    = document.getElementById('welcomeScreen');
+    const rulesScreen      = document.getElementById('rulesScreen');
+    const playerScreen     = document.getElementById('playerScreen');
+    const startButton      = document.getElementById('startButton');
+    const shiftBeginBtn    = document.getElementById('shiftBeginBtn');
+    const backToRulesBtn   = document.getElementById('backToRulesBtn');
+
+    const nameInput        = document.getElementById('nameInput');
+    const characterGrid    = document.getElementById('characterGrid');
+    const beginBtn         = document.getElementById('beginBtn');
+    const topBar           = document.getElementById('topBar');
+    const gameArea         = document.getElementById('gameArea');
+    const progressPanel    = document.getElementById('progressPanel');
+    const bellContainer    = document.getElementById('bellContainer');
+    const playerAvatar     = document.getElementById('playerAvatar');
+    const playerNameLabel  = document.getElementById('playerNameLabel');
+    const cashierNameInReceipt = document.getElementById('cashierNameInReceipt');
+    const receiptBody      = document.getElementById('receiptBody');
+    const totalInput       = document.getElementById('totalInput');
+    const totalLabel       = document.getElementById('totalLabel');
+    const checkoutBtn      = document.getElementById('checkoutBtn');
+    const priceList        = document.getElementById('priceList');
+    const toast            = document.getElementById('toast');
+    const coinsDisplay     = document.getElementById('coinsDisplay');
+    const taskText         = document.getElementById('taskText');
+    const angryOverlay     = document.getElementById('angryOverlay');
+    const angrySpeech      = document.getElementById('angrySpeech');
+    const penaltyAmount    = document.getElementById('penaltyAmount');
+    const acceptPenaltyBtn = document.getElementById('acceptPenaltyBtn');
+    const shiftSummary     = document.getElementById('shiftSummary');
+    const closeShiftBtn    = document.getElementById('closeShiftBtn');
+    const bellBadge        = document.getElementById('bellBadge');
+    const restartBtn       = document.getElementById('restartBtn');
+    const finishBtn        = document.getElementById('finishBtn');
+    const levelNum         = document.getElementById('levelNum');
+    const levelBadge       = document.getElementById('levelBadge');
+    const progressDots     = document.getElementById('progressDots').children;
+    const letterOverlay    = document.getElementById('letterOverlay');
+    const letterTitle      = document.getElementById('letterTitle');
+    const letterBody       = document.getElementById('letterBody');
+    const letterSign       = document.getElementById('letterSign');
+    const letterGreeting   = document.getElementById('letterGreeting');
+    const newLevelNum      = document.getElementById('newLevelNum');
+    const newLevelFeature  = document.getElementById('newLevelFeature');
+    const acceptLevelBtn   = document.getElementById('acceptLevelBtn');
+    const summaryAvatar    = document.getElementById('summaryAvatar');
+    const summaryTitle     = document.getElementById('summaryTitle');
+    const summarySub       = document.getElementById('summarySub');
+    const soundToggle      = document.getElementById('soundToggle');
+    const recordsList      = document.getElementById('recordsList');
+    const clearRecordsBtn  = document.getElementById('clearRecordsBtn');
+
+    // ============================================================
+    // ================ УТИЛИТЫ ===================================
+    // ============================================================
+    function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function shuffle(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+    function getLevelConfig() { return LEVELS[currentLevel - 1]; }
+
+    // ============================================================
+    // ================ ЗВУК ======================================
+    // ============================================================
+    let soundEnabled = loadSoundPref();
+    updateSoundIcon();
+
+    function updateSoundIcon() {
+        soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
+        soundToggle.classList.toggle('muted', !soundEnabled);
+        Sound.setEnabled(soundEnabled);
+    }
+
+    soundToggle.addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        saveSoundPref(soundEnabled);
+        updateSoundIcon();
+        if (soundEnabled) Sound.click();
+    });
+
+    document.addEventListener('click', function unlockAudio() {
+        Sound.init();
+        document.removeEventListener('click', unlockAudio);
+    }, { once: true });
+
+    // ============================================================
+    // ================ ТАБЛИЦА РЕКОРДОВ ==========================
+    // ============================================================
+    function renderRecords() {
+        const records = loadRecords();
+        recordsList.innerHTML = '';
+
+        if (records.length === 0) {
+            recordsList.innerHTML = '<li class="records-empty">Пока нет рекордов. Сыграй первым! 🎮</li>';
+            clearRecordsBtn.style.display = 'none';
+            return;
+        }
+
+        clearRecordsBtn.style.display = 'block';
+        const sorted = records.slice().sort((a, b) => b.coins - a.coins);
+        const medals = ['🥇', '🥈', '🥉'];
+
+        sorted.slice(0, 10).forEach((r, i) => {
+            const li = document.createElement('li');
+            if (i === 0) li.classList.add('gold');
+            const place = i < 3 ? medals[i] : `${i + 1}.`;
+            const amountClass = r.coins >= 0 ? '' : 'negative';
+            li.innerHTML = `
+                <span class="place">${place}</span>
+                <div class="rec-avatar">${r.emoji}</div>
+                <span class="rec-name">${r.name}</span>
+                <span class="rec-amount ${amountClass}">${r.coins >= 0 ? '+' : ''}${r.coins} 💰</span>
+            `;
+            recordsList.appendChild(li);
+        });
+    }
+
+    function addRecord(name, emoji, coins, level) {
+        const records = loadRecords();
+        records.push({ name, emoji, coins, level, date: new Date().toISOString() });
+        saveRecords(records.slice(-20));
+    }
+
+    clearRecordsBtn.addEventListener('click', () => {
+        if (confirm('Удалить все рекорды? Это действие нельзя отменить.')) {
+            saveRecords([]);
+            renderRecords();
+            Sound.errorBuzz();
+        }
+    });
+
+    // ============================================================
+    // ================ ЭКРАНЫ ====================================
+    // ============================================================
+    function showScreen(screen) {
+        [welcomeScreen, rulesScreen, playerScreen].forEach(s => s.style.display = 'none');
+        if (screen === playerScreen) screen.style.display = 'flex';
+        else if (screen) screen.style.display = 'block';
+    }
+
+    startButton.addEventListener('click', () => {
+        Sound.click();
+        showScreen(rulesScreen);
+    });
+
+    shiftBeginBtn.addEventListener('click', () => {
+        Sound.click();
+        showScreen(playerScreen);
+        renderRecords();
+        updateBeginButton();
+    });
+
+    backToRulesBtn.addEventListener('click', () => {
+        Sound.click();
+        showScreen(rulesScreen);
+    });
+
+    // ============================================================
+    // ================ ФОРМА ИГРОКА ==============================
+    // ============================================================
+    let selectedChar = null;
+
+    function restorePlayer() {
+        const saved = loadPlayer();
+        if (saved) {
+            nameInput.value = saved.name || '';
+            if (saved.char) {
+                const option = characterGrid.querySelector(`[data-character="${saved.char}"]`);
+                if (option) {
+                    option.classList.add('selected');
+                    selectedChar = saved.char;
+                    playerEmoji = option.dataset.emoji;
+                    playerChar = saved.char;
+                }
+            }
+        }
+        updateBeginButton();
+    }
+
+    characterGrid.addEventListener('click', (e) => {
+        const option = e.target.closest('.character-option');
+        if (!option) return;
+        characterGrid.querySelectorAll('.character-option').forEach(el => el.classList.remove('selected'));
+        option.classList.add('selected');
+        selectedChar = option.dataset.character;
+        playerEmoji = option.dataset.emoji;
+        playerChar = selectedChar;
+        Sound.click();
+        updateBeginButton();
+    });
+
+    nameInput.addEventListener('input', updateBeginButton);
+
+    function updateBeginButton() {
+        const nameOk = nameInput.value.trim().length >= 2;
+        const charOk = selectedChar !== null;
+        beginBtn.disabled = !(nameOk && charOk);
+    }
+
+    // ============================================================
+    // ================ СТАРТ ИГРЫ ================================
+    // ============================================================
+    beginBtn.addEventListener('click', () => {
+        if (beginBtn.disabled) return;
+
+        playerName = nameInput.value.trim();
+        savePlayer(playerName, playerChar, playerEmoji);
+
+        playerAvatar.textContent = playerEmoji;
+        playerNameLabel.textContent = playerName;
+        cashierNameInReceipt.textContent = `${playerEmoji} ${playerName}`;
+        summaryAvatar.textContent = playerEmoji;
+
+        showScreen(null);
+
+        document.body.classList.add('shift-active');
+        topBar.style.display = 'flex';
+        gameArea.classList.add('active');
+        progressPanel.style.display = 'flex';
+        bellContainer.style.display = 'block';
+
+        coins = 0;
+        currentLevel = 1;
+        correctStreak = 0;
+        stats = { served: 0, happy: 0, angry: 0, earned: 0, penalties: 0 };
+        shiftRecorded = false;
+        levelNum.textContent = '1';
+
+        Sound.click();
+        renderPriceList();
+        updateCoinsDisplay();
+        updateProgress();
+        newClient();
+        bellBadge.textContent = '1';
+
+        setTimeout(() => Sound.bell(), 600);
+    });
+
+    // ============================================================
+    // ================ ГЕНЕРАЦИЯ ЗАДАНИЯ =========================
+    // ============================================================
+    function generateTask() {
+        const config = getLevelConfig();
+        const taskType = pick(config.taskTypes);
+
+        let numItems;
+        if (taskType === 'mixed') {
+            numItems = randInt(2, Math.min(3, config.maxItems));
+        } else {
+            numItems = randInt(2, config.maxItems);
+        }
+
+        const chosenKeys = shuffle(PRODUCT_KEYS).slice(0, numItems);
+        const availablePrices = config.prices;
+
+        const items = chosenKeys.map(key => {
+            const product = PRODUCTS[key];
+            const maxQty = currentLevel >= 3 ? 7 : 5;
+            const qty = randInt(2, maxQty);
+            const price = pick(availablePrices);
+            return {
+                productKey: key,
+                product: { ...product, price },
+                qty, price,
+                total: price * qty,
+                unknown: null
+            };
+        });
+
+        let description = '';
+        let totalUnknown = false;
+
+        if (taskType === 'sum') {
+            items.forEach(it => it.unknown = 'total');
+            totalUnknown = true;
+            description = 'Посчитай стоимость каждого продукта и общий итог';
+        } else if (taskType === 'qty') {
+            const idx = randInt(0, items.length - 1);
+            items[idx].unknown = 'qty';
+            description = `Сколько купили «${items[idx].product.name}»? Найди количество`;
+        } else if (taskType === 'price') {
+            const idx = randInt(0, items.length - 1);
+            items[idx].unknown = 'price';
+            description = `Сколько стоит одна «${items[idx].product.name}»? Найди цену`;
+        } else {
+            const idxQty = randInt(0, items.length - 1);
+            let idxPrice = randInt(0, items.length - 1);
+            while (idxPrice === idxQty && items.length > 1) {
+                idxPrice = randInt(0, items.length - 1);
+            }
+            items[idxQty].unknown = 'qty';
+            items[idxPrice].unknown = 'price';
+            description = 'Найди пропущенные значения в чеке';
+        }
+
+        const grandTotal = items.reduce((s, it) => s + it.total, 0);
+        return { type: taskType, items, grandTotal, totalUnknown, description };
+    }
+
+    // ============================================================
+    // ================ РЕНДЕР ====================================
+    // ============================================================
+    function renderPriceList() {
+        priceList.innerHTML = '';
+        const config = getLevelConfig();
+        const assignedPrices = {};
+        PRODUCT_KEYS.forEach((key, i) => {
+            assignedPrices[key] = config.prices[i % config.prices.length];
+        });
+        PRODUCT_KEYS.forEach(key => { PRODUCTS[key].price = assignedPrices[key]; });
+
+        Object.values(PRODUCTS).forEach(p => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <div class="mini-sticker" style="background:${p.color}">${p.emoji}</div>
+                <span class="p-name">${p.name}</span>
+                <span class="p-price">${p.price} ₽</span>
+            `;
+            priceList.appendChild(li);
+        });
+    }
+
+    function renderReceipt() {
+        receiptBody.innerHTML = '';
+        taskText.textContent = currentTask.description;
+        cashierNameInReceipt.textContent = `${playerEmoji} ${playerName}`;
+
+        currentTask.items.forEach((it, index) => {
+            const row = document.createElement('div');
+            row.className = 'receipt-row';
+
+            const sticker = document.createElement('div');
+            sticker.className = 'product-sticker';
+            sticker.style.background = it.product.color;
+            sticker.textContent = it.product.emoji;
+
+            const info = document.createElement('div');
+            info.className = 'product-info';
+            info.innerHTML = `<div class="product-name">${it.product.name}</div>`;
+
+            const qtyBlock = document.createElement('div');
+            qtyBlock.className = 'qty-block';
+            if (it.unknown === 'qty') {
+                qtyBlock.innerHTML = `
+                    <div class="qty-label">Кол-во</div>
+                    <div class="qty-value unknown">?</div>
+                `;
+            } else {
+                qtyBlock.innerHTML = `
+                    <div class="qty-label">Кол-во</div>
+                    <div class="qty-value">${it.qty} шт</div>
+                `;
+            }
+
+            const answerBlock = document.createElement('div');
+            answerBlock.className = 'answer-field';
+
+            let fieldLabel = 'Стоимость';
+            let inputValue = '';
+            let inputDisabled = true;
+            let dataField = '';
+
+            if (it.unknown === 'total') {
+                fieldLabel = 'Стоимость';
+                dataField = 'total';
+                inputDisabled = false;
+                inputValue = '';
+            } else if (it.unknown === 'price') {
+                fieldLabel = 'Цена';
+                dataField = 'price';
+                inputDisabled = false;
+                inputValue = '';
+            } else {
+                fieldLabel = 'Стоимость';
+                dataField = 'total-known';
+                inputDisabled = true;
+                inputValue = String(it.total);
+            }
+
+            const label = document.createElement('span');
+            label.className = 'field-label';
+            label.textContent = fieldLabel;
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.inputMode = 'numeric';
+            input.autocomplete = 'off';
+            input.dataset.index = String(index);
+            input.dataset.field = dataField;
+            input.value = inputValue;
+            if (inputDisabled) input.disabled = true;
+            input.placeholder = inputDisabled ? '' : '?';
+
+            answerBlock.appendChild(label);
+            answerBlock.appendChild(input);
+
+            row.appendChild(sticker);
+            row.appendChild(info);
+            row.appendChild(qtyBlock);
+            row.appendChild(answerBlock);
+            receiptBody.appendChild(row);
+        });
+
+        // Итог
+        if (currentTask.totalUnknown) {
+            totalLabel.textContent = 'ИТОГО (посчитай сам):';
+            totalInput.disabled = false;
+            totalInput.value = '';
+            totalInput.placeholder = '?';
+        } else {
+            totalLabel.textContent = 'ИТОГО:';
+            totalInput.disabled = true;
+            totalInput.value = String(currentTask.grandTotal);
+        }
+
+        checkoutBtn.disabled = false;
+    }
+
+    // ============================================================
+    // ================ ПРОВЕРКА ОТВЕТОВ ==========================
+    // ============================================================
+    function readNumber(inputEl) {
+        // Читаем только цифры из значения, преобразуем в число
+        const raw = String(inputEl.value || '').replace(/[^0-9]/g, '');
+        if (raw === '') return null;
+        return parseInt(raw, 10);
+    }
+
+    function checkAnswers() {
+        let errorsCount = 0;
+        const inputs = receiptBody.querySelectorAll('input:not([disabled])');
+
+        inputs.forEach(inp => {
+            const index = Number(inp.dataset.index);
+            const field = inp.dataset.field;
+            const it = currentTask.items[index];
+            const userValue = readNumber(inp);
+
+            let correctValue = null;
+            if (field === 'total') correctValue = it.total;
+            else if (field === 'price') correctValue = it.price;
+
+            inp.classList.remove('correct', 'wrong', 'needs-fill');
+
+            if (correctValue !== null && userValue === correctValue) {
+                inp.classList.add('correct');
+            } else {
+                inp.classList.add('wrong');
+                errorsCount++;
+            }
+        });
+
+        if (!totalInput.disabled) {
+            totalInput.classList.remove('correct', 'wrong', 'needs-fill');
+            const userTotal = readNumber(totalInput);
+            if (userTotal === currentTask.grandTotal) {
+                totalInput.classList.add('correct');
+            } else {
+                totalInput.classList.add('wrong');
+                errorsCount++;
+            }
+        }
+
+        return { allCorrect: errorsCount === 0, errorsCount };
+    }
+
+    // ============================================================
+    // ================ ТОСТ / UI =================================
+    // ============================================================
+    function showToast(message, type = 'success', duration = 2500) {
+        toast.className = `toast ${type}`;
+        toast.innerHTML = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), duration);
+    }
+
+    function updateCoinsDisplay(bump = false) {
+        coinsDisplay.textContent = `💰 Монеты: ${coins}`;
+        coinsDisplay.classList.toggle('negative', coins < 0);
+        if (bump) {
+            coinsDisplay.classList.remove('bump');
+            void coinsDisplay.offsetWidth;
+            coinsDisplay.classList.add('bump');
+        }
+    }
+
+    function updateProgress() {
+        const filled = correctStreak % 3;
+        const displayFilled = filled === 0 && correctStreak > 0 ? 0 : filled;
+        for (let i = 0; i < progressDots.length; i++) {
+            progressDots[i].classList.toggle('filled', i < displayFilled);
+        }
+    }
+
+    // ============================================================
+    // ================ НЕДОВОЛЬНЫЙ КЛИЕНТ ========================
+    // ============================================================
+    function showAngryCustomer(errorsCount) {
+        const config = getLevelConfig();
+        const penalty = errorsCount * config.penalty;
+        const angryPhrases = [
+            'Это неправильно! Я не буду это покупать!',
+            'Что за безобразие?! Я жаловаться буду!',
+            'Вы обсчитали меня! Верните мои деньги!',
+            'Я больше сюда не приду! Безобразие!',
+            'Так нечестно! Я требую штраф!'
+        ];
+        const angryEmojis = ['😡', '🤬', '😤', '😠'];
+
+        angrySpeech.textContent = pick(angryPhrases);
+        document.getElementById('angryEmoji').textContent = pick(angryEmojis);
+        penaltyAmount.textContent = `-${penalty}`;
+
+        angryOverlay.dataset.penalty = penalty;
+        angryOverlay.classList.add('show');
+
+        Sound.grumble();
+        setTimeout(() => Sound.penalty(), 400);
+    }
+
+    function applyPenalty() {
+        const penalty = Number(angryOverlay.dataset.penalty || 0);
+        coins -= penalty;
+        stats.penalties += penalty;
+        stats.angry++;
+        stats.served++;
+        correctStreak = 0;
+        updateCoinsDisplay(true);
+        updateProgress();
+        angryOverlay.classList.remove('show');
+        setTimeout(() => newClient(), 700);
+    }
+
+    function newClient() {
+        currentTask = generateTask();
+        renderReceipt();
+        setTimeout(() => Sound.bell(), 300);
+    }
+
+    // ============================================================
+    // ================ ПИСЬМО / УРОВНИ ===========================
+    // ============================================================
+    function showLetter(newLevel) {
+        const letterData = LETTERS[newLevel - 2];
+        if (!letterData) return;
+
+        letterGreeting.innerHTML = `Здравствуй, <strong>${playerEmoji} ${playerName}</strong>!`;
+        letterTitle.innerHTML = letterData.title;
+        letterBody.innerHTML = letterData.body;
+        letterSign.textContent = letterData.sign;
+        newLevelNum.textContent = newLevel;
+        newLevelFeature.textContent = letterData.feature;
+
+        letterOverlay.classList.add('show');
+        Sound.levelUp();
+    }
+
+    acceptLevelBtn.addEventListener('click', () => {
+        letterOverlay.classList.remove('show');
+        levelNum.textContent = currentLevel;
+        levelBadge.classList.add('bump');
+        setTimeout(() => levelBadge.classList.remove('bump'), 600);
+        renderPriceList();
+        newClient();
+        updateProgress();
+        Sound.click();
+    });
+
+    function checkLevelUp() {
+        const nextLevel = currentLevel + 1;
+        if (correctStreak > 0 && correctStreak % 3 === 0 && nextLevel <= LEVELS.length) {
+            currentLevel = nextLevel;
+            correctStreak = 0;
+            showLetter(currentLevel);
+            return true;
+        }
+        return false;
+    }
+
+    // ============================================================
+    // ================ ФИЛЬТР ВВОДА: ТОЛЬКО ЦИФРЫ ================
+    // ============================================================
+    document.addEventListener('input', (e) => {
+        if (e.target.matches('.answer-field input')) {
+            const cleaned = e.target.value.replace(/[^0-9]/g, '');
+            if (cleaned !== e.target.value) {
+                e.target.value = cleaned;
+            }
+            // Сбрасываем подсветку при редактировании
+            e.target.classList.remove('correct', 'wrong', 'needs-fill');
+        }
+    });
+
+    // ============================================================
+    // ================ ПРОБИТЬ ЧЕК ===============================
+    // ============================================================
+    checkoutBtn.addEventListener('click', () => {
+        // Очищаем ввод от мусора
+        const allInputs = [
+            ...receiptBody.querySelectorAll('input:not([disabled])'),
+            ...(!totalInput.disabled ? [totalInput] : [])
+        ];
+        allInputs.forEach(inp => { inp.value = String(inp.value).replace(/[^0-9]/g, ''); });
+
+        // Проверяем пустые поля
+        const emptyInputs = [...receiptBody.querySelectorAll('input:not([disabled])')]
+            .filter(inp => inp.value === '');
+        const totalEmpty = !totalInput.disabled && totalInput.value === '';
+
+        // Если есть пустые — подсветить и попросить заполнить (БЕЗ ШТРАФА!)
+        if (emptyInputs.length > 0 || totalEmpty) {
+            emptyInputs.forEach(inp => {
+                inp.classList.remove('needs-fill');
+                void inp.offsetWidth;
+                inp.classList.add('needs-fill');
+                setTimeout(() => inp.classList.remove('needs-fill'), 1200);
+            });
+            if (totalEmpty) {
+                totalInput.classList.remove('needs-fill');
+                void totalInput.offsetWidth;
+                totalInput.classList.add('needs-fill');
+                setTimeout(() => totalInput.classList.remove('needs-fill'), 1200);
+            }
+
+            showToast(
+                `<span class="emoji">✍️</span>
+                 Заполни все поля!<br>
+                 <span style="font-size:1rem;color:#6b5c3e;">Введи числа с клавиатуры.</span>`,
+                'info', 2200
+            );
+            Sound.errorBuzz();
+            return;
+        }
+
+        const result = checkAnswers();
+        const config = getLevelConfig();
+
+        if (result.allCorrect) {
+            coins += config.reward;
+            stats.happy++;
+            stats.served++;
+            stats.earned += config.reward;
+            correctStreak++;
+            updateCoinsDisplay(true);
+            updateProgress();
+
+            Sound.cashRegister();
+            setTimeout(() => Sound.coins(), 250);
+
+            showToast(
+                `<span class="emoji">🎉</span>
+                 Клиент доволен!<br>
+                 <span style="font-size:1rem;color:#6b5c3e;">+${config.reward} монет</span>`,
+                'success', 2000
+            );
+            checkoutBtn.disabled = true;
+
+            const leveledUp = checkLevelUp();
+            if (!leveledUp) {
+                setTimeout(() => newClient(), 2200);
+            }
+        } else {
+            showAngryCustomer(result.errorsCount);
+        }
+    });
+
+    acceptPenaltyBtn.addEventListener('click', () => {
+        Sound.click();
+        applyPenalty();
+    });
+
+    // ============================================================
+    // ================ ЗАКРЫТЬ СМЕНУ =============================
+    // ============================================================
+    closeShiftBtn.addEventListener('click', () => {
+        Sound.click();
+
+        document.getElementById('statServed').textContent = stats.served;
+        document.getElementById('statHappy').textContent = stats.happy;
+        document.getElementById('statAngry').textContent = stats.angry;
+        document.getElementById('statEarned').textContent = stats.earned;
+        document.getElementById('statLevel').textContent = currentLevel;
+        document.getElementById('statPenalties').textContent = stats.penalties;
+
+        summaryAvatar.textContent = playerEmoji;
+        summaryTitle.textContent = `${playerName}, смена закрыта!`;
+        summarySub.textContent = `Твой уровень: «${LEVELS[currentLevel - 1].name}»`;
+
+        const finalBalance = document.getElementById('finalBalance');
+        finalBalance.textContent = `${coins >= 0 ? '+' : ''}${coins} ₽`;
+        finalBalance.className = 'result-value ' + (coins >= 0 ? 'positive' : 'negative');
+
+        const msg = document.getElementById('finalMessage');
+        const levelName = LEVELS[currentLevel - 1].name;
+        if (stats.served === 0) {
+            msg.textContent = 'Ты ещё не обслужил ни одного клиента. Смена была очень короткой!';
+        } else if (stats.angry === 0 && stats.happy > 0) {
+            msg.textContent = `Идеальная смена! ${stats.happy} довольных клиентов, ни одного штрафа. Ты — «${levelName}»!`;
+        } else if (coins < 0) {
+            msg.textContent = `Ты ушёл в минус на ${Math.abs(coins)} монет. Придётся поработать сверхурочно!`;
+        } else {
+            const accuracy = Math.round((stats.happy / stats.served) * 100);
+            msg.textContent = `Точность: ${accuracy}%. Достигнут уровень «${levelName}». Продолжай в том же духе!`;
+        }
+
+        if (!shiftRecorded && stats.served > 0) {
+            addRecord(playerName, playerEmoji, coins, currentLevel);
+            shiftRecorded = true;
+        }
+
+        shiftSummary.classList.add('show');
+    });
+
+    restartBtn.addEventListener('click', () => {
+        Sound.click();
+        coins = 0;
+        currentLevel = 1;
+        correctStreak = 0;
+        stats = { served: 0, happy: 0, angry: 0, earned: 0, penalties: 0 };
+        shiftRecorded = false;
+        levelNum.textContent = '1';
+        updateCoinsDisplay();
+        updateProgress();
+        shiftSummary.classList.remove('show');
+        renderPriceList();
+        newClient();
+    });
+
+    finishBtn.addEventListener('click', () => {
+        Sound.click();
+        coins = 0;
+        currentLevel = 1;
+        correctStreak = 0;
+        stats = { served: 0, happy: 0, angry: 0, earned: 0, penalties: 0 };
+        shiftRecorded = false;
+
+        shiftSummary.classList.remove('show');
+        document.body.classList.remove('shift-active');
+        topBar.style.display = 'none';
+        gameArea.classList.remove('active');
+        progressPanel.style.display = 'none';
+        bellContainer.style.display = 'none';
+
+        showScreen(welcomeScreen);
+        renderRecords();
+    });
+
+    // ============================================================
+    // ================ ИНИЦИАЛИЗАЦИЯ =============================
+    // ============================================================
+    restorePlayer();
+    updateSoundIcon();
+
+})();
+</script>
+</body>
+</html>
