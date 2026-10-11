@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Подготовка к диктанту</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #eef4ff;
+    color: #1f2937;
+    margin: 0;
+    padding: 20px;
+  }
+  h1 { text-align: center; }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  .tabs { text-align: center; margin-bottom: 20px; }
+  .tab {
+    display: inline-block;
+    padding: 10px 16px;
+    margin: 4px;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 15px;
+  }
+  .tab.active { background: #2563eb; color: #fff; border-color: #2563eb; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  }
+  .sentence {
+    font-size: 20px;
+    line-height: 1.6;
+    padding: 14px;
+    background: #f8fafc;
+    border: 1px dashed #94a3b8;
+    border-radius: 12px;
+    margin: 12px 0;
+    min-height: 30px;
+  }
+  .blur { filter: blur(6px); }
+  button {
+    font-size: 15px;
+    padding: 9px 14px;
+    margin: 4px 4px 4px 0;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: #2563eb;
+    color: #fff;
+  }
+  button.ghost { background: #e5e7eb; color: #1f2937; }
+  button.green { background: #16a34a; }
+  button.yellow { background: #f59e0b; }
+  .word {
+    display: inline-block;
+    padding: 6px 10px;
+    margin: 3px;
+    border: 2px solid #cbd5e1;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #fff;
+  }
+  .word.selected { background: #dbeafe; border-color: #2563eb; }
+  .word.correct { background: #dcfce7; border-color: #16a34a; }
+  .word.wrong { background: #fee2e2; border-color: #dc2626; }
+  .task { border-top: 1px solid #e5e7eb; padding-top: 14px; margin-top: 14px; }
+  .task h3 { margin: 0 0 8px; }
+  .option {
+    display: block;
+    padding: 10px;
+    margin: 6px 0;
+    border: 2px solid #cbd5e1;
+    border-radius: 10px;
+    cursor: pointer;
+    background: #fff;
+  }
+  .option.selected { background: #dbeafe; border-color: #2563eb; }
+  .option.correct { background: #dcfce7; border-color: #16a34a; }
+  .option.wrong { background: #fee2e2; border-color: #dc2626; }
+  .fb { margin-top: 8px; font-weight: bold; }
+  .fb.ok { color: #16a34a; }
+  .fb.no { color: #dc2626; }
+  .fb.part { color: #d97706; }
+  .hint {
+    display: none;
+    background: #f1f5f9;
+    border-left: 4px solid #2563eb;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-top: 8px;
+  }
+  .hint.show { display: block; }
+  .mini {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .mini h4 { margin: 0 0 8px; }
+  .score { text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Подготовка к диктанту</h1>
+  <div class="score">Баллы: <span id="score">0</span></div>
+  <div class="tabs" id="tabs"></div>
+  <div id="panels"></div>
+</div>
+
+<script>
+/* ---------- ДАННЫЕ ---------- */
+var sentences = [
+  {
+    id: 1,
+    text: "В заповеднике жил Петька.",
+    words: ["В", "заповеднике", "жил", "Петька"],
+    subject: "Петька",
+    predicate: ["жил"],
+    secondary: ["В", "заповеднике"],
+    schemes: ["[ _ = ].", "[ = _ ].", "[ _ = --- ]."],
+    schemeCorrect: 0,
+    hint: "Подлежащее — Петька, сказуемое — жил.",
+    parse: [
+      { word: "заповеднике", correct: "заповедник + е", options: ["заповедник + е", "за + повед + ник + е"] },
+      { word: "Петька", correct: "Петьк + а", options: ["Петьк + а", "Пет + ька"] }
+    ],
+    vocab: ["заповеднике"]
+  },
+  {
+    id: 2,
+    text: "Это была большая, чёрная, серьёзная птица.",
+    words: ["Это", "была", "большая", "чёрная", "серьёзная", "птица"],
+    subject: "птица",
+    predicate: ["была"],
+    secondary: ["Это", "большая", "чёрная", "серьёзная"],
+    schemes: ["[ _ = ].", "[ = _ ].", "[ _ = ~~~, ~~~, ~~~ ]."],
+    schemeCorrect: 2,
+    hint: "Основа: птица была. Остальные слова — второстепенные.",
+    parse: [
+      { word: "большая", correct: "больш + ая", options: ["больш + ая", "боль + шая"] },
+      { word: "серьёзная", correct: "серьёз + н + ая", options: ["серьёз + н + ая", "серь + ёзная"] }
+    ],
+    vocab: []
+  },
+  {
+    id: 3,
+    text: "Однажды я дал ворону печенье.",
+    words: ["Однажды", "я", "дал", "ворону", "печенье"],
+    subject: "я",
+    predicate: ["дал"],
+    secondary: ["Однажды", "ворону", "печенье"],
+    schemes: ["[ _ = ].", "[ _ = --- --- ].", "[ --- _ = --- ]."],
+    schemeCorrect: 1,
+    hint: "Основа: я дал. Второстепенные: однажды, ворону, печенье.",
+    parse: [
+      { word: "однажды", correct: "однажды (целиком)", options: ["однажды (целиком)", "одн + ажды"] },
+      { word: "печенье", correct: "печень + е", options: ["печень + е", "печ + енье"] }
+    ],
+    vocab: ["однажды", "печенье"]
+  },
+  {
+    id: 4,
+    text: "Он взял печенье и спрятал в подклювный мешок.",
+    words: ["Он", "взял", "печенье", "и", "спрятал", "в", "подклювный", "мешок"],
+    subject: "Он",
+    predicate: ["взял", "спрятал"],
+    secondary: ["печенье", "в", "подклювный", "мешок"],
+    schemes: ["[ _ = и = --- ].", "[ _ =, = ].", "[ _ = --- и = --- ]."],
+    schemeCorrect: 0,
+    hint: "Основа: он взял и спрятал. Однородные сказуемые.",
+    parse: [
+      { word: "подклювный", correct: "под + клюв + н + ый", options: ["под + клюв + н + ый", "подклюв + н + ый"] },
+      { word: "мешок", correct: "мешок (целиком)", options: ["мешок (целиком)", "меш + ок"] }
+    ],
+    vocab: ["печенье", "мешок"]
+  },
+  {
+    id: 5,
+    text: "Я вынул маленькую монетку и показал Петьке.",
+    words: ["Я", "вынул", "маленькую", "монетку", "и", "показал", "Петьке"],
+    subject: "Я",
+    predicate: ["вынул", "показал"],
+    secondary: ["маленькую", "монетку", "Петьке"],
+    schemes: ["[ _ = и = --- ].", "[ _ = ---, = --- ].", "[ _ = --- и = --- ]."],
+    schemeCorrect: 0,
+    hint: "Основа: я вынул и показал. Однородные сказуемые.",
+    parse: [
+      { word: "маленькую", correct: "мал + еньк + ую", options: ["мал + еньк + ую", "малень + кую"] },
+      { word: "монетку", correct: "монет + к + у", options: ["монет + к + у", "монетк + у"] }
+    ],
+    vocab: ["монетку"]
+  },
+  {
+    id: 6,
+    text: "Потом Петька слетел на дорогу, сделал клювом круглую ямку, запрятал в песок подарки.",
+    words: ["Потом", "Петька", "слетел", "на", "дорогу", "сделал", "клювом", "круглую", "ямку", "запрятал", "в", "песок", "подарки"],
+    subject: "Петька",
+    predicate: ["слетел", "сделал", "запрятал"],
+    secondary: ["Потом", "на", "дорогу", "клювом", "круглую", "ямку", "в", "песок", "подарки"],
+    schemes: ["[ _ =, =, = ].", "[ _ = ---, = ---, = --- ].", "[ _ = и = и = ]."],
+    schemeCorrect: 1,
+    hint: "Основа: Петька слетел, сделал, запрятал.",
+    parse: [
+      { word: "слетел", correct: "с + лет + е + л", options: ["с + лет + е + л", "слет + ел"] },
+      { word: "песок", correct: "песок (целиком)", options: ["песок (целиком)", "пес + ок"] }
+    ],
+    vocab: ["дорогу", "песок", "подарки"]
+  }
+];
+
+var vocabWords = [
+  { correct: "заповедник", wrong: ["запаведник", "заповеднек"] },
+  { correct: "однажды", wrong: ["одножды", "однажди"] },
+  { correct: "печенье", wrong: ["печение", "печене"] },
+  { correct: "мешок", wrong: ["мешёк", "мешог"] },
+  { correct: "монетка", wrong: ["манетка", "монетко"] },
+  { correct: "дорога", wrong: ["дарога", "дорога"] },
+  { correct: "песок", wrong: ["писок", "песог"] },
+  { correct: "подарок", wrong: ["подарак", "подарок"] },
+  { correct: "ворона", wrong: ["варона", "ворона"] },
+  { correct: "серьёзная", wrong: ["серёзная", "серьёзнай"] },
+  { correct: "птица", wrong: ["пцица", "птитса"] },
+  { correct: "ягода", wrong: ["егода", "ягада"] }
+];
+
+var orthoData = [
+  { word: "заповеднике", correct: "безударная гласная", options: ["безударная гласная", "парная согласная", "разделительный мягкий знак", "жи-ши, ча-ща, чу-щу", "непроизносимая согласная"] },
+  { word: "жил", correct: "жи-ши, ча-ща, чу-щу", options: ["безударная гласная", "парная согласная", "разделительный мягкий знак", "жи-ши, ча-ща, чу-щу", "непроизносимая согласная"] },
+  { word: "большая", correct: "безударная гласная", options: ["безударная гласная", "парная согласная", "разделительный мягкий знак", "жи-ши, ча-ща, чу-щу", "непроизносимая согласная"] },
+  { word: "серьёзная", correct: "разделительный мягкий знак", options: ["безударная гласная", "парная согласная", "разделительный мягкий знак", "жи-ши, ча-ща, чу-щу", "непроизносимая согласная"] },
+  { word: "печенье", correct: "разделительный мягкий знак", options: ["безударная гласная", "парная согласная", "разделительный мягкий знак", "жи-ши, ча-ща, чу-щу", "непроизносимая согласная"] },
+  { word: "ямку", correct: "парная согласная", options: ["безударная гласная", "парная согласная", "разделительный мягкий знак", "жи-ши, ча-ща, чу-щу", "непроизносимая согласная"] },
+  { word: "мешок", correct: "парная согласная", options: ["безударная гласная", "парная согласная", "разделительный мягкий знак", "жи-ши, ча-ща, чу-щу", "непроизносимая согласная"] },
+  { word: "праздник", correct: "непроизносимая согласная", options: ["безударная гласная", "парная согласная", "разделительный мягкий знак", "жи-ши, ча-ща, чу-щу", "непроизносимая согласная"] },
+  { word: "солнце", correct: "непроизносимая согласная", options: ["безударная гласная", "парная согласная", "разделительный мягкий знак", "жи-ши, ча-ща, чу-щу", "непроизносимая согласная"] },
+  { word: "чаща", correct: "жи-ши, ча-ща, чу-щу", options: ["безударная гласная", "парная согласная", "разделительный мягкий знак", "жи-ши, ча-ща, чу-щу", "непроизносимая согласная"] }
+];
+
+var score = 0;
+
+/* ---------- ОЗВУЧКА ---------- */
+function speak(text) {
+  if (!("speechSynthesis" in window)) {
+    alert("Браузер не поддерживает озвучку. Прочитайте предложение вслух сами.");
+    return;
+  }
+  window.speechSynthesis.cancel();
+  var u = new SpeechSynthesisUtterance(text);
+  u.lang = "ru-RU";
+  u.rate = 0.85;
+  window.speechSynthesis.speak(u);
+}
+
+function addScore(n) {
+  score += n;
+  document.getElementById("score").innerText = score;
+}
+
+/* ---------- ВКЛАДКИ ---------- */
+function buildTabs() {
+  var tabs = document.getElementById("tabs");
+  var html = "";
+  for (var i = 0; i < sentences.length; i++) {
+    html += '<span class="tab' + (i === 0 ? ' active' : '') + '" data-tab="p' + sentences[i].id + '">Предложение ' + sentences[i].id + '</span>';
+  }
+  html += '<span class="tab" data-tab="vocab">Словарные слова</span>';
+  html += '<span class="tab" data-tab="ortho">Орфограммы</span>';
+  tabs.innerHTML = html;
+  tabs.onclick = function (e) {
+    var t = e.target.closest(".tab");
+    if (!t) return;
+    switchTab(t.getAttribute("data-tab"));
+  };
+}
+
+function switchTab(tab) {
+  var tabs = document.querySelectorAll(".tab");
+  for (var i = 0; i < tabs.length; i++) {
+    tabs[i].classList.toggle("active", tabs[i].getAttribute("data-tab") === tab);
+  }
+  var panels = document.querySelectorAll(".panel");
+  for (var j = 0; j < panels.length; j++) {
+    panels[j].classList.toggle("active", panels[j].id === "panel-" + tab);
+  }
+}
+
+/* ---------- ПОСТРОЕНИЕ ПАНЕЛЕЙ ---------- */
+function buildPanels() {
+  var panels = document.getElementById("panels");
+  var html = "";
+
+  for (var i = 0; i < sentences.length; i++) {
+    var s = sentences[i];
+    html += '<div class="panel' + (i === 0 ? ' active' : '') + '" id="panel-p' + s.id + '">';
+    html += '<div class="card">';
+    html += '<h2>Предложение ' + s.id + '</h2>';
+    html += '<p>Сначала послушай, потом открой карточку.</p>';
+    html += '<button onclick="speak(\'' + s.text + '\')">🔊 Прослушать</button>';
+    html += '<button class="ghost" onclick="toggleSent(' + s.id + ')">👁 Открыть/закрыть</button>';
+    html += '<div class="sentence blur" id="sent-' + s.id + '">' + s.text + '</div>';
+
+    html += '<div class="task"><h3>1. Найди подлежащее</h3>';
+    html += '<div id="subj-' + s.id + '"></div>';
+    html += '<button class="green" onclick="checkSubj(' + s.id + ')">Проверить</button>';
+    html += '<button class="ghost" onclick="toggleHint(\'hs-' + s.id + '\')">Подсказка</button>';
+    html += '<div class="hint" id="hs-' + s.id + '">Подлежащее отвечает на вопрос «кто?» или «что?».</div>';
+    html += '<div class="fb" id="fb-subj-' + s.id + '"></div></div>';
+
+    html += '<div class="task"><h3>2. Найди сказуемое</h3>';
+    html += '<div id="pred-' + s.id + '"></div>';
+    html += '<button class="green" onclick="checkPred(' + s.id + ')">Проверить</button>';
+    html += '<button class="ghost" onclick="toggleHint(\'hp-' + s.id + '\')">Подсказка</button>';
+    html += '<div class="hint" id="hp-' + s.id + '">Сказуемое отвечает на вопросы «что делает?», «что сделал?».</div>';
+    html += '<div class="fb" id="fb-pred-' + s.id + '"></div></div>';
+
+    html += '<div class="task"><h3>3. Отметь второстепенные члены</h3>';
+    html += '<div id="sec-' + s.id + '"></div>';
+    html += '<button class="green" onclick="checkSec(' + s.id + ')">Проверить</button>';
+    html += '<div class="fb" id="fb-sec-' + s.id + '"></div></div>';
+
+    html += '<div class="task"><h3>4. Выбери схему</h3>';
+    html += '<div id="scheme-' + s.id + '"></div>';
+    html += '<button class="green" onclick="checkScheme(' + s.id + ')">Проверить</button>';
+    html += '<div class="fb" id="fb-scheme-' + s.id + '"></div></div>';
+
+    html += '<div class="task"><h3>5. Разбери слова по составу</h3>';
+    html += '<div id="parse-' + s.id + '"></div>';
+    html += '<button class="green" onclick="checkParse(' + s.id + ')">Проверить</button>';
+    html += '<div class="fb" id="fb-parse-' + s.id + '"></div></div>';
+
+    html += '<div class="task"><h3>6. Найди словарные слова</h3>';
+    html += '<div id="vocab-' + s.id + '"></div>';
+    html += '<button class="green" onclick="checkVocab(' + s.id + ')">Проверить</button>';
+    html += '<div class="fb" id="fb-vocab-' + s.id + '"></div></div>';
+
+    html += '</div></div>';
+  }
+
+  /* Панель словарных слов */
+  html += '<div class="panel" id="panel-vocab"><div class="card">';
+  html += '<h2>Словарные слова</h2><p>Выбери правильное написание.</p>';
+  html += '<div id="vocabGame"></div>';
+  html += '<button class="green" onclick="checkAllVocab()">Проверить всё</button>';
+  html += '<div class="fb" id="fb-vocab-all"></div>';
+  html += '</div></div>';
+
+  /* Панель орфограмм */
+  html += '<div class="panel" id="panel-ortho"><div class="card">';
+  html += '<h2>Орфограммы</h2><p>Определи, какая орфограмма есть в слове.</p>';
+  html += '<div id="orthoGame"></div>';
+  html += '<button class="green" onclick="checkAllOrtho()">Проверить всё</button>';
+  html += '<div class="fb" id="fb-ortho-all"></div>';
+  html += '</div></div>';
+
+  panels.innerHTML = html;
+
+  /* Наполнение задач */
+  for (var k = 0; k < sentences.length; k++) {
+    renderWordTask(sentences[k].id, sentences[k].words, "subj");
+    renderWordTask(sentences[k].id, sentences[k].words, "pred");
+    renderWordTask(sentences[k].id, sentences[k].words, "sec");
+    renderSchemes(sentences[k]);
+    renderParse(sentences[k]);
+    renderVocab(sentences[k]);
+  }
+
+  buildVocabGame();
+  buildOrthoGame();
+}
+
+function toggleSent(id) {
+  document.getElementById("sent-" + id).classList.toggle("blur");
+}
+
+function toggleHint(id) {
+  document.getElementById(id).classList.toggle("show");
+}
+
+function renderWordTask(id, words, type) {
+  var container = document.getElementById(type + "-" + id);
+  var html = "";
+  for (var i = 0; i < words.length; i++) {
+    html += '<span class="word" data-word="' + words[i] + '">' + words[i] + '</span>';
+  }
+  container.innerHTML = html;
+  container.onclick = function (e) {
+    var w = e.target.closest(".word");
+    if (!w) return;
+    if (type === "subj" || type === "pred") {
+      var all = container.querySelectorAll(".word");
+      for (var j = 0; j < all.length; j++) all[j].classList.remove("selected");
+      w.classList.add("selected");
+    } else {
+      w.classList.toggle("selected");
+    }
+  };
+}
+
+function clearMarks(container) {
+  var all = container.querySelectorAll(".word");
+  for (var i = 0; i < all.length; i++) {
+    all[i].className = "word";
+  }
+}
+
+function checkSubj(id) {
+  var s = null;
+  for (var i = 0; i < sentences.length; i++) if (sentences[i].id === id) s = sentences[i];
+  var container = document.getElementById("subj-" + id);
+  var sel = container.querySelector(".word.selected");
+  var fb = document.getElementById("fb-subj-" + id);
+  clearMarks(container);
+  if (!sel) { fb.className = "fb no"; fb.innerText = "Выбери слово."; return; }
+  if (sel.getAttribute("data-word") === s.subject) {
+    sel.classList.add("correct");
+    fb.className = "fb ok"; fb.innerText = "Верно! Подлежащее — " + s.subject;
+    addScore(2);
+  } else {
+    sel.classList.add("wrong");
+    var all = container.querySelectorAll(".word");
+    for (var j = 0; j < all.length; j++) {
+      if (all[j].getAttribute("data-word") === s.subject) all[j].classList.add("correct");
+    }
+    fb.className = "fb no"; fb.innerText = "Неверно. Правильный ответ подсвечен.";
+  }
+}
+
+function checkPred(id) {
+  var s = null;
+  for (var i = 0; i < sentences.length; i++) if (sentences[i].id === id) s = sentences[i];
+  var container = document.getElementById("pred-" + id);
+  var sel = container.querySelector(".word.selected");
+  var fb = document.getElementById("fb-pred-" + id);
+  clearMarks(container);
+  if (!sel) { fb.className = "fb no"; fb.innerText = "Выбери слово."; return; }
+  var word = sel.getAttribute("data-word");
+  if (s.predicate.indexOf(word) !== -1) {
+    sel.classList.add("correct");
+    fb.className = "fb ok"; fb.innerText = "Верно! Сказуемое — " + s.predicate.join(", ");
+    addScore(2);
+  } else {
+    sel.classList.add("wrong");
+    var all = container.querySelectorAll(".word");
+    for (var j = 0; j < all.length; j++) {
+      if (s.predicate.indexOf(all[j].getAttribute("data-word")) !== -1) all[j].classList.add("correct");
+    }
+    fb.className = "fb no"; fb.innerText = "Неверно. Правильные сказуемые подсвечены.";
+  }
+}
+
+function checkSec(id) {
+  var s = null;
+  for (var i = 0; i < sentences.length; i++) if (sentences[i].id === id) s = sentences[i];
+  var container = document.getElementById("sec-" + id);
+  var selected = [];
+  var all = container.querySelectorAll(".word");
+  for (var i = 0; i < all.length; i++) {
+    if (all[i].classList.contains("selected")) selected.push(all[i].getAttribute("data-word"));
+  }
+  var fb = document.getElementById("fb-sec-" + id);
+  clearMarks(container);
+
+  var ok = selected.length === s.secondary.length;
+  if (ok) {
+    for (var i = 0; i < selected.length; i++) {
+      if (s.secondary.indexOf(selected[i]) === -1) { ok = false; break; }
+    }
+  }
+
+  var all2 = container.querySelectorAll(".word");
+  for (var j = 0; j < all2.length; j++) {
+    var w = all2[j].getAttribute("data-word");
+    if (s.secondary.indexOf(w) !== -1) all2[j].classList.add("correct");
+  }
+
+  if (ok) {
+    fb.className = "fb ok"; fb.innerText = "Верно! Второстепенные члены найдены.";
+    addScore(3);
+  } else {
+    fb.className = "fb part"; fb.innerText = "Есть неточности. Зелёным показаны правильные ответы.";
+  }
+}
+
+function renderSchemes(s) {
+  var container = document.getElementById("scheme-" + s.id);
+  var html = "";
+  for (var i = 0; i < s.schemes.length; i++) {
+    html += '<div class="option" data-i="' + i + '">' + s.schemes[i] + '</div>';
+  }
+  container.innerHTML = html;
+  container.onclick = function (e) {
+    var o = e.target.closest(".option");
+    if (!o) return;
+    var all = container.querySelectorAll(".option");
+    for (var j = 0; j < all.length; j++) all[j].classList.remove("selected");
+    o.classList.add("selected");
+  };
+}
+
+function checkScheme(id) {
+  var s = null;
+  for (var i = 0; i < sentences.length; i++) if (sentences[i].id === id) s = sentences[i];
+  var container = document.getElementById("scheme-" + id);
+  var sel = container.querySelector(".option.selected");
+  var fb = document.getElementById("fb-scheme-" + id);
+  var all = container.querySelectorAll(".option");
+  for (var j = 0; j < all.length; j++) all[j].classList.remove("correct", "wrong");
+  if (!sel) { fb.className = "fb no"; fb.innerText = "Выбери схему."; return; }
+  if (parseInt(sel.getAttribute("data-i"), 10) === s.schemeCorrect) {
+    sel.classList.add("correct");
+    fb.className = "fb ok"; fb.innerText = "Верно! " + s.hint;
+    addScore(2);
+  } else {
+    sel.classList.add("wrong");
+    for (var k = 0; k < all.length; k++) {
+      if (parseInt(all[k].getAttribute("data-i"), 10) === s.schemeCorrect) all[k].classList.add("correct");
+    }
+    fb.className = "fb no"; fb.innerText = "Неверно. Правильная схема подсвечена.";
+  }
+}
+
+function renderParse(s) {
+  var container = document.getElementById("parse-" + s.id);
+  var html = "";
+  for (var i = 0; i < s.parse.length; i++) {
+    var p = s.parse[i];
+    html += '<div class="mini"><h4>' + p.word + '</h4>';
+    for (var j = 0; j < p.options.length; j++) {
+      var isCorrect = p.options[j] === p.correct ? "1" : "0";
+      html += '<button class="ghost parse-btn" data-correct="' + isCorrect + '">' + p.options[j] + '</button>';
+    }
+    html += '</div>';
+  }
+  container.innerHTML = html;
+  container.onclick = function (e) {
+    var b = e.target.closest("button");
+    if (!b) return;
+    var box = b.parentNode;
+    var btns = box.querySelectorAll("button");
+    for (var k = 0; k < btns.length; k++) btns[k].classList.remove("selected");
+    b.classList.add("selected");
+  };
+}
+
+function checkParse(id) {
+  var container = document.getElementById("parse-" + id);
+  var boxes = container.querySelectorAll(".mini");
+  var fb = document.getElementById("fb-parse-" + id);
+  var correctCount = 0;
+  for (var i = 0; i < boxes.length; i++) {
+    var sel = boxes[i].querySelector("button.selected");
+    var btns = boxes[i].querySelectorAll("button");
+    for (var j = 0; j < btns.length; j++) btns[j].classList.remove("green", "wrong");
+    if (sel && sel.getAttribute("data-correct") === "1") {
+      sel.classList.add("green");
+      correctCount++;
+    } else if (sel) {
+      sel.classList.add("wrong");
+      for (var k = 0; k < btns.length; k++) {
+        if (btns[k].getAttribute("data-correct") === "1") btns[k].classList.add("green");
+      }
+    }
+  }
+  if (correctCount === boxes.length) {
+    fb.className = "fb ok"; fb.innerText = "Разбор выполнен верно!";
+    addScore(3);
+  } else {
+    fb.className = "fb part"; fb.innerText = "Верно " + correctCount + " из " + boxes.length + ".";
+  }
+}
+
+function renderVocab(s) {
+  var container = document.getElementById("vocab-" + s.id);
+  var html = "";
+  for (var i = 0; i < s.words.length; i++) {
+    html += '<span class="word" data-word="' + s.words[i] + '">' + s.words[i] + '</span>';
+  }
+  container.innerHTML = html;
+  container.onclick = function (e) {
+    var w = e.target.closest(".word");
+    if (!w) return;
+    w.classList.toggle("selected");
+  };
+}
+
+function checkVocab(id) {
+  var s = null;
+  for (var i = 0; i < sentences.length; i++) if (sentences[i].id === id) s = sentences[i];
+  var container = document.getElementById("vocab-" + id);
+  var fb = document.getElementById("fb-vocab-" + id);
+  var all = container.querySelectorAll(".word");
+  var selected = [];
+  for (var i = 0; i < all.length; i++) {
+    all[i].classList.remove("correct", "wrong");
+    if (all[i].classList.contains("selected")) selected.push(all[i].getAttribute("data-word"));
+  }
+  var ok = selected.length === s.vocab.length;
+  if (ok) {
+    for (var i = 0; i < selected.length; i++) {
+      if (s.vocab.indexOf(selected[i]) === -1) { ok = false; break; }
+    }
+  }
+  for (var j = 0; j < all.length; j++) {
+    if (s.vocab.indexOf(all[j].getAttribute("data-word")) !== -1) all[j].classList.add("correct");
+  }
+  if (s.vocab.length === 0) {
+    fb.className = "fb ok"; fb.innerText = "В этом предложении нет словарных слов.";
+  } else if (ok) {
+    fb.className = "fb ok"; fb.innerText = "Верно! Словарные слова: " + s.vocab.join(", ");
+    addScore(2);
+  } else {
+    fb.className = "fb part"; fb.innerText = "Не все слова найдены. Правильные подсвечены.";
+  }
+}
+
+/* ---------- СЛОВАРНЫЕ СЛОВА ---------- */
+function buildVocabGame() {
+  var container = document.getElementById("vocabGame");
+  var html = "";
+  for (var i = 0; i < vocabWords.length; i++) {
+    var item = vocabWords[i];
+    var opts = [item.correct].concat(item.wrong);
+    /* перемешать */
+    for (var j = opts.length - 1; j > 0; j--) {
+      var k = Math.floor(Math.random() * (j + 1));
+      var tmp = opts[j]; opts[j] = opts[k]; opts[k] = tmp;
+    }
+    html += '<div class="mini"><h4>Слово ' + (i + 1) + '</h4>';
+    for (var m = 0; m < opts.length; m++) {
+      var isC = opts[m] === item.correct ? "1" : "0";
+      html += '<button class="ghost v-btn" data-correct="' + isC + '">' + opts[m] + '</button>';
+    }
+    html += '</div>';
+  }
+  container.innerHTML = html;
+  container.onclick = function (e) {
+    var b = e.target.closest("button.v-btn");
+    if (!b) return;
+    var box = b.parentNode;
+    var btns = box.querySelectorAll("button");
+    for (var k = 0; k < btns.length; k++) btns[k].classList.remove("selected");
+    b.classList.add("selected");
+  };
+}
+
+function checkAllVocab() {
+  var container = document.getElementById("vocabGame");
+  var boxes = container.querySelectorAll(".mini");
+  var fb = document.getElementById("fb-vocab-all");
+  var correctCount = 0;
+  for (var i = 0; i < boxes.length; i++) {
+    var sel = boxes[i].querySelector("button.selected");
+    var btns = boxes[i].querySelectorAll("button");
+    for (var j = 0; j < btns.length; j++) btns[j].classList.remove("green", "wrong");
+    if (sel && sel.getAttribute("data-correct") === "1") {
+      sel.classList.add("green");
+      correctCount++;
+    } else if (sel) {
+      sel.classList.add("wrong");
+      for (var k = 0; k < btns.length; k++) {
+        if (btns[k].getAttribute("data-correct") === "1") btns[k].classList.add("green");
+      }
+    }
+  }
+  if (correctCount === boxes.length) {
+    fb.className = "fb ok"; fb.innerText = "Все слова выбраны верно!";
+    addScore(5);
+  } else {
+    fb.className = "fb part"; fb.innerText = "Верно " + correctCount + " из " + boxes.length + ".";
+  }
+}
+
+/* ---------- ОРФОГРАММЫ ---------- */
+function buildOrthoGame() {
+  var container = document.getElementById("orthoGame");
+  var html = "";
+  for (var i = 0; i < orthoData.length; i++) {
+    var item = orthoData[i];
+    html += '<div class="mini"><h4>' + item.word + '</h4>';
+    for (var j = 0; j < item.options.length; j++) {
+      var isC = item.options[j] === item.correct ? "1" : "0";
+      html += '<button class="ghost o-btn" data-correct="' + isC + '">' + item.options[j] + '</button>';
+    }
+    html += '</div>';
+  }
+  container.innerHTML = html;
+  container.onclick = function (e) {
+    var b = e.target.closest("button.o-btn");
+    if (!b) return;
+    var box = b.parentNode;
+    var btns = box.querySelectorAll("button");
+    for (var k = 0; k < btns.length; k++) btns[k].classList.remove("selected");
+    b.classList.add("selected");
+  };
+}
+
+function checkAllOrtho() {
+  var container = document.getElementById("orthoGame");
+  var boxes = container.querySelectorAll(".mini");
+  var fb = document.getElementById("fb-ortho-all");
+  var correctCount = 0;
+  for (var i = 0; i < boxes.length; i++) {
+    var sel = boxes[i].querySelector("button.selected");
+    var btns = boxes[i].querySelectorAll("button");
+    for (var j = 0; j < btns.length; j++) btns[j].classList.remove("green", "wrong");
+    if (sel && sel.getAttribute("data-correct") === "1") {
+      sel.classList.add("green");
+      correctCount++;
+    } else if (sel) {
+      sel.classList.add("wrong");
+      for (var k = 0; k < btns.length; k++) {
+        if (btns[k].getAttribute("data-correct") === "1") btns[k].classList.add("green");
+      }
+    }
+  }
+  if (correctCount === boxes.length) {
+    fb.className = "fb ok"; fb.innerText = "Все орфограммы определены верно!";
+    addScore(5);
+  } else {
+    fb.className = "fb part"; fb.innerText = "Верно " + correctCount + " из " + boxes.length + ".";
+  }
+}
+
+/* ---------- ЗАПУСК ---------- */
+buildTabs();
+buildPanels();
+</script>
+</body>
+</html>
