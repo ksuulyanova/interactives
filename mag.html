@@ -1620,11 +1620,6 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- ===== ОТЛАДОЧНАЯ ПАНЕЛЬ (можно удалить после проверки) ===== -->
-<div id="debugPanel" style="position:fixed;bottom:4px;left:4px;background:rgba(0,0,0,0.85);color:#0f0;font-family:monospace;font-size:11px;padding:6px 10px;border-radius:8px;z-index:9999;max-width:300px;line-height:1.4;pointer-events:none;">
-    Debug: ожидание...
-</div>
-
 <script>
 (function() {
     // ============================================================
@@ -1725,7 +1720,6 @@
     };
     const PRODUCT_KEYS = Object.keys(PRODUCTS);
 
-    // Карта картинок персонажей
     const CHAR_IMAGES = {
         girl:   'https://i.pinimg.com/736x/53/96/52/539652339193b559144114e8a36bb844.jpg',
         boy:    'https://i.pinimg.com/736x/a3/c8/0d/a3c80db8cc0edfa2fba9ff2b620dc959.jpg',
@@ -1858,7 +1852,6 @@
     const soundToggle      = document.getElementById('soundToggle');
     const recordsList      = document.getElementById('recordsList');
     const clearRecordsBtn  = document.getElementById('clearRecordsBtn');
-    const debugPanel       = document.getElementById('debugPanel');
 
     // ============================================================
     // ================ УТИЛИТЫ ===================================
@@ -2032,7 +2025,6 @@
         playerName = nameInput.value.trim();
         savePlayer(playerName, playerChar, playerEmoji);
 
-        // Устанавливаем аватар-картинку в верхней панели и в итогах
         const charImgSrc = getCharImageSrc(playerChar);
         playerAvatar.innerHTML = `<img src="${charImgSrc}" alt="${playerName}">`;
         playerNameLabel.textContent = playerName;
@@ -2242,19 +2234,6 @@
         }
 
         checkoutBtn.disabled = false;
-
-        // ОТЛАДКА
-        setTimeout(() => {
-            if (!debugPanel || !currentTask) return;
-            const lines = [];
-            lines.push(`Тип: <b>${currentTask.type}</b>`);
-            currentTask.items.forEach((it, i) => {
-                lines.push(`#${i} ${it.product.name} | цена=${it.price} | кол=${it.qty} | стоим=${it.total} | искать=${it.unknown || '—'}`);
-            });
-            lines.push(`ИТОГО ожид=${currentTask.grandTotal} ${currentTask.totalUnknown ? '(искать)' : ''}`);
-            debugPanel.innerHTML = lines.join('<br>');
-            debugPanel.style.color = '#0f0';
-        }, 50);
     }
 
     // ============================================================
@@ -2269,7 +2248,6 @@
     function checkAnswers() {
         let errorsCount = 0;
         const inputs = receiptBody.querySelectorAll('input:not([disabled])');
-        const log = ['=== ПРОВЕРКА ==='];
 
         inputs.forEach(inp => {
             const index = Number(inp.dataset.index);
@@ -2281,8 +2259,6 @@
             if (field === 'total') correctValue = it.total;
             else if (field === 'price') correctValue = it.price;
             else if (field === 'qty')   correctValue = it.qty;
-
-            log.push(`idx=${index} field=${field} ввод="${inp.value}"(${userValue}) ожид=${correctValue} ${userValue === correctValue ? '✅' : '❌'}`);
 
             inp.classList.remove('correct', 'wrong', 'needs-fill');
 
@@ -2297,18 +2273,12 @@
         if (!totalInput.disabled) {
             totalInput.classList.remove('correct', 'wrong', 'needs-fill');
             const userTotal = readNumber(totalInput);
-            log.push(`ИТОГО ввод="${totalInput.value}"(${userTotal}) ожид=${currentTask.grandTotal} ${userTotal === currentTask.grandTotal ? '✅' : '❌'}`);
             if (userTotal === currentTask.grandTotal) {
                 totalInput.classList.add('correct');
             } else {
                 totalInput.classList.add('wrong');
                 errorsCount++;
             }
-        }
-
-        if (debugPanel) {
-            debugPanel.innerHTML = log.join('<br>');
-            debugPanel.style.color = errorsCount === 0 ? '#0f0' : '#f66';
         }
 
         return { allCorrect: errorsCount === 0, errorsCount };
