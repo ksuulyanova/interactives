@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>⚽ Футбольные множества</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Comic Sans MS', 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(180deg, #4CAF50 0%, #2E7D32 100%);
+    min-height: 100vh;
+    display: flex; justify-content: center; align-items: flex-start;
+    padding: 10px; color: #fff;
+  }
+  .game {
+    background: #fff; color: #222; border-radius: 16px;
+    padding: 14px 18px; width: 100%; max-width: 1100px;
+    min-height: calc(100vh - 20px);
+    box-shadow: 0 20px 50px rgba(0,0,0,.4);
+    border: 5px solid #FFD54F;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+
+  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  h1 { font-size: 20px; color: #1B5E20; }
+  .subtitle { font-size: 12px; color: #666; }
+  .score-badge {
+    background: #FF6F00; color: #fff; font-size: 14px; font-weight: bold;
+    padding: 5px 14px; border-radius: 10px; transition: transform .2s;
+  }
+  .score-badge.pulse { transform: scale(1.15); }
+
+  .stage {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    flex: 1;
+  }
+  .panel {
+    border-radius: 12px; padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .panel-diagram {
+    background: #F1F8E9; border-left: 6px solid #7CB342;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .panel-task {
+    background: #E3F2FD; border-left: 6px solid #1976D2;
+    font-size: 13px; line-height: 1.45;
+  }
+  .panel-task h3 { font-size: 14px; margin-bottom: 4px; color: #0D47A1; }
+
+  /* ============================================================
+     ВЕНН-ДИАГРАММА НА ЧИСТОМ HTML/CSS
+     ============================================================ */
+  .venn-box {
+    width: 100%;
+    min-height: 240px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .venn-canvas {
+    position: relative;
+    width: 460px; height: 200px;
+    max-width: 100%;
+    transform-origin: center center;
+  }
+  .circle {
+    position: absolute;
+    top: 10px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+  }
+  .circle.a { left: 50px; background: rgba(66,165,245,.40); border: 3px solid #1976D2; }
+  .circle.b { right: 50px; background: rgba(255,152,0,.40); border: 3px solid #EF6C00; }
+  .label {
+    position: absolute; top: -6px;
+    font-size: 14px; font-weight: bold;
+  }
+  .label.a { left: 20px; color: #0D47A1; }
+  .label.b { right: 20px; color: #E65100; }
+
+  .mid-zone {
+    position: absolute;
+    top: 60px; left: 50%;
+    transform: translateX(-50%);
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: rgba(255,235,59,.85);
+    border: 2px solid #F57F17;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: bold; color: #7A4F00;
+    z-index: 3;
+  }
+
+  .el { position: absolute; font-size: 22px; z-index: 2; }
+  .num { position: absolute; font-size: 20px; font-weight: bold; z-index: 2; }
+  .caption {
+    position: absolute; bottom: -10px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px; font-weight: bold; color: #333;
+    white-space: nowrap;
+  }
+
+  .subset-wrap { position: relative; width: 460px; height: 200px; max-width: 100%; }
+  .big-set {
+    position: absolute; top: 10px; left: 50px;
+    width: 360px; height: 180px; border-radius: 50%;
+    background: rgba(255,152,0,.30); border: 3px solid #EF6C00;
+  }
+  .small-set {
+    position: absolute; top: 60px; left: 100px;
+    width: 120px; height: 120px; border-radius: 50%;
+    background: rgba(66,165,245,.55); border: 3px solid #1976D2;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+  }
+  .big-set .lbl { position: absolute; top: -8px; right: 30px; font-size: 13px; font-weight: bold; color: #E65100; }
+  .small-set .lbl { position: absolute; top: -22px; left: 0; font-size: 13px; font-weight: bold; color: #0D47A1; white-space: nowrap; }
+  .empty-mark { font-size: 40px; font-weight: bold; color: #B71C1C; }
+
+  /* ============================================================
+     ВАРИАНТЫ ОТВЕТОВ
+     ============================================================ */
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 4px 0; }
+  .opt {
+    padding: 9px 11px; border-radius: 10px; border: 2.5px solid #1976D2;
+    background: #fff; color: #0D47A1; font-size: 12.5px; text-align: left;
+    cursor: pointer; font-family: inherit; font-weight: bold; line-height: 1.3;
+    transition: all .15s;
+  }
+  .opt:hover:not(:disabled) { background: #BBDEFB; transform: translateY(-2px); }
+  .opt:disabled { cursor: default; }
+  .opt.correct { background: #A5D6A7; border-color: #2E7D32; color: #1B5E20; animation: pop .35s ease; }
+  .opt.wrong { background: #EF9A9A; border-color: #C62828; color: #B71C1C; animation: shake .4s ease; }
+
+  @keyframes pop { 0%{transform:scale(1);} 50%{transform:scale(1.06);} 100%{transform:scale(1);} }
+  @keyframes shake {
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-4px);} 75%{transform:translateX(4px);}
+  }
+
+  .feedback {
+    padding: 7px 10px; border-radius: 8px; font-size: 12px;
+    background: #F5F5F5; text-align: center; min-height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+  .feedback.ok { background: #C8E6C9; color: #1B5E20; font-weight: bold; animation: pop .3s; }
+  .feedback.no { background: #FFCDD2; color: #B71C1C; font-weight: bold; }
+
+  .footer {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 10px; flex-wrap: wrap;
+  }
+  .progress { font-size: 14px; color: #555; font-weight: bold; }
+  .btn {
+    padding: 9px 20px; border: none; border-radius: 10px; background: #FF6F00;
+    color: #fff; font-size: 14px; font-weight: bold; cursor: pointer;
+    font-family: inherit; transition: all .12s;
+  }
+  .btn:hover:not(:disabled) { background: #E65100; transform: scale(1.05); }
+  .btn:disabled { background: #BDBDBD; cursor: default; }
+  .btn.ghost { background: #1976D2; padding:5px 12px; font-size:12px; }
+  .btn.ghost:hover:not(:disabled) { background: #0D47A1; }
+
+  /* ---------- drag & drop ---------- */
+  .drag-wrap { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+  .drag-prompt {
+    padding: 7px 10px; border-radius: 8px; font-size: 12px;
+    background: #FFFDE7; color: #7A4F00; font-weight: bold;
+  }
+  .players {
+    display:flex; gap:6px; flex-wrap:wrap; justify-content:center;
+    padding:8px; background:#F1F8E9; border-radius:10px;
+    border:2px dashed #7CB342; min-height:46px;
+  }
+  .player {
+    background:#FFF; border:2.5px solid #1976D2; border-radius:8px;
+    padding:6px 10px; font-size:12px; font-weight:bold; color:#0D47A1;
+    cursor:grab; user-select:none;
+    box-shadow:0 2px 0 #90CAF9;
+    transition: transform .15s, box-shadow .15s;
+    animation: dropIn .3s ease;
+  }
+  @keyframes dropIn {
+    from { opacity:0; transform: translateY(-8px) scale(.85); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+  }
+  .player:hover:not(.placed) { transform: translateY(-2px) rotate(-1deg); }
+  .player:active { cursor:grabbing; transform:scale(.96); }
+  .player.placed { cursor:default; animation: none; }
+  .player.ok { border-color:#2E7D32; box-shadow:0 2px 0 #A5D6A7; animation: pop .35s; }
+  .player.bad { border-color:#C62828; box-shadow:0 2px 0 #EF9A9A; animation: shake .4s; }
+
+  .zones { display:grid; gap:8px; }
+  .zone {
+    border:2.5px dashed #888; border-radius:10px; padding:8px;
+    min-height:80px; text-align:center; font-size:11px; color:#555;
+    background:#FAFAFA;
+    transition: all .2s ease;
+    display: flex; flex-direction: column;
+  }
+  .zone.over {
+    border-color:#2E7D32; background:#E8F5E9;
+    transform: scale(1.02);
+    box-shadow: 0 0 0 3px rgba(46,125,50,.15);
+  }
+  .zone .ztitle { font-weight:bold; margin-bottom:5px; color:#333; font-size:11px; }
+  .zone .items {
+    display:flex; gap:5px; flex-wrap:wrap; justify-content:center;
+    flex:1; align-content:flex-start; min-height:30px;
+  }
+  .zone .items .player { font-size:11px; padding:4px 7px; border-width:2px; }
+  .zone.z-left { border-color:#1976D2; }
+  .zone.z-mid  { border-color:#F57F17; background:#FFFDE7; }
+  .zone.z-right{ border-color:#EF6C00; }
+  .zone.z-out  { border-color:#9E9E9E; }
+
+  /* финал */
+  .final {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+    padding: 14px;
+  }
+  .final h2 { color: #1B5E20; font-size: 24px; margin-bottom: 8px; }
+  .final .score { font-size: 38px; color: #FF6F00; font-weight: bold; margin: 8px 0; }
+  .final p { font-size: 14px; margin-bottom: 8px; color: #333; }
+  .final .cheat {
+    background:#FFF8E1; border:2.5px solid #FFB300; border-radius:12px;
+    padding:12px 16px; text-align:left; font-size:13px; line-height:1.7;
+    color:#333; max-width:640px; margin: 10px auto 0;
+  }
+  .final .cheat b { color:#E65100; }
+
+  @media (max-width: 900px) {
+    .stage { grid-template-columns: 1fr; }
+    .venn-canvas, .subset-wrap { transform: scale(.85); }
+  }
+</style>
+</head>
+<body>
+<div class="game" id="game"></div>
+
+<script>
+/* =========================================================
+   ВЕНН-ДИАГРАММЫ (чистый HTML)
+   ========================================================= */
+function vennHTML(type, labelA='A: Забивают', labelB='B: Пасуют') {
+  const two = (inner) => `
+    <div class="venn-canvas">
+      <div class="label a">${labelA}</div>
+      <div class="label b">${labelB}</div>
+      <div class="circle a"></div>
+      <div class="circle b"></div>
+      ${inner}
+    </div>`;
+
+  switch(type) {
+    case 'set1':
+      return two(`
+        <span class="el" style="top:70px; left:110px;">⚽</span>
+        <span class="el" style="top:70px; left:170px;">⚽</span>
+        <span class="el" style="top:130px; left:110px;">⚽</span>
+        <span class="el" style="top:130px; left:170px;">⚽</span>`);
+
+    case 'elements':
+      return two(`
+        <span class="num" style="top:80px; left:120px; color:#0D47A1;">С</span>
+        <span class="num" style="top:80px; left:180px; color:#0D47A1;">М</span>
+        <span class="num" style="top:130px; left:150px; color:#0D47A1;">П</span>`);
+
+    case 'cross':
+      return two(`
+        <span class="el" style="top:70px; left:100px;">⚽</span>
+        <span class="el" style="top:70px; right:100px;">🎯</span>
+        <div class="mid-zone">⭐</div>`);
+
+    case 'union':
+      return two(`
+        <span class="el" style="top:70px; left:100px;">⚽</span>
+        <span class="el" style="top:70px; right:100px;">🎯</span>
+        <div class="mid-zone" style="background:transparent;border:none;font-size:22px;">⭐</div>`);
+
+    case 'unionBig':
+      return `
+      <div class="venn-canvas" style="width:500px;">
+        <div class="label a">${labelA}</div>
+        <div class="label b">${labelB}</div>
+        <div class="circle a" style="border-color:#2E7D32;border-style:dashed;border-width:4px;"></div>
+        <div class="circle b" style="border-color:#2E7D32;border-style:dashed;border-width:4px;"></div>
+        <span class="el" style="top:70px; left:100px;">⚽</span>
+        <span class="el" style="top:110px; left:220px;">⭐</span>
+        <span class="el" style="top:70px; right:100px;">🎯</span>
+      </div>`;
+
+    case 'empty':
+      return `
+      <div class="venn-canvas">
+        <div class="label a">A: Забивают</div>
+        <div class="label b">B: Вратари</div>
+        <div class="circle a"></div>
+        <div class="circle b"></div>
+        <span class="el" style="top:70px; left:110px;">⚽</span>
+        <span class="el" style="top:120px; left:160px;">⚽</span>
+        <span class="el" style="top:70px; right:110px;">🧤</span>
+        <span class="el" style="top:120px; right:160px;">🧤</span>
+        <div class="mid-zone empty-mark" style="background:transparent;border:none;">∅</div>
+      </div>`;
+
+    case 'subset':
+      return `
+      <div class="subset-wrap">
+        <div class="big-set"><div class="lbl">B: Умеют играть</div></div>
+        <div class="small-set">
+          ⚽⚽
+          <div class="lbl">A: Забивают</div>
+        </div>
+        <span class="el" style="top:80px; right:80px;">🥅</span>
+        <span class="el" style="top:130px; right:110px;">🥅</span>
+      </div>`;
+
+    case 'subset2':
+      return `
+      <div class="subset-wrap">
+        <div class="big-set"><div class="lbl">B: Футболисты</div></div>
+        <div class="small-set" style="font-size:30px;">
+          🧤🧤
+          <div class="lbl">A: Вратари</div>
+        </div>
+        <span class="el" style="top:80px; right:80px;">🛡</span>
+        <span class="el" style="top:130px; right:110px;">🏃</span>
+      </div>`;
+
+    case 'onlyA':
+      return two(`
+        <div class="num" style="top:95px; left:70px; color:#0D47A1; font-size:16px; text-align:center; width:90px;">только<br>A: 3</div>
+        <div class="mid-zone" style="font-size:20px;">5</div>
+        <div class="num" style="top:105px; right:110px; color:#E65100; font-size:22px;">4</div>`);
+
+    case 'onlyB':
+      return two(`
+        <div class="num" style="top:105px; left:110px; color:#0D47A1; font-size:22px;">6</div>
+        <div class="mid-zone" style="font-size:20px;">4</div>
+        <div class="num" style="top:95px; right:70px; color:#E65100; font-size:16px; text-align:center; width:90px;">только<br>B: ?</div>`);
+
+    case 'finalTask':
+      return two(`
+        <div class="num" style="top:105px; left:110px; color:#0D47A1; font-size:20px;">8 ⚽</div>
+        <div class="mid-zone" style="font-size:20px;">4</div>
+        <div class="num" style="top:105px; right:110px; color:#E65100; font-size:20px;">🎾 4</div>
+        <div class="caption" style="bottom:-6px; color:#555;">🚫 4 снаружи</div>`, 'A: Футбол (12)', 'B: Теннис (8)');
+
+    case 'finalSuper':
+      return two(`
+        <div class="num" style="top:105px; left:110px; color:#0D47A1; font-size:20px;">⚽ 9</div>
+        <div class="mid-zone" style="font-size:20px;">9</div>
+        <div class="num" style="top:105px; right:110px; color:#E65100; font-size:20px;">🎯 5</div>
+        <div class="caption" style="bottom:-6px; color:#555;">🚫 7 снаружи</div>`, 'A: Забивают (18)', 'B: Пасуют (14)');
+
+    case 'allSigns':
+      return two(`
+        <div class="num" style="top:95px; left:110px; color:#0D47A1; font-size:22px;">1</div>
+        <div class="num" style="top:145px; left:150px; color:#0D47A1; font-size:22px;">2</div>
+        <div class="num" style="top:95px; right:110px; color:#E65100; font-size:22px;">4</div>
+        <div class="num" style="top:145px; right:150px; color:#7A4F00; font-size:22px;">3</div>`);
+
+    default: return two('');
+  }
+}
+
+/* =========================================================
+   УРОВНИ (без theory и hero-line, без hint)
+   ========================================================= */
+const levels = [
+  {
+    title: "Что такое множество?",
+    venn: 'set1',
+    q: "Какое утверждение <b>верно</b>?",
+    opts: ["Множество — группа с общим признаком", "Множество — обязательно круг на бумаге", "Множество — любое число", "Множество — всегда 3 предмета"],
+    correct: 0,
+    drags: [{ prompt: "В круг — тех, кто умеет забивать. Ваня не умеет.",
+      players: [
+        { id:'a', label:'⚽ Саша', zone:'left' },
+        { id:'b', label:'⚽ Миша', zone:'left' },
+        { id:'c', label:'⚽ Петя', zone:'left' },
+        { id:'d', label:'🚫 Ваня', zone:'out' }],
+      zones: ['left','out'] }]
+  },
+  {
+    title: "Элементы множества",
+    venn: 'elements',
+    q: "Что означает <b>Саша ∈ A</b>?",
+    opts: ["Саша — элемент A", "Саша не входит в A", "A состоит только из Саши", "Саша — название A"],
+    correct: 0,
+    drags: [{ prompt: "Все элементы A — в левый круг. Ваня не забивает.",
+      players: [
+        { id:'a', label:'⚽ Саша', zone:'left' },
+        { id:'b', label:'⚽ Миша', zone:'left' },
+        { id:'c', label:'⚽ Петя', zone:'left' },
+        { id:'d', label:'🚫 Ваня', zone:'out' }],
+      zones: ['left','out'] }]
+  },
+  {
+    title: "Пересечение ∩",
+    venn: 'cross',
+    q: "Петя умеет и то, и другое. Гриша — только забивать. Куда каждого?",
+    opts: ["Петя — в ∩, Гриша — в левый круг", "Оба в ∩", "Петя в левый, Гриша в ∩", "Оба в левый круг"],
+    correct: 0,
+    drags: [{ prompt: "Петя — ∩. Гриша — только гол. Ваня — только пас.",
+      players: [
+        { id:'a', label:'⭐ Петя', zone:'mid' },
+        { id:'b', label:'⚽ Гриша', zone:'left' },
+        { id:'c', label:'🎯 Ваня', zone:'right' }],
+      zones: ['left','mid','right'] }]
+  },
+  {
+    title: "Знаки ∩ и ∪",
+    venn: 'union',
+    q: "20 ребят. A — забивают (11), B — пасуют (9), 4 умеют и то, и другое. Сколько умеют хотя бы одно?",
+    opts: ["16", "20", "18", "24"],
+    correct: 0,
+    drags: [{ prompt: "Расставь: 7 только-гол, 4 ∩, 5 только-пас.",
+      players: [
+        { id:'a', label:'⚽×7', zone:'left' },
+        { id:'b', label:'⭐×4', zone:'mid' },
+        { id:'c', label:'🎯×5', zone:'right' }],
+      zones: ['left','mid','right'] }]
+  },
+  {
+    title: "Только забивать",
+    venn: 'onlyA',
+    q: "8 ребят забивают, 5 умеют и то, и другое. Сколько умеют ТОЛЬКО забивать?",
+    opts: ["3", "5", "8", "13"],
+    correct: 0,
+    drags: [{ prompt: "Расставь: 3 только-гол, 5 ∩, 4 только-пас.",
+      players: [
+        { id:'a', label:'⚽×3', zone:'left' },
+        { id:'b', label:'⭐×5', zone:'mid' },
+        { id:'c', label:'🎯×4', zone:'right' }],
+      zones: ['left','mid','right'] }]
+  },
+  {
+    title: "Объединение ∪",
+    venn: 'unionBig',
+    q: "9 забивают, 6 пасуют, 2 умеют и то, и другое. Сколько умеют хотя бы что-то?",
+    opts: ["13", "15", "11", "17"],
+    correct: 0,
+    drags: [{ prompt: "Расставь: 7 только-гол, 2 ∩, 4 только-пас, 1 снаружи.",
+      players: [
+        { id:'a', label:'⚽×7', zone:'left' },
+        { id:'b', label:'⭐×2', zone:'mid' },
+        { id:'c', label:'🎯×4', zone:'right' },
+        { id:'d', label:'🚫×1', zone:'out' }],
+      zones: ['left','mid','right','out'] }]
+  },
+  {
+    title: "Пустое множество ∅",
+    venn: 'empty',
+    q: "Какое множество <b>точно пустое</b>?",
+    opts: ["Числа, которые делятся на 0", "Чётные числа", "Все мячи на поле", "Натуральные числа"],
+    correct: 0,
+    drags: [{ prompt: "Пересечение пустое. Забивающие — слева, вратари — справа.",
+      players: [
+        { id:'a', label:'⚽ Саша', zone:'left' },
+        { id:'b', label:'⚽ Петя', zone:'left' },
+        { id:'c', label:'🧤 Ваня', zone:'right' },
+        { id:'d', label:'🧤 Гриша', zone:'right' }],
+      zones: ['left','right'] }]
+  },
+  {
+    title: "Подмножество ⊂",
+    venn: 'subset',
+    q: "A = {мяч, свисток}. B = {мяч, свисток, бутсы}. Что верно?",
+    opts: ["A ⊂ B, потому что все элементы A есть в B", "B ⊂ A", "A = B", "A и B не связаны"],
+    correct: 0,
+    drags: [{ prompt: "Большой круг — умеют играть. Внутри — забивают. Вася не играет.",
+      players: [
+        { id:'a', label:'⚽ Саша', zone:'left' },
+        { id:'b', label:'⚽ Петя', zone:'left' },
+        { id:'c', label:'🥅 Миша', zone:'right' },
+        { id:'d', label:'🚫 Вася', zone:'out' }],
+      zones: ['left','right','out'] }]
+  },
+  {
+    title: "Задача в два шага",
+    venn: 'finalTask',
+    q: "20 ребят. 12 — футбол, 8 — теннис, 4 — и то, и другое. Сколько не играют ни во что?",
+    opts: ["4", "2", "6", "8"],
+    correct: 0,
+    drags: [{ prompt: "Расставь: 8 только-футбол, 4 ∩, 4 только-теннис, 4 снаружи.",
+      players: [
+        { id:'a', label:'⚽×8', zone:'left' },
+        { id:'b', label:'⭐×4', zone:'mid' },
+        { id:'c', label:'🎾×4', zone:'right' },
+        { id:'d', label:'🚫×4', zone:'out' }],
+      zones: ['left','mid','right','out'] }]
+  },
+  {
+    title: "Ловушка: лишние данные",
+    venn: 'onlyB',
+    q: "18 ребят. 10 забивают, 7 пасуют, 4 и то, и другое. Сколько умеют ТОЛЬКО пасовать?",
+    opts: ["3", "7", "4", "6"],
+    correct: 0,
+    drags: [{ prompt: "Расставь: 6 только-гол, 4 ∩, 3 только-пас, 5 снаружи.",
+      players: [
+        { id:'a', label:'⚽×6', zone:'left' },
+        { id:'b', label:'⭐×4', zone:'mid' },
+        { id:'c', label:'🎯×3', zone:'right' },
+        { id:'d', label:'🚫×5', zone:'out' }],
+      zones: ['left','mid','right','out'] }]
+  },
+  {
+    title: "Найди ошибку",
+    venn: 'cross',
+    q: "Тима записал: A ∩ B = {Саша, Ваня}. Но Саша — только гол, Ваня — только пас. Где ошибка?",
+    opts: ["В ∩ только «и то, и другое»", "Всё правильно", "Петя снаружи", "Нужен ∪"],
+    correct: 0,
+    drags: [{ prompt: "Исправь: Саша — только гол, Ваня — только пас, Петя — ∩.",
+      players: [
+        { id:'a', label:'⚽ Саша', zone:'left' },
+        { id:'b', label:'⭐ Петя', zone:'mid' },
+        { id:'c', label:'🎯 Ваня', zone:'right' }],
+      zones: ['left','mid','right'] }]
+  },
+  {
+    title: "Обратная задача",
+    venn: 'unionBig',
+    q: "A ∪ B = 15, A = 9, B = 8. Найди A ∩ B.",
+    opts: ["2", "17", "15", "1"],
+    correct: 0,
+    drags: [{ prompt: "Расставь: 7 только-гол, 2 ∩, 6 только-пас.",
+      players: [
+        { id:'a', label:'⚽×7', zone:'left' },
+        { id:'b', label:'⭐×2', zone:'mid' },
+        { id:'c', label:'🎯×6', zone:'right' }],
+      zones: ['left','mid','right'] }]
+  },
+  {
+    title: "Подмножество: разбор",
+    venn: 'subset2',
+    q: "A = {вратари}, B = {футболисты}. Что верно?",
+    opts: ["A ⊂ B, потому что каждый вратарь — футболист", "B ⊂ A", "A ∩ B = ∅", "A = B"],
+    correct: 0,
+    drags: [{ prompt: "Большой круг — футболисты. Внутри — вратари. Защитник — футболист, но не вратарь.",
+      players: [
+        { id:'a', label:'🧤 Вратарь 1', zone:'left' },
+        { id:'b', label:'🧤 Вратарь 2', zone:'left' },
+        { id:'c', label:'🛡 Защитник', zone:'right' }],
+      zones: ['left','right'] }]
+  },
+  {
+    title: "Всё вместе",
+    venn: 'allSigns',
+    q: "A = {1,2,3}, B = {2,3,4}. Чему равно <b>A ∪ B</b>?",
+    opts: ["{1, 2, 3, 4}", "{2, 3}", "{1, 4}", "{1,2,3,4,2,3}"],
+    correct: 0,
+    drags: [{ prompt: "Слева {1,2,3}, справа {2,3,4}. Расставь элементы.",
+      players: [
+        { id:'a', label:'1', zone:'left' },
+        { id:'b', label:'2', zone:'mid' },
+        { id:'c', label:'3', zone:'mid' },
+        { id:'d', label:'4', zone:'right' }],
+      zones: ['left','mid','right'] }]
+  },
+  {
+    title: "Супер-задача",
+    venn: 'finalSuper',
+    q: "30 ребят. 18 забивают, 14 пасуют, 9 умеют и то, и другое. Сколько не умеют ни то, ни другое?",
+    opts: ["7", "5", "9", "3"],
+    correct: 0,
+    drags: [{ prompt: "Расставь: 9 только-гол, 9 ∩, 5 только-пас, 7 снаружи.",
+      players: [
+        { id:'a', label:'⚽×9', zone:'left' },
+        { id:'b', label:'⭐×9', zone:'mid' },
+        { id:'c', label:'🎯×5', zone:'right' },
+        { id:'d', label:'🚫×7', zone:'out' }],
+      zones: ['left','mid','right','out'] }]
+  }
+];
+
+/* =========================================================
+   ЛОГИКА
+   ========================================================= */
+let idx = 0, score = 0;
+const game = document.getElementById('game');
+const ZONE_LABELS = {
+  left:  '🔵 Только A',
+  mid:   '🟡 A ∩ B',
+  right: '🟠 Только B',
+  out:   '⚪ Снаружи'
+};
+
+function render() {
+  if (idx >= levels.length) return renderFinal();
+  const L = levels[idx];
+
+  game.innerHTML = `
+    <div class="topbar">
+      <div>
+        <h1>⚽ Футбольные множества</h1>
+        <div class="subtitle">Уровень ${idx+1} из ${levels.length} · ${L.title}</div>
+      </div>
+      <div class="score-badge" id="scoreBadge">Очки: <b id="sc">${score}</b></div>
+    </div>
+
+    <div class="stage">
+      <div class="panel panel-diagram">
+        <div class="venn-box" id="vennBox"></div>
+      </div>
+
+      <div class="panel panel-task">
+        <h3>🎯 Вопрос</h3>
+        <p style="margin-bottom:6px">${L.q}</p>
+        <div class="options" id="opts">
+          ${L.opts.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join('')}
+        </div>
+        <div class="feedback" id="fb"></div>
+        <div class="drag-wrap" id="dragWrap" style="display:none"></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="progress">Уровень ${idx+1} / ${levels.length}</div>
+      <button class="btn" id="next" disabled>Дальше ▶</button>
+    </div>
+  `;
+
+  document.getElementById('vennBox').innerHTML = vennHTML(L.venn);
+
+  let testDone = false;
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.onclick = () => {
+      if (testDone) return;
+      testDone = true;
+      const i = +btn.dataset.i;
+      const fb = document.getElementById('fb');
+      document.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if (i === L.correct) {
+        btn.classList.add('correct');
+        fb.className = 'feedback ok';
+        fb.textContent = '✅ Верно!';
+        addScore(5);
+      } else {
+        btn.classList.add('wrong');
+        document.querySelector(`.opt[data-i="${L.correct}"]`).classList.add('correct');
+        fb.className = 'feedback no';
+        fb.textContent = '❌ Неверно';
+      }
+      const dw = document.getElementById('dragWrap');
+      dw.style.display = 'flex';
+      renderDragStep(dw, L, 0);
+    };
+  });
+
+  document.getElementById('next').onclick = () => { idx++; render(); };
+}
+
+function addScore(n) {
+  score += n;
+  const sc = document.getElementById('sc');
+  const badge = document.getElementById('scoreBadge');
+  if (sc) sc.textContent = score;
+  if (badge) {
+    badge.classList.add('pulse');
+    setTimeout(() => badge.classList.remove('pulse'), 250);
+  }
+}
+
+function renderDragStep(container, L, stepIndex) {
+  const D = L.drags[stepIndex];
+  const totalSteps = L.drags.length;
+
+  container.innerHTML = `
+    <div class="drag-prompt">🧩 ${D.prompt} ${totalSteps>1?`<b>(${stepIndex+1}/${totalSteps})</b>`:''}</div>
+    <div class="players" id="players"></div>
+    <div class="zones" id="zones" style="grid-template-columns:repeat(${D.zones.length},1fr)"></div>
+    <div class="feedback" id="fb2">Перетащи игроков в зоны 🖱️</div>
+  `;
+
+  const playersBox = container.querySelector('#players');
+  const zonesBox = container.querySelector('#zones');
+  const fb2 = container.querySelector('#fb2');
+  const nextBtn = document.getElementById('next');
+  nextBtn.disabled = true;
+
+  const total = D.players.length;
+  let placed = 0, correctCount = 0;
+
+  D.players.forEach((p, i) => {
+    const el = document.createElement('div');
+    el.className = 'player';
+    el.draggable = true;
+    el.dataset.id = p.id;
+    el.dataset.correct = p.zone;
+    el.textContent = p.label;
+    el.style.animationDelay = (i * 50) + 'ms';
+    el.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', p.id);
+      el.style.opacity = '.5';
+    });
+    el.addEventListener('dragend', () => { el.style.opacity = ''; });
+    playersBox.appendChild(el);
+  });
+
+  D.zones.forEach(z => {
+    const zone = document.createElement('div');
+    zone.className = 'zone z-' + z;
+    zone.dataset.zone = z;
+    zone.innerHTML = `<div class="ztitle">${ZONE_LABELS[z]}</div><div class="items"></div>`;
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('over'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('over');
+      const id = e.dataTransfer.getData('text/plain');
+      const el = container.querySelector(`.player[data-id="${id}"]`);
+      if (!el || el.classList.contains('placed')) return;
+      placePlayer(el, zone, z);
+    });
+    zonesBox.appendChild(zone);
+  });
+
+  function placePlayer(el, zone, z) {
+    zone.querySelector('.items').appendChild(el);
+    el.classList.add('placed');
+    el.draggable = false;
+    placed++;
+    if (el.dataset.correct === z) {
+      el.classList.add('ok');
+      correctCount++;
+    } else {
+      el.classList.add('bad');
+    }
+    updateFeedback();
+  }
+
+  function updateFeedback() {
+    if (placed < total) {
+      fb2.className = 'feedback';
+      fb2.textContent = `Расставлено: ${placed} из ${total} 🧩`;
+      return;
+    }
+    if (correctCount === total) {
+      fb2.className = 'feedback ok';
+      fb2.textContent = `🎉 Все ${total} стоят правильно!`;
+      addScore(5);
+      advanceOrFinish();
+    } else {
+      fb2.className = 'feedback no';
+      fb2.innerHTML = `😕 Правильно: ${correctCount} из ${total}. <button class="btn ghost" id="retry">🔁 Снова</button>`;
+      fb2.querySelector('#retry').onclick = () => renderDragStep(container, L, stepIndex);
+      nextBtn.disabled = false;
+    }
+  }
+
+  function advanceOrFinish() {
+    if (stepIndex + 1 < totalSteps) {
+      setTimeout(() => renderDragStep(container, L, stepIndex + 1), 700);
+    } else {
+      nextBtn.disabled = false;
+    }
+  }
+}
+
+function renderFinal() {
+  const max = levels.length * 10;
+  let title, msg;
+  if (score >= max * 0.8) { title='🏆 Тима — капитан команды!'; msg='Ты мастер множеств и кругов Венна!'; }
+  else if (score >= max * 0.5) { title='🥈 Хороший матч!'; msg='Почти всё понял. Пройди ещё раз!'; }
+  else { title='🥉 Разминка прошла!'; msg='Повтори теорию и попробуй снова!'; }
+
+  game.innerHTML = `
+    <div class="final">
+      <h2>${title}</h2>
+      <div class="score">${score} из ${max} очков</div>
+      <p>${msg}</p>
+      <div class="cheat">
+        <b>📌 Шпаргалка:</b><br>
+        🔵 <b>Множество</b> — группа с общим признаком.<br>
+        ⚽ <b>Элемент</b> — один предмет внутри (a ∈ A).<br>
+        🟡 <b>A ∩ B</b> — пересечение: «и в A, и в B».<br>
+        🟢 <b>A ∪ B</b> — объединение: «в A или в B».<br>
+        ⚪ <b>∅</b> — пустое множество.<br>
+        🔷 <b>A ⊂ B</b> — A подмножество B.<br>
+        🧮 <b>A ∪ B = A + B − (A ∩ B)</b>.<br>
+        🎯 <b>Только A = A − (A ∩ B)</b>.
+      </div>
+      <button class="btn" style="margin-top:14px" onclick="idx=0;score=0;render()">🔁 Играть снова</button>
+    </div>
+  `;
+}
+
+render();
+</script>
+</body>
+</html>
