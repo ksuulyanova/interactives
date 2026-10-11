@@ -2,10 +2,16 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Кассир • Магазин сладостей</title>
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+
+    html, body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+    }
 
     body {
         min-height: 100vh;
@@ -14,7 +20,7 @@
         background-position: center;
         background-attachment: fixed;
         box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.25);
-        padding: 20px;
+        padding: 12px;
         transition: background-image 0.8s ease, box-shadow 0.8s ease;
     }
     body.shift-active {
@@ -27,23 +33,31 @@
         background: linear-gradient(160deg, rgba(255, 253, 245, 0.98), rgba(245, 236, 212, 0.98));
         border: 5px solid #b45f3b;
         border-radius: 32px;
-        padding: 36px 40px;
+        padding: 32px 36px;
         box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 0 3px #f7d9aa inset;
         text-align: center;
     }
 
-    /* ===== ЭКРАН 1: Приветствие ===== */
+    /* ===== Стартовые экраны ===== */
+    .welcome-screen, .rules-screen, .player-screen {
+        max-height: 100vh;
+        overflow-y: auto;
+        padding: 12px;
+    }
+
     .welcome-screen {
         max-width: 700px;
-        margin: 60px auto;
+        margin: 0 auto;
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
         gap: 34px;
+        min-height: 100vh;
         animation: fadeIn 0.8s ease;
     }
     .welcome-title {
-        font-size: 3rem;
+        font-size: 2.6rem;
         color: #fff;
         text-align: center;
         text-shadow: 0 4px 12px rgba(0,0,0,0.7), 0 0 30px rgba(255, 200, 100, 0.6);
@@ -54,54 +68,58 @@
     }
     .welcome-title .sub {
         display: block;
-        font-size: 1.3rem;
+        font-size: 1.1rem;
         color: #ffe4b5;
         margin-top: 12px;
         letter-spacing: 4px;
         font-weight: 600;
     }
     .start-btn {
-        background: linear-gradient(145deg, #f0b87b, #e09b4a);
-        color: #3b1e0a;
-        border: 4px solid #ffefd0;
+        background: linear-gradient(145deg, #f5c6c6, #e8a5a5);
+        color: #5a2828;
+        border: 4px solid #fbe1e1;
         border-radius: 60px;
-        padding: 22px 70px;
-        font-size: 2rem;
+        padding: 20px 60px;
+        font-size: 1.8rem;
         font-weight: 900;
         letter-spacing: 2px;
         text-transform: uppercase;
         cursor: pointer;
-        box-shadow: 0 14px 0 #8b5a2b, 0 16px 30px rgba(0,0,0,0.55);
+        box-shadow: 0 14px 0 #a86b6b, 0 16px 30px rgba(0,0,0,0.55);
         transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
     }
     .start-btn:hover {
-        background: linear-gradient(145deg, #ffcb8e, #f0a955);
+        background: linear-gradient(145deg, #ffd9d9, #f0b8b8);
         transform: scale(1.05);
     }
     .start-btn:active {
         transform: translateY(8px);
-        box-shadow: 0 6px 0 #8b5a2b, 0 16px 30px rgba(0,0,0,0.55);
+        box-shadow: 0 6px 0 #a86b6b, 0 16px 30px rgba(0,0,0,0.55);
     }
 
     /* ===== ЭКРАН 2: Правила ===== */
     .rules-screen {
         max-width: 700px;
-        margin: 40px auto;
+        margin: 0 auto;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         animation: fadeIn 0.6s ease;
     }
     .rules-card h2 {
-        font-size: 2rem;
+        font-size: 1.7rem;
         color: #a34f2b;
-        margin-bottom: 16px;
+        margin-bottom: 14px;
         text-shadow: 2px 2px 0 #f0d5b0;
         letter-spacing: 1px;
         border-bottom: 3px dashed #d9a066;
-        padding-bottom: 12px;
+        padding-bottom: 10px;
     }
     .rules-card p {
-        font-size: 1.15rem;
-        line-height: 1.6;
-        margin-bottom: 16px;
+        font-size: 1rem;
+        line-height: 1.5;
+        margin-bottom: 12px;
         font-weight: 500;
         color: #3e2c1b;
     }
@@ -117,83 +135,84 @@
     }
     .rules-card ul {
         text-align: left;
-        margin: 18px 0 22px 20px;
-        font-size: 1.05rem;
-        line-height: 1.7;
+        margin: 14px 0 18px 20px;
+        font-size: 0.95rem;
+        line-height: 1.6;
         list-style-type: '🍬 ';
         color: #4a3a24;
     }
-    .rules-card li { margin-bottom: 8px; padding-left: 8px; }
+    .rules-card li { margin-bottom: 6px; padding-left: 6px; }
     .rules-emoji-row {
-        font-size: 2.2rem;
+        font-size: 1.8rem;
         letter-spacing: 8px;
-        margin: 14px 0 20px;
+        margin: 10px 0 16px;
         animation: stickerPop 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.4);
     }
     .shift-begin-btn {
-        background: linear-gradient(145deg, #b3e0c9, #8ecfb0);
-        color: #1e4d3a;
-        border: 3px solid #d9f0e3;
+        background: linear-gradient(145deg, #f5d5c6, #e8b5a5);
+        color: #5a2828;
+        border: 3px solid #fbeae1;
         border-radius: 60px;
-        padding: 16px 50px;
-        font-size: 1.4rem;
+        padding: 14px 42px;
+        font-size: 1.25rem;
         font-weight: 800;
         letter-spacing: 1px;
         text-transform: uppercase;
         cursor: pointer;
-        box-shadow: 0 10px 0 #2f6d52, 0 10px 20px rgba(0,0,0,0.4);
+        box-shadow: 0 10px 0 #a87b6b, 0 10px 20px rgba(0,0,0,0.4);
         transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
-        margin-top: 10px;
+        margin-top: 8px;
     }
     .shift-begin-btn:hover {
-        background: linear-gradient(145deg, #c6ecd8, #a0dcbf);
+        background: linear-gradient(145deg, #ffe2d3, #f0c5b5);
         transform: scale(1.03);
     }
     .shift-begin-btn:active {
         transform: translateY(6px);
-        box-shadow: 0 4px 0 #2f6d52, 0 10px 20px rgba(0,0,0,0.4);
+        box-shadow: 0 4px 0 #a87b6b, 0 10px 20px rgba(0,0,0,0.4);
     }
 
-    /* ===== ЭКРАН 3: Форма игрока + рекорды ===== */
+    /* ===== ЭКРАН 3: Форма игрока ===== */
     .player-screen {
-        max-width: 780px;
-        margin: 30px auto;
+        max-width: 760px;
+        margin: 0 auto;
         display: flex;
         flex-direction: column;
-        gap: 24px;
+        gap: 16px;
         animation: fadeIn 0.8s ease;
+        padding: 12px;
     }
 
     .start-card h1 {
-        font-size: 2rem;
+        font-size: 1.6rem;
         color: #a34f2b;
-        margin-bottom: 10px;
+        margin-bottom: 6px;
         letter-spacing: 1px;
         text-shadow: 2px 2px 0 #f0d5b0;
         font-weight: 800;
     }
     .start-card .subtitle {
-        font-size: 1.05rem;
+        font-size: 0.95rem;
         color: #6b5c3e;
-        margin-bottom: 26px;
+        margin-bottom: 20px;
         line-height: 1.5;
     }
 
-    .form-group { margin-bottom: 24px; text-align: left; }
+    .form-group { margin-bottom: 18px; text-align: left; }
     .form-group label {
         display: block;
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: 800;
         color: #7b3f00;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         letter-spacing: 0.5px;
     }
-    .form-group label .label-emoji { font-size: 1.3rem; margin-right: 6px; }
+    .form-group label .label-emoji { font-size: 1.2rem; margin-right: 6px; }
 
     .name-input {
         width: 100%;
-        padding: 16px 20px;
-        font-size: 1.3rem;
+        padding: 14px 18px;
+        font-size: 1.2rem;
         font-weight: 700;
         color: #422b18;
         background: #fffef9;
@@ -214,13 +233,13 @@
     .character-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
+        gap: 14px;
     }
     .character-option {
         background: #fffef9;
         border: 3px solid #d9c9a0;
-        border-radius: 20px;
-        padding: 20px 12px 16px;
+        border-radius: 24px;
+        padding: 18px 12px 14px;
         cursor: pointer;
         transition: all 0.25s ease;
         text-align: center;
@@ -254,57 +273,75 @@
         box-shadow: 0 3px 8px rgba(0,0,0,0.3);
         animation: checkPop 0.3s ease;
     }
-    .character-option .char-emoji {
-        font-size: 4rem;
-        display: block;
-        margin-bottom: 8px;
-        line-height: 1;
-        transition: transform 0.2s;
+    .character-option .char-avatar {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin: 0 auto 10px;
+        border: 4px solid #fbe1e1;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.2), inset 0 0 0 2px rgba(255,255,255,0.6);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        background: #f5ecd4;
     }
-    .character-option:hover .char-emoji { transform: scale(1.15); }
-    .character-option.selected .char-emoji { transform: scale(1.1); }
+    .character-option .char-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    .character-option:hover .char-avatar {
+        transform: scale(1.06);
+        box-shadow: 0 10px 22px rgba(0,0,0,0.28), inset 0 0 0 2px rgba(255,255,255,0.7);
+    }
+    .character-option.selected .char-avatar {
+        border-color: #4a9c5e;
+        box-shadow: 0 0 0 4px rgba(74, 156, 94, 0.3), 0 8px 20px rgba(0,0,0,0.2);
+        transform: scale(1.05);
+    }
     .character-option .char-label {
         font-size: 1rem;
         font-weight: 800;
         color: #4a3a24;
         letter-spacing: 0.5px;
+        margin-bottom: 2px;
     }
-    .character-option .char-sub { font-size: 0.8rem; color: #8a7a5c; margin-top: 4px; }
+    .character-option .char-sub { font-size: 0.75rem; color: #8a7a5c; }
 
     .begin-btn {
         width: 100%;
-        padding: 20px;
-        font-size: 1.4rem;
+        padding: 16px;
+        font-size: 1.2rem;
         font-weight: 900;
         letter-spacing: 1px;
         text-transform: uppercase;
-        color: #fff;
-        background: linear-gradient(145deg, #e76f51, #c9532f);
-        border: 4px solid #ffd9c9;
+        color: #5a2828;
+        background: linear-gradient(145deg, #f5d0c0, #e8a898);
+        border: 4px solid #fbe6d6;
         border-radius: 18px;
         cursor: pointer;
-        box-shadow: 0 10px 0 #8b3a1f, 0 12px 24px rgba(0,0,0,0.35);
+        box-shadow: 0 10px 0 #a86b5b, 0 12px 24px rgba(0,0,0,0.35);
         transition: transform 0.15s, box-shadow 0.2s;
-        margin-top: 10px;
+        margin-top: 8px;
     }
     .begin-btn:hover:not(:disabled) {
-        background: linear-gradient(145deg, #f07f61, #d9633f);
+        background: linear-gradient(145deg, #ffdccb, #f0b8a8);
         transform: scale(1.02);
     }
-    .begin-btn:active:not(:disabled) { transform: translateY(6px); box-shadow: 0 4px 0 #8b3a1f; }
+    .begin-btn:active:not(:disabled) { transform: translateY(6px); box-shadow: 0 4px 0 #a86b5b; }
     .begin-btn:disabled {
-        background: #bdb3a0;
-        box-shadow: 0 10px 0 #7a7062;
+        background: #d5c4bc;
+        box-shadow: 0 10px 0 #8b7a72;
         cursor: not-allowed;
     }
 
     .back-link {
         display: block;
-        margin: 14px auto 0;
+        margin: 10px auto 0;
         background: transparent;
         border: none;
         color: #8a7a5c;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         cursor: pointer;
         text-decoration: underline;
         font-weight: 600;
@@ -313,66 +350,70 @@
     .back-link:hover { color: #a34f2b; }
 
     /* ===== Таблица рекордов ===== */
-    .records-card { padding: 24px 30px; text-align: left; }
+    .records-card { padding: 20px 24px; text-align: left; }
     .records-card h2 {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
         color: #a34f2b;
-        margin-bottom: 14px;
+        margin-bottom: 12px;
         text-align: center;
         letter-spacing: 1px;
         border-bottom: 3px dashed #d9a066;
-        padding-bottom: 10px;
+        padding-bottom: 8px;
     }
     .records-list {
         list-style: none;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
     }
     .records-list li {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 10px 14px;
+        gap: 10px;
+        padding: 8px 12px;
         background: #fffef9;
-        border-radius: 14px;
+        border-radius: 12px;
         border: 1.5px solid #ece0c2;
-        font-size: 1rem;
-        transition: transform 0.2s;
+        font-size: 0.9rem;
     }
-    .records-list li:hover { transform: translateX(4px); }
     .records-list li.gold {
         background: linear-gradient(135deg, #fff5d6, #ffe4a0);
         border-color: #f0b429;
         box-shadow: 0 4px 12px rgba(240, 180, 41, 0.3);
     }
     .records-list .place {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         font-weight: 900;
         color: #a34f2b;
-        min-width: 32px;
+        min-width: 28px;
         text-align: center;
     }
     .records-list .rec-avatar {
-        width: 36px; height: 36px;
+        width: 32px; height: 32px;
         border-radius: 50%;
+        overflow: hidden;
         background: linear-gradient(145deg, #ffe4b5, #f0b429);
         border: 2px solid #fff;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.3rem;
+        font-size: 1.1rem;
         flex-shrink: 0;
-        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    }
+    .records-list .rec-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
     }
     .records-list .rec-name { flex: 1; font-weight: 700; color: #4a3a24; }
     .records-list .rec-amount {
         font-weight: 800;
         color: #2d6a4f;
         background: #e8f6ec;
-        padding: 4px 12px;
+        padding: 3px 10px;
         border-radius: 20px;
-        font-size: 0.95rem;
+        font-size: 0.85rem;
         white-space: nowrap;
     }
     .records-list .rec-amount.negative { color: #a32635; background: #fde8ea; }
@@ -380,20 +421,20 @@
         text-align: center;
         color: #8a7a5c;
         font-style: italic;
-        padding: 16px;
+        padding: 14px;
         background: #fffef9;
-        border-radius: 14px;
+        border-radius: 12px;
         border: 2px dashed #e8d9b5;
     }
     .records-clear-btn {
         display: block;
-        margin: 14px auto 0;
+        margin: 10px auto 0;
         background: transparent;
         border: 2px dashed #d9a066;
         color: #a34f2b;
-        padding: 8px 20px;
+        padding: 6px 16px;
         border-radius: 20px;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-weight: 700;
         cursor: pointer;
         transition: all 0.2s;
@@ -403,108 +444,128 @@
     /* ===== Звонок ===== */
     .bell-container {
         position: fixed;
-        top: 25px; right: 25px;
+        top: 12px; right: 12px;
         z-index: 100;
         cursor: pointer;
         animation: bellSlideIn 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2);
     }
     .bell-icon {
-        width: 80px; height: 80px;
+        width: 60px; height: 60px;
         background: linear-gradient(145deg, #ffd966, #f0b429);
-        border: 4px solid #fff3d6;
+        border: 3px solid #fff3d6;
         border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
-        font-size: 2.4rem;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.45), 0 0 0 4px rgba(255,220,120,0.4);
+        font-size: 1.8rem;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.45), 0 0 0 3px rgba(255,220,120,0.4);
         animation: bellRing 1.5s ease-in-out infinite;
         position: relative;
         transition: transform 0.2s;
     }
     .bell-icon:hover { transform: scale(1.1); }
     .bell-badge {
-        position: absolute; top: -6px; right: -6px;
+        position: absolute; top: -4px; right: -4px;
         background: #e63946; color: #fff;
-        font-size: 1.1rem; font-weight: 800;
-        width: 32px; height: 32px; border-radius: 50%;
+        font-size: 0.9rem; font-weight: 800;
+        width: 24px; height: 24px; border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
-        border: 3px solid #fff;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+        border: 2px solid #fff;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
         animation: badgePulse 1s ease-in-out infinite;
     }
 
     /* ===== Верхняя панель ===== */
     .top-bar {
         position: fixed;
-        top: 25px; left: 25px;
+        top: 12px;
+        left: 12px;
+        right: 90px;
         display: flex;
-        gap: 10px;
+        gap: 6px;
         align-items: center;
         z-index: 90;
         flex-wrap: wrap;
-        max-width: 62%;
     }
     .player-badge {
         background: rgba(255, 248, 235, 0.97);
-        border: 3px solid #4a9c5e;
+        border: 2px solid #4a9c5e;
         border-radius: 50px;
-        padding: 5px 16px 5px 6px;
-        font-size: 0.95rem;
+        padding: 3px 12px 3px 4px;
+        font-size: 0.8rem;
         font-weight: 800;
         color: #2d6a4f;
-        box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 6px;
+        max-width: 130px;
     }
     .player-badge .player-avatar {
-        width: 36px; height: 36px;
+        width: 32px; height: 32px;
         border-radius: 50%;
-        background: linear-gradient(145deg, #ffe4b5, #f0b429);
+        overflow: hidden;
         border: 2px solid #fff;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.4rem;
-        box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        flex-shrink: 0;
+        background: #ffe4b5;
     }
+    .player-badge .player-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    .player-badge #playerNameLabel {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
     .level-badge {
         background: linear-gradient(145deg, #a34f2b, #7b3f00);
         color: #fff;
-        border: 3px solid #ffd9a0;
+        border: 2px solid #ffd9a0;
         border-radius: 50px;
-        padding: 8px 16px;
-        font-size: 0.9rem;
+        padding: 4px 12px;
+        font-size: 0.75rem;
         font-weight: 800;
-        box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         letter-spacing: 0.5px;
         text-transform: uppercase;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
+        white-space: nowrap;
     }
     .level-badge .level-num {
         background: #ffd966;
         color: #7b3f00;
         border-radius: 50%;
-        width: 26px; height: 26px;
+        width: 20px; height: 20px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 0.95rem;
+        font-size: 0.75rem;
         font-weight: 900;
+    }
+    .level-badge .streak-mini {
+        font-size: 0.65rem;
+        opacity: 0.9;
+        letter-spacing: 0;
     }
     .level-badge.bump { animation: levelBadgePop 0.6s ease; }
 
     .coins-display {
         background: rgba(255, 248, 235, 0.97);
-        border: 3px solid #f0b429;
+        border: 2px solid #f0b429;
         border-radius: 50px;
-        padding: 8px 16px;
-        font-size: 1.1rem;
+        padding: 4px 12px;
+        font-size: 0.85rem;
         font-weight: 800;
         color: #7b3f00;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-        transition: color 0.3s, border-color 0.3s, background 0.3s;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        white-space: nowrap;
     }
     .coins-display.negative {
         color: #e63946;
@@ -512,79 +573,49 @@
         background: #fde8ea;
     }
     .coins-display.bump { animation: coinsBump 0.4s ease; }
+
     .close-shift-btn {
         background: linear-gradient(145deg, #6a8caf, #4a6d8f);
         color: #fff;
-        border: 3px solid #cfe2f3;
+        border: 2px solid #cfe2f3;
         border-radius: 50px;
-        padding: 8px 18px;
-        font-size: 0.9rem;
+        padding: 5px 12px;
+        font-size: 0.75rem;
         font-weight: 800;
         letter-spacing: 0.5px;
         cursor: pointer;
-        box-shadow: 0 6px 0 #2f4d68;
+        box-shadow: 0 4px 0 #2f4d68;
         transition: transform 0.15s, box-shadow 0.2s;
         text-transform: uppercase;
+        white-space: nowrap;
     }
     .close-shift-btn:hover { transform: scale(1.04); }
-    .close-shift-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #2f4d68; }
+    .close-shift-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #2f4d68; }
 
     .sound-toggle {
         background: rgba(255, 248, 235, 0.97);
-        border: 3px solid #f0b429;
+        border: 2px solid #f0b429;
         border-radius: 50%;
-        width: 42px; height: 42px;
+        width: 30px; height: 30px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.2rem;
-        cursor: pointer;
-        box-shadow: 0 6px 16px rgba(0,0,0,0.35);
-        transition: transform 0.2s;
-    }
-    .sound-toggle:hover { transform: scale(1.08); }
-    .sound-toggle.muted { opacity: 0.55; }
-
-    /* ===== Прогресс ===== */
-    .progress-panel {
-        position: fixed;
-        top: 100px; left: 25px;
-        background: rgba(255, 248, 235, 0.97);
-        border: 3px solid #f0b429;
-        border-radius: 50px;
-        padding: 8px 18px;
         font-size: 0.9rem;
-        font-weight: 700;
-        color: #7b3f00;
-        box-shadow: 0 6px 16px rgba(0,0,0,0.35);
-        z-index: 90;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        flex-shrink: 0;
     }
-    .progress-panel .progress-dots { display: flex; gap: 5px; }
-    .progress-panel .dot {
-        width: 12px; height: 12px;
-        border-radius: 50%;
-        background: #e0d5b8;
-        border: 2px solid #c9b88f;
-        transition: all 0.3s;
-    }
-    .progress-panel .dot.filled {
-        background: #4a9c5e;
-        border-color: #2d6a4f;
-        box-shadow: 0 0 8px rgba(74, 156, 94, 0.6);
-        transform: scale(1.15);
-    }
+    .sound-toggle.muted { opacity: 0.55; }
 
     /* ===== Игровая зона ===== */
     .game-area {
         display: none;
-        grid-template-columns: 1fr 360px;
-        gap: 24px;
+        grid-template-columns: 1fr 320px;
+        gap: 14px;
         max-width: 1200px;
-        margin: 130px auto 40px;
+        margin: 70px auto 8px;
         align-items: start;
+        height: calc(100vh - 82px);
     }
     .game-area.active { display: grid; }
 
@@ -592,7 +623,7 @@
     .receipt {
         background: #fffdf5;
         border-radius: 8px 8px 24px 24px;
-        padding: 44px 30px 26px;
+        padding: 28px 20px 18px;
         box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px #e8d9b5;
         position: relative;
         font-family: 'Courier New', monospace;
@@ -603,110 +634,111 @@
             96% 12px, 100% 0, 100% 100%, 0 100%
         );
         animation: receiptDrop 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+        overflow-y: auto;
+        max-height: 100%;
     }
     .receipt h2 {
-        font-size: 1.6rem;
+        font-size: 1.3rem;
         text-align: center;
         color: #a34f2b;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
         letter-spacing: 2px;
     }
     .receipt .shop-name {
         text-align: center;
-        font-size: 0.95rem;
+        font-size: 0.72rem;
         color: #8a7a5c;
-        margin-bottom: 22px;
-        letter-spacing: 2px;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
     }
     .receipt .cashier-line {
         text-align: center;
-        font-size: 0.85rem;
+        font-size: 0.72rem;
         color: #8a7a5c;
-        margin-bottom: 14px;
+        margin-bottom: 10px;
         font-family: 'Courier New', monospace;
     }
     .receipt .cashier-line strong { color: #a34f2b; font-weight: 800; }
 
     .task-banner {
         background: linear-gradient(135deg, #ffe4b5, #f7c35c);
-        border: 3px dashed #b45f3b;
-        border-radius: 16px;
-        padding: 14px 18px;
-        margin-bottom: 18px;
+        border: 2px dashed #b45f3b;
+        border-radius: 12px;
+        padding: 8px 14px;
+        margin-bottom: 10px;
         text-align: center;
         font-family: 'Segoe UI', sans-serif;
     }
     .task-banner .task-label {
         display: block;
-        font-size: 0.85rem;
+        font-size: 0.68rem;
         text-transform: uppercase;
         letter-spacing: 2px;
         color: #7b3f00;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
     }
     .task-banner .task-text {
-        font-size: 1.15rem;
+        font-size: 0.95rem;
         font-weight: 800;
         color: #422b18;
     }
 
     .receipt-row {
         display: grid;
-        grid-template-columns: 70px 1fr 90px 130px;
+        grid-template-columns: 58px 1fr 82px 108px;
         align-items: center;
-        gap: 10px;
-        padding: 12px 6px;
+        gap: 8px;
+        padding: 8px 4px;
         border-bottom: 1px dashed #ece0c2;
         font-family: 'Segoe UI', sans-serif;
     }
     .receipt-row:last-of-type { border-bottom: none; }
 
     .product-sticker {
-        width: 64px; height: 64px;
+        width: 54px; height: 54px;
         border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
-        font-size: 2.2rem;
+        font-size: 1.8rem;
         box-shadow: 0 6px 14px rgba(0,0,0,0.25), inset 0 -4px 8px rgba(0,0,0,0.15);
         border: 3px solid #fff;
         flex-shrink: 0;
         animation: stickerPop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.4);
     }
 
-    .product-info .product-name { font-weight: 800; font-size: 1.05rem; color: #3e2c1b; }
+    .product-info .product-name { font-weight: 800; font-size: 0.95rem; color: #3e2c1b; }
 
     .qty-block { text-align: center; }
     .qty-block .qty-label {
-        font-size: 0.75rem;
+        font-size: 0.65rem;
         text-transform: uppercase;
         color: #8a7a5c;
         letter-spacing: 1px;
+        margin-bottom: 2px;
     }
-    .qty-block .qty-value { font-size: 1.15rem; font-weight: 800; color: #4a3a24; }
-    .qty-block .qty-value.unknown { color: #e63946; font-size: 1.4rem; }
+    .qty-block .qty-value { font-size: 1rem; font-weight: 800; color: #4a3a24; }
 
     .answer-field { position: relative; }
     .answer-field .field-label {
         position: absolute;
-        top: -8px; left: 8px;
+        top: -7px; left: 6px;
         background: #fffdf5;
-        padding: 0 6px;
-        font-size: 0.7rem;
+        padding: 0 5px;
+        font-size: 0.6rem;
         color: #8a7a5c;
         text-transform: uppercase;
         letter-spacing: 1px;
         font-family: 'Courier New', monospace;
         border-radius: 4px;
     }
-    /* Поля ввода БЕЗ стрелочек */
     .answer-field input {
         width: 100%;
-        padding: 12px 12px 10px;
+        padding: 9px 8px 8px;
         font-family: 'Courier New', monospace;
-        font-size: 1.2rem;
+        font-size: 1rem;
         font-weight: 800;
         text-align: center;
         border: 2.5px solid #d9c9a0;
-        border-radius: 12px;
+        border-radius: 10px;
         background: #fffef9;
         color: #3e2c1b;
         outline: none;
@@ -728,91 +760,122 @@
     .answer-field input.wrong { border-color: #e63946; background: #fde8ea; animation: shake 0.4s; }
     .answer-field input.needs-fill { border-color: #f0b429; background: #fff5d6; animation: pulseField 0.6s ease; }
 
+    .qty-answer { width: 100%; }
+    .qty-answer input {
+        width: 100%;
+        padding: 8px 6px 7px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.95rem;
+        font-weight: 800;
+        text-align: center;
+        border: 2.5px solid #d9c9a0;
+        border-radius: 10px;
+        background: #fffef9;
+        color: #3e2c1b;
+        outline: none;
+        transition: border-color 0.2s, background 0.2s;
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+    .qty-answer input::-webkit-outer-spin-button,
+    .qty-answer input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    .qty-answer input:focus {
+        border-color: #f0b429;
+        background: #fffbe8;
+        box-shadow: 0 0 0 3px rgba(240, 180, 41, 0.3);
+    }
+    .qty-answer input.correct { border-color: #4a9c5e; background: #e8f6ec; }
+    .qty-answer input.wrong { border-color: #e63946; background: #fde8ea; animation: shake 0.4s; }
+    .qty-answer input.needs-fill { border-color: #f0b429; background: #fff5d6; animation: pulseField 0.6s ease; }
+
     .total-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-top: 20px;
-        padding: 14px 16px;
+        margin-top: 12px;
+        padding: 10px 14px;
         background: #f5ecd4;
-        border-radius: 14px;
+        border-radius: 12px;
         border: 2px solid #e8d9b5;
     }
-    .total-row label { font-size: 1.15rem; font-weight: 800; color: #7b3f00; letter-spacing: 1px; }
-    .total-row .answer-field { width: 160px; }
+    .total-row label { font-size: 1rem; font-weight: 800; color: #7b3f00; letter-spacing: 1px; }
+    .total-row .answer-field { width: 130px; }
 
     .checkout-btn {
         display: block;
         width: 100%;
-        margin-top: 20px;
-        padding: 16px;
-        font-size: 1.3rem;
+        margin-top: 12px;
+        padding: 12px;
+        font-size: 1.1rem;
         font-weight: 800;
         letter-spacing: 1px;
         text-transform: uppercase;
-        color: #fff;
-        background: linear-gradient(145deg, #e76f51, #c9532f);
-        border: 3px solid #ffd9c9;
-        border-radius: 14px;
+        color: #5a2828;
+        background: linear-gradient(145deg, #f5b8b8, #e89898);
+        border: 3px solid #fbd9d9;
+        border-radius: 12px;
         cursor: pointer;
-        box-shadow: 0 8px 0 #8b3a1f, 0 10px 20px rgba(0,0,0,0.3);
+        box-shadow: 0 6px 0 #a86b6b, 0 8px 16px rgba(0,0,0,0.3);
         transition: transform 0.15s, box-shadow 0.2s;
     }
-    .checkout-btn:hover:not(:disabled) { background: linear-gradient(145deg, #f07f61, #d9633f); transform: scale(1.02); }
-    .checkout-btn:active:not(:disabled) { transform: translateY(5px); box-shadow: 0 3px 0 #8b3a1f; }
-    .checkout-btn:disabled { background: #bdb3a0; box-shadow: 0 8px 0 #7a7062; cursor: not-allowed; }
+    .checkout-btn:hover:not(:disabled) { background: linear-gradient(145deg, #ffc9c9, #f0a8a8); transform: scale(1.02); }
+    .checkout-btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 2px 0 #a86b6b; }
+    .checkout-btn:disabled { background: #d5c4bc; box-shadow: 0 6px 0 #8b7a72; cursor: not-allowed; }
 
     /* ===== Панель кассира ===== */
     .cashier-panel {
         background: rgba(255, 248, 235, 0.97);
-        border: 4px solid #f0b429;
-        border-radius: 24px;
-        padding: 22px 20px;
+        border: 3px solid #f0b429;
+        border-radius: 20px;
+        padding: 14px 12px;
         box-shadow: 0 16px 30px rgba(0,0,0,0.45), 0 0 0 2px #fff3d6 inset;
-        position: sticky;
-        top: 20px;
+        height: 100%;
+        overflow-y: auto;
     }
     .cashier-panel h3 {
-        font-size: 1.2rem;
+        font-size: 1rem;
         color: #a34f2b;
         text-align: center;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
         letter-spacing: 1px;
     }
     .cashier-panel .subtitle {
         text-align: center;
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         color: #8a7a5c;
-        margin-bottom: 16px;
+        margin-bottom: 10px;
         letter-spacing: 1px;
         text-transform: uppercase;
     }
-    .price-list { display: grid; grid-template-columns: 1fr; gap: 10px; list-style: none; }
+    .price-list { display: grid; grid-template-columns: 1fr; gap: 6px; list-style: none; }
     .price-list li {
-        display: flex; align-items: center; gap: 12px;
-        padding: 8px 12px 8px 8px;
+        display: flex; align-items: center; gap: 8px;
+        padding: 6px 10px 6px 6px;
         background: #fffef9;
-        border-radius: 16px;
+        border-radius: 12px;
         border: 1.5px solid #ece0c2;
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition: transform 0.2s;
     }
-    .price-list li:hover { transform: translateX(-4px); box-shadow: -4px 4px 12px rgba(0,0,0,0.1); }
+    .price-list li:hover { transform: translateX(-3px); }
     .price-list .mini-sticker {
-        width: 46px; height: 46px;
+        width: 36px; height: 36px;
         border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
-        font-size: 1.6rem;
+        font-size: 1.3rem;
         border: 2px solid #fff;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 3px 6px rgba(0,0,0,0.2);
         flex-shrink: 0;
     }
-    .price-list .p-name { font-weight: 700; color: #4a3a24; font-size: 0.95rem; flex: 1; }
+    .price-list .p-name { font-weight: 700; color: #4a3a24; font-size: 0.85rem; flex: 1; }
     .price-list .p-price {
         font-weight: 800; color: #a34f2b;
         background: #ffe4b5;
-        padding: 5px 14px;
+        padding: 3px 10px;
         border-radius: 20px;
-        font-size: 1rem;
+        font-size: 0.85rem;
         border: 1px solid #dfa86a;
         white-space: nowrap;
     }
@@ -823,23 +886,23 @@
         top: 50%; left: 50%;
         transform: translate(-50%, -50%) scale(0.8);
         background: #fff;
-        padding: 30px 45px;
-        border-radius: 24px;
+        padding: 24px 36px;
+        border-radius: 20px;
         box-shadow: 0 25px 60px rgba(0,0,0,0.5);
-        font-size: 1.4rem;
+        font-size: 1.2rem;
         font-weight: 700;
         text-align: center;
         z-index: 500;
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.3s, transform 0.3s;
-        max-width: 440px;
+        max-width: 400px;
     }
     .toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
     .toast.success { border: 4px solid #4a9c5e; color: #2d6a4f; }
     .toast.error { border: 4px solid #e63946; color: #a32635; }
     .toast.info { border: 4px solid #f0b429; color: #7b3f00; }
-    .toast .emoji { font-size: 3rem; display: block; margin-bottom: 10px; }
+    .toast .emoji { font-size: 2.5rem; display: block; margin-bottom: 8px; }
 
     /* ===== Недовольный клиент ===== */
     .angry-customer-overlay {
@@ -856,50 +919,50 @@
     .angry-customer {
         background: linear-gradient(160deg, #fff0f0, #ffe0e0);
         border: 5px solid #e63946;
-        border-radius: 32px;
-        padding: 30px 36px;
-        max-width: 460px;
+        border-radius: 28px;
+        padding: 26px 30px;
+        max-width: 420px;
         width: 100%;
         text-align: center;
         box-shadow: 0 25px 60px rgba(0,0,0,0.6);
         animation: angryShake 0.5s ease, popIn 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.4);
     }
     .angry-customer .angry-emoji {
-        font-size: 5rem;
+        font-size: 4rem;
         display: block;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
         animation: angryHeadShake 0.6s ease infinite alternate;
     }
     .angry-customer .speech {
         background: #fff;
         border: 3px dashed #e63946;
-        border-radius: 20px;
-        padding: 16px 20px;
-        font-size: 1.2rem;
+        border-radius: 18px;
+        padding: 14px 18px;
+        font-size: 1.1rem;
         font-weight: 700;
         color: #a32635;
-        margin: 14px 0 18px;
-        line-height: 1.5;
+        margin: 12px 0 16px;
+        line-height: 1.4;
     }
     .angry-customer .penalty {
         background: #e63946;
         color: #fff;
-        font-size: 1.4rem;
+        font-size: 1.3rem;
         font-weight: 800;
-        padding: 12px 20px;
-        border-radius: 16px;
-        margin-bottom: 18px;
+        padding: 10px 18px;
+        border-radius: 14px;
+        margin-bottom: 16px;
         letter-spacing: 0.5px;
         box-shadow: 0 6px 0 #8b1e2b;
     }
-    .angry-customer .penalty .amount { font-size: 1.7rem; display: inline-block; }
+    .angry-customer .penalty .amount { font-size: 1.5rem; display: inline-block; }
     .angry-customer .accept-btn {
         background: linear-gradient(145deg, #6a8caf, #4a6d8f);
         color: #fff;
         border: 3px solid #cfe2f3;
         border-radius: 50px;
-        padding: 14px 40px;
-        font-size: 1.15rem;
+        padding: 12px 34px;
+        font-size: 1.05rem;
         font-weight: 800;
         cursor: pointer;
         box-shadow: 0 8px 0 #2f4d68;
@@ -920,16 +983,18 @@
         display: none;
         align-items: center;
         justify-content: center;
-        padding: 20px;
+        padding: 16px;
     }
     .letter-overlay.show { display: flex; animation: fadeIn 0.4s ease; }
     .letter {
         background: linear-gradient(160deg, #fffdf5, #f5e9c8);
         border: 4px solid #b45f3b;
         border-radius: 20px;
-        padding: 36px 40px 30px;
-        max-width: 520px;
+        padding: 30px 32px 26px;
+        max-width: 500px;
         width: 100%;
+        max-height: 92vh;
+        overflow-y: auto;
         box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 0 3px #f7d9aa inset;
         animation: letterPop 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2);
         position: relative;
@@ -938,57 +1003,57 @@
     .letter::before {
         content: '';
         position: absolute;
-        top: 18px; left: 30px; right: 30px;
+        top: 16px; left: 26px; right: 26px;
         height: 2px;
         background: repeating-linear-gradient(90deg, transparent 0 8px, #d9a066 8px 16px);
     }
     .letter .stamp {
         position: absolute;
-        top: 10px; right: 20px;
-        font-size: 3rem;
+        top: 8px; right: 16px;
+        font-size: 2.4rem;
         transform: rotate(-15deg);
         filter: drop-shadow(0 3px 4px rgba(0,0,0,0.3));
         animation: stampSpin 1s ease;
     }
     .letter .letter-header {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         text-transform: uppercase;
         color: #8a7a5c;
         letter-spacing: 3px;
-        margin-bottom: 8px;
-        margin-top: 8px;
+        margin-bottom: 6px;
+        margin-top: 6px;
     }
     .letter h2 {
-        font-size: 1.7rem;
+        font-size: 1.4rem;
         color: #a34f2b;
-        margin-bottom: 16px;
+        margin-bottom: 12px;
         letter-spacing: 1px;
         text-shadow: 2px 2px 0 #f0d5b0;
     }
     .letter .letter-greeting {
-        font-size: 1.15rem;
+        font-size: 1rem;
         color: #7b3f00;
         font-weight: 800;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
         text-align: left;
     }
     .letter .letter-body {
-        font-size: 1.05rem;
+        font-size: 0.95rem;
         color: #4a3a24;
-        line-height: 1.7;
-        margin-bottom: 20px;
+        line-height: 1.6;
+        margin-bottom: 16px;
         text-align: left;
         background: rgba(255, 248, 235, 0.7);
         border-left: 4px solid #d9a066;
-        padding: 16px 18px;
+        padding: 12px 16px;
         border-radius: 8px;
     }
     .letter .letter-body strong { color: #7b3f00; }
     .letter .letter-sign {
         font-style: italic;
         color: #8a7a5c;
-        font-size: 1rem;
-        margin-bottom: 20px;
+        font-size: 0.9rem;
+        margin-bottom: 16px;
         text-align: right;
     }
     .letter .level-up-info {
@@ -996,27 +1061,27 @@
         align-items: center;
         justify-content: center;
         gap: 12px;
-        margin-bottom: 22px;
+        margin-bottom: 18px;
         background: #f5ecd4;
         border: 2px dashed #b45f3b;
         border-radius: 16px;
-        padding: 14px 18px;
+        padding: 12px 16px;
     }
     .letter .level-up-info .info-item { text-align: center; }
     .letter .level-up-info .info-label {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         text-transform: uppercase;
         color: #8a7a5c;
         letter-spacing: 1px;
     }
-    .letter .level-up-info .info-value { font-size: 1.5rem; font-weight: 800; color: #a34f2b; }
+    .letter .level-up-info .info-value { font-size: 1.3rem; font-weight: 800; color: #a34f2b; }
     .letter .accept-level-btn {
         background: linear-gradient(145deg, #f0b87b, #e09b4a);
         color: #3b1e0a;
         border: 3px solid #ffefd0;
         border-radius: 50px;
-        padding: 14px 40px;
-        font-size: 1.15rem;
+        padding: 12px 34px;
+        font-size: 1.05rem;
         font-weight: 800;
         cursor: pointer;
         box-shadow: 0 8px 0 #8b5a2b;
@@ -1037,17 +1102,19 @@
         display: none;
         align-items: center;
         justify-content: center;
-        padding: 20px;
+        padding: 16px;
         overflow-y: auto;
     }
     .shift-summary.show { display: flex; animation: fadeIn 0.4s ease; }
     .summary-card {
         background: linear-gradient(160deg, #fffdf5, #f5ecd4);
         border: 5px solid #f0b429;
-        border-radius: 32px;
-        padding: 32px 36px;
-        max-width: 540px;
+        border-radius: 28px;
+        padding: 26px 30px;
+        max-width: 500px;
         width: 100%;
+        max-height: 92vh;
+        overflow-y: auto;
         box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 0 4px #fff3d6 inset;
         animation: popIn 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.3);
         text-align: center;
@@ -1056,54 +1123,60 @@
     .summary-card .summary-avatar {
         width: 90px; height: 90px;
         border-radius: 50%;
-        background: linear-gradient(145deg, #ffe4b5, #f0b429);
+        overflow: hidden;
+        background: #ffe4b5;
         border: 4px solid #fff;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 3.5rem;
-        margin: 0 auto 12px;
+        margin: 0 auto 10px;
         box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
+    .summary-card .summary-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
     .summary-card h2 {
-        font-size: 1.7rem;
+        font-size: 1.5rem;
         color: #a34f2b;
         margin-bottom: 4px;
         letter-spacing: 1px;
     }
     .summary-card .summary-sub {
-        font-size: 1rem;
+        font-size: 0.9rem;
         color: #8a7a5c;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
         letter-spacing: 1px;
     }
     .summary-stats {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-bottom: 18px;
+        gap: 8px;
+        margin-bottom: 14px;
     }
     .stat-box {
         background: #fffef9;
         border: 2px solid #e8d9b5;
-        border-radius: 16px;
-        padding: 12px 10px;
+        border-radius: 14px;
+        padding: 10px 8px;
         text-align: center;
     }
-    .stat-box .stat-emoji { font-size: 1.6rem; display: block; margin-bottom: 4px; }
+    .stat-box .stat-emoji { font-size: 1.3rem; display: block; margin-bottom: 2px; }
     .stat-box .stat-value {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
         font-weight: 800;
         color: #4a3a24;
         display: block;
         line-height: 1.1;
     }
     .stat-box .stat-label {
-        font-size: 0.7rem;
+        font-size: 0.65rem;
         color: #8a7a5c;
         text-transform: uppercase;
         letter-spacing: 1px;
-        margin-top: 4px;
+        margin-top: 3px;
         display: block;
     }
     .stat-box.good { border-color: #4a9c5e; background: #e8f6ec; }
@@ -1118,39 +1191,39 @@
     .summary-result {
         background: #f5ecd4;
         border: 3px dashed #b45f3b;
-        border-radius: 18px;
-        padding: 16px;
-        margin-bottom: 18px;
+        border-radius: 16px;
+        padding: 14px;
+        margin-bottom: 14px;
     }
     .summary-result .result-label {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         color: #7b3f00;
         text-transform: uppercase;
         letter-spacing: 2px;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
     }
-    .summary-result .result-value { font-size: 1.9rem; font-weight: 800; }
+    .summary-result .result-value { font-size: 1.6rem; font-weight: 800; }
     .summary-result .result-value.positive { color: #2d6a4f; }
     .summary-result .result-value.negative { color: #a32635; }
     .summary-result .result-message {
-        font-size: 0.95rem;
+        font-size: 0.85rem;
         color: #6b5c3e;
-        margin-top: 8px;
-        line-height: 1.4;
+        margin-top: 6px;
+        line-height: 1.3;
     }
 
     .summary-buttons {
         display: flex;
-        gap: 10px;
+        gap: 8px;
         justify-content: center;
         flex-wrap: wrap;
     }
     .summary-card .restart-btn, .summary-card .finish-btn {
         flex: 1;
-        min-width: 160px;
+        min-width: 130px;
         border-radius: 50px;
-        padding: 14px 24px;
-        font-size: 1.05rem;
+        padding: 12px 18px;
+        font-size: 0.95rem;
         font-weight: 800;
         cursor: pointer;
         transition: transform 0.15s, box-shadow 0.2s;
@@ -1158,13 +1231,13 @@
         letter-spacing: 1px;
     }
     .summary-card .restart-btn {
-        background: linear-gradient(145deg, #f0b87b, #e09b4a);
-        color: #3b1e0a;
-        border: 3px solid #ffefd0;
-        box-shadow: 0 8px 0 #8b5a2b;
+        background: linear-gradient(145deg, #f5d0c0, #e8a898);
+        color: #5a2828;
+        border: 3px solid #fbe6d6;
+        box-shadow: 0 8px 0 #a86b5b;
     }
     .summary-card .restart-btn:hover { transform: scale(1.04); }
-    .summary-card .restart-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #8b5a2b; }
+    .summary-card .restart-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #a86b5b; }
 
     .summary-card .finish-btn {
         background: linear-gradient(145deg, #6a8caf, #4a6d8f);
@@ -1229,56 +1302,87 @@
     }
 
     /* ===== Адаптивность ===== */
-    @media (max-width: 1000px) {
-        .game-area { grid-template-columns: 1fr; }
-        .cashier-panel { position: static; }
-        .top-bar { max-width: 75%; }
+    @media (max-width: 1100px) {
+        .game-area { grid-template-columns: 1fr 280px; }
+        .receipt-row { grid-template-columns: 52px 1fr 74px 100px; gap: 6px; padding: 7px 3px; }
+        .product-sticker { width: 48px; height: 48px; font-size: 1.6rem; border-width: 2px; }
+        .product-info .product-name { font-size: 0.85rem; }
+        .answer-field input { padding: 8px 6px 7px; font-size: 0.9rem; }
+        .qty-answer input { padding: 7px 5px 6px; font-size: 0.85rem; }
+    }
+    @media (max-width: 900px) {
+        .top-bar { right: 78px; gap: 4px; }
+        .game-area {
+            grid-template-columns: 1fr 250px;
+            gap: 10px;
+            margin: 64px auto 6px;
+            height: calc(100vh - 74px);
+        }
+        .receipt { padding: 22px 14px 12px; }
+        .receipt-row { grid-template-columns: 46px 1fr 66px 90px; gap: 5px; padding: 6px 2px; }
+        .product-sticker { width: 42px; height: 42px; font-size: 1.4rem; }
+        .product-info .product-name { font-size: 0.78rem; }
+        .answer-field input { padding: 7px 5px 6px; font-size: 0.85rem; }
+        .qty-answer input { padding: 6px 4px 5px; font-size: 0.8rem; }
+        .checkout-btn { padding: 10px; font-size: 1rem; }
+        .total-row { padding: 8px 10px; }
+        .total-row .answer-field { width: 110px; }
+        .cashier-panel { padding: 10px 8px; }
+        .price-list li { padding: 4px 8px 4px 4px; }
+        .price-list .mini-sticker { width: 30px; height: 30px; font-size: 1.1rem; }
+        .price-list .p-name { font-size: 0.78rem; }
+        .price-list .p-price { font-size: 0.78rem; padding: 2px 8px; }
+        .character-option .char-avatar { width: 90px; height: 90px; }
     }
     @media (max-width: 700px) {
-        .start-card, .records-card, .rules-card { padding: 22px 18px; }
-        .start-card h1 { font-size: 1.5rem; }
-        .welcome-title { font-size: 2rem; }
-        .welcome-title .sub { font-size: 1rem; }
-        .start-btn { font-size: 1.5rem; padding: 18px 48px; }
-        .character-grid { gap: 10px; }
-        .character-option { padding: 14px 6px 10px; }
-        .character-option .char-emoji { font-size: 2.8rem; }
+        .start-card, .records-card, .rules-card { padding: 20px 16px; border-width: 4px; }
+        .start-card h1 { font-size: 1.3rem; }
+        .welcome-title { font-size: 1.8rem; }
+        .welcome-title .sub { font-size: 0.9rem; }
+        .start-btn { font-size: 1.3rem; padding: 14px 40px; }
+        .character-grid { gap: 8px; }
+        .character-option { padding: 12px 6px 10px; border-radius: 20px; }
+        .character-option .char-avatar { width: 76px; height: 76px; border-width: 3px; margin-bottom: 6px; }
         .character-option .char-label { font-size: 0.85rem; }
-        .character-option .char-sub { font-size: 0.7rem; }
-        .records-card h2 { font-size: 1.2rem; }
-        .records-list li { padding: 8px 10px; font-size: 0.9rem; }
-        .rules-card h2 { font-size: 1.5rem; }
-        .rules-card p, .rules-card ul { font-size: 0.95rem; }
+        .character-option .char-sub { display: none; }
+        .character-option.selected::after { width: 22px; height: 22px; font-size: 0.85rem; top: 5px; right: 6px; }
+        .game-area {
+            grid-template-columns: 1fr 220px;
+            gap: 8px;
+        }
+        .receipt h2 { font-size: 1.1rem; }
+        .receipt .shop-name { font-size: 0.65rem; }
+        .task-banner { padding: 6px 10px; }
+        .task-banner .task-text { font-size: 0.85rem; }
+        .receipt-row { grid-template-columns: 40px 1fr 60px 80px; gap: 4px; padding: 5px 2px; }
+        .product-sticker { width: 36px; height: 36px; font-size: 1.2rem; }
+        .product-info .product-name { font-size: 0.7rem; }
+        .qty-block .qty-label { font-size: 0.55rem; }
+        .qty-block .qty-value { font-size: 0.85rem; }
+        .answer-field .field-label { font-size: 0.55rem; top: -6px; }
+        .answer-field input { padding: 6px 4px 5px; font-size: 0.8rem; border-width: 2px; }
+        .qty-answer input { padding: 5px 3px 4px; font-size: 0.78rem; border-width: 2px; }
+        .checkout-btn { padding: 9px; font-size: 0.9rem; }
+        .cashier-panel h3 { font-size: 0.9rem; }
+        .cashier-panel .subtitle { font-size: 0.65rem; }
+        .price-list .mini-sticker { width: 26px; height: 26px; font-size: 0.95rem; }
+        .price-list .p-name { font-size: 0.7rem; }
+        .price-list .p-price { font-size: 0.7rem; padding: 2px 6px; }
     }
-    @media (max-width: 600px) {
-        body { padding: 10px; }
-        .bell-icon { width: 60px; height: 60px; font-size: 1.8rem; }
-        .coins-display { font-size: 0.85rem; padding: 6px 12px; }
-        .close-shift-btn { font-size: 0.7rem; padding: 5px 10px; }
-        .level-badge { font-size: 0.7rem; padding: 5px 10px; }
-        .level-badge .level-num { width: 20px; height: 20px; font-size: 0.8rem; }
-        .player-badge { font-size: 0.75rem; padding: 4px 10px 4px 5px; }
-        .player-badge .player-avatar { width: 28px; height: 28px; font-size: 1.1rem; }
-        .sound-toggle { width: 36px; height: 36px; font-size: 1rem; }
-        .top-bar { gap: 4px; }
-        .progress-panel { font-size: 0.7rem; padding: 6px 10px; top: 100px; }
-        .progress-panel .dot { width: 10px; height: 10px; }
-        .receipt { padding: 30px 14px 20px; }
-        .receipt-row { grid-template-columns: 50px 1fr 70px 100px; gap: 6px; padding: 10px 2px; }
-        .product-sticker { width: 46px; height: 46px; font-size: 1.6rem; border-width: 2px; }
-        .product-info .product-name { font-size: 0.9rem; }
-        .answer-field input { font-size: 1rem; padding: 8px 6px; }
-        .checkout-btn { font-size: 1.05rem; padding: 14px; }
-        .summary-stats { grid-template-columns: 1fr 1fr; gap: 8px; }
-        .stat-box .stat-value { font-size: 1.2rem; }
-        .summary-card { padding: 20px 16px; }
-        .summary-card h2 { font-size: 1.3rem; }
-        .angry-customer { padding: 22px 20px; }
-        .angry-customer .angry-emoji { font-size: 4rem; }
-        .letter { padding: 24px 20px; }
-        .letter h2 { font-size: 1.4rem; }
-        .letter .letter-body { font-size: 0.95rem; padding: 12px 14px; }
-        .letter .stamp { font-size: 2.2rem; right: 10px; }
+    @media (max-width: 500px) {
+        .top-bar { right: 70px; }
+        .player-badge { max-width: 90px; }
+        .player-badge .player-avatar { width: 26px; height: 26px; }
+        .player-badge { font-size: 0.7rem; }
+        .level-badge { font-size: 0.65rem; padding: 3px 8px; }
+        .level-badge .level-num { width: 18px; height: 18px; font-size: 0.65rem; }
+        .coins-display { font-size: 0.75rem; padding: 3px 8px; }
+        .close-shift-btn { font-size: 0.65rem; padding: 3px 8px; }
+        .sound-toggle { width: 26px; height: 26px; font-size: 0.8rem; }
+        .bell-icon { width: 50px; height: 50px; font-size: 1.5rem; }
+        .bell-badge { width: 20px; height: 20px; font-size: 0.75rem; }
+        .game-area { grid-template-columns: 1fr 190px; }
+        .character-option .char-avatar { width: 62px; height: 62px; }
     }
 </style>
 </head>
@@ -1313,7 +1417,7 @@
             <li>За правильный чек получаешь <strong>монеты</strong>. За ошибку — <strong>штраф</strong> из своей копилки!</li>
         </ul>
         <div class="rules-emoji-row">🍬 🍫 🧁 🍩 🍭</div>
-        <p style="font-size: 1rem; color: #6b5c3e;">
+        <p style="font-size: 0.9rem; color: #6b5c3e;">
             💰 Чем больше правильных ответов, тем выше уровень и больше монет!
         </p>
         <button class="shift-begin-btn" id="shiftBeginBtn">🔄 Начать смену</button>
@@ -1335,17 +1439,23 @@
             <label><span class="label-emoji">🎭</span> За кого будешь играть?</label>
             <div class="character-grid" id="characterGrid">
                 <div class="character-option" data-character="girl" data-emoji="👧">
-                    <span class="char-emoji">👧</span>
+                    <div class="char-avatar">
+                        <img src="https://i.pinimg.com/736x/53/96/52/539652339193b559144114e8a36bb844.jpg" alt="Девочка">
+                    </div>
                     <div class="char-label">Девочка</div>
                     <div class="char-sub">Аккуратная и умная</div>
                 </div>
                 <div class="character-option" data-character="boy" data-emoji="👦">
-                    <span class="char-emoji">👦</span>
+                    <div class="char-avatar">
+                        <img src="https://i.pinimg.com/736x/a3/c8/0d/a3c80db8cc0edfa2fba9ff2b620dc959.jpg" alt="Мальчик">
+                    </div>
                     <div class="char-label">Мальчик</div>
                     <div class="char-sub">Быстрый и смелый</div>
                 </div>
                 <div class="character-option" data-character="granny" data-emoji="👵">
-                    <span class="char-emoji">👵</span>
+                    <div class="char-avatar">
+                        <img src="https://i.pinimg.com/736x/64/d4/b3/64d4b3a2f73698ffb1d284f2783c4caa.jpg" alt="Старушка">
+                    </div>
                     <div class="char-label">Старушка</div>
                     <div class="char-sub">Мудрая и опытная</div>
                 </div>
@@ -1366,24 +1476,16 @@
 <!-- ===== ВЕРХНЯЯ ПАНЕЛЬ ===== -->
 <div class="top-bar" id="topBar" style="display:none;">
     <div class="player-badge" id="playerBadge">
-        <div class="player-avatar" id="playerAvatar">👧</div>
+        <div class="player-avatar" id="playerAvatar"></div>
         <span id="playerNameLabel">Имя</span>
     </div>
     <div class="level-badge" id="levelBadge">
-        Уровень <span class="level-num" id="levelNum">1</span>
+        Ур. <span class="level-num" id="levelNum">1</span>
+        <span class="streak-mini" id="streakLabel">0/3</span>
     </div>
-    <div class="coins-display" id="coinsDisplay">💰 Монеты: 0</div>
-    <div class="sound-toggle" id="soundToggle" title="Звук вкл/выкл">🔊</div>
-    <button class="close-shift-btn" id="closeShiftBtn">🔒 Закрыть смену</button>
-</div>
-
-<div class="progress-panel" id="progressPanel" style="display:none;">
-    <span>До след. уровня:</span>
-    <div class="progress-dots" id="progressDots">
-        <div class="dot"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
-    </div>
+    <div class="coins-display" id="coinsDisplay">💰 0</div>
+    <div class="sound-toggle" id="soundToggle" title="Звук">🔊</div>
+    <button class="close-shift-btn" id="closeShiftBtn">🔒 Закрыть</button>
 </div>
 
 <div class="bell-container" id="bellContainer" style="display:none;" title="Покупатель ждёт!">
@@ -1419,7 +1521,7 @@
 
     <aside class="cashier-panel">
         <h3>📋 ПРАЙС-ЛИСТ</h3>
-        <div class="subtitle">Ассортимент магазина</div>
+        <div class="subtitle">Ассортимент</div>
         <ul class="price-list" id="priceList"></ul>
     </aside>
 </div>
@@ -1453,7 +1555,7 @@
             </div>
             <div class="info-item">
                 <div class="info-label">Что нового</div>
-                <div class="info-value" id="newLevelFeature" style="font-size: 0.95rem; color: #7b3f00;">
+                <div class="info-value" id="newLevelFeature" style="font-size: 0.85rem; color: #7b3f00;">
                     Сложнее заказы
                 </div>
             </div>
@@ -1466,7 +1568,7 @@
 <!-- ===== ИТОГ СМЕНЫ ===== -->
 <div class="shift-summary" id="shiftSummary">
     <div class="summary-card">
-        <div class="summary-avatar" id="summaryAvatar">👧</div>
+        <div class="summary-avatar" id="summaryAvatar"></div>
         <h2 id="summaryTitle">СМЕНА ЗАКРЫТА</h2>
         <div class="summary-sub" id="summarySub">Итоги рабочего дня</div>
 
@@ -1517,6 +1619,11 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- ===== ОТЛАДОЧНАЯ ПАНЕЛЬ (можно удалить после проверки) ===== -->
+<div id="debugPanel" style="position:fixed;bottom:4px;left:4px;background:rgba(0,0,0,0.85);color:#0f0;font-family:monospace;font-size:11px;padding:6px 10px;border-radius:8px;z-index:9999;max-width:300px;line-height:1.4;pointer-events:none;">
+    Debug: ожидание...
+</div>
 
 <script>
 (function() {
@@ -1618,6 +1725,16 @@
     };
     const PRODUCT_KEYS = Object.keys(PRODUCTS);
 
+    // Карта картинок персонажей
+    const CHAR_IMAGES = {
+        girl:   'https://i.pinimg.com/736x/53/96/52/539652339193b559144114e8a36bb844.jpg',
+        boy:    'https://i.pinimg.com/736x/a3/c8/0d/a3c80db8cc0edfa2fba9ff2b620dc959.jpg',
+        granny: 'https://i.pinimg.com/736x/64/d4/b3/64d4b3a2f73698ffb1d284f2783c4caa.jpg'
+    };
+    function getCharImageSrc(char) {
+        return CHAR_IMAGES[char] || CHAR_IMAGES.girl;
+    }
+
     const LEVELS = [
         { num: 1, name: 'Новичок', prices: [5, 10, 15, 20], maxItems: 3, taskTypes: ['sum'], reward: 10, penalty: 5 },
         { num: 2, name: 'Популярность растёт', prices: [5, 6, 7, 8, 10, 12, 15], maxItems: 3, taskTypes: ['sum', 'sum', 'qty'], reward: 12, penalty: 8 },
@@ -1703,7 +1820,6 @@
     const beginBtn         = document.getElementById('beginBtn');
     const topBar           = document.getElementById('topBar');
     const gameArea         = document.getElementById('gameArea');
-    const progressPanel    = document.getElementById('progressPanel');
     const bellContainer    = document.getElementById('bellContainer');
     const playerAvatar     = document.getElementById('playerAvatar');
     const playerNameLabel  = document.getElementById('playerNameLabel');
@@ -1727,7 +1843,7 @@
     const finishBtn        = document.getElementById('finishBtn');
     const levelNum         = document.getElementById('levelNum');
     const levelBadge       = document.getElementById('levelBadge');
-    const progressDots     = document.getElementById('progressDots').children;
+    const streakLabel      = document.getElementById('streakLabel');
     const letterOverlay    = document.getElementById('letterOverlay');
     const letterTitle      = document.getElementById('letterTitle');
     const letterBody       = document.getElementById('letterBody');
@@ -1742,6 +1858,7 @@
     const soundToggle      = document.getElementById('soundToggle');
     const recordsList      = document.getElementById('recordsList');
     const clearRecordsBtn  = document.getElementById('clearRecordsBtn');
+    const debugPanel       = document.getElementById('debugPanel');
 
     // ============================================================
     // ================ УТИЛИТЫ ===================================
@@ -1757,6 +1874,14 @@
         return a;
     }
     function getLevelConfig() { return LEVELS[currentLevel - 1]; }
+
+    // ЕДИНЫЙ источник правды для цен
+    function applyPricesForLevel() {
+        const config = getLevelConfig();
+        PRODUCT_KEYS.forEach((key, i) => {
+            PRODUCTS[key].price = config.prices[i % config.prices.length];
+        });
+    }
 
     // ============================================================
     // ================ ЗВУК ======================================
@@ -1804,9 +1929,11 @@
             if (i === 0) li.classList.add('gold');
             const place = i < 3 ? medals[i] : `${i + 1}.`;
             const amountClass = r.coins >= 0 ? '' : 'negative';
+            const charKey = r.char || (r.emoji === '👦' ? 'boy' : r.emoji === '👵' ? 'granny' : 'girl');
+            const imgSrc = getCharImageSrc(charKey);
             li.innerHTML = `
                 <span class="place">${place}</span>
-                <div class="rec-avatar">${r.emoji}</div>
+                <div class="rec-avatar"><img src="${imgSrc}" alt="${r.name}"></div>
                 <span class="rec-name">${r.name}</span>
                 <span class="rec-amount ${amountClass}">${r.coins >= 0 ? '+' : ''}${r.coins} 💰</span>
             `;
@@ -1814,9 +1941,9 @@
         });
     }
 
-    function addRecord(name, emoji, coins, level) {
+    function addRecord(name, emoji, char, coins, level) {
         const records = loadRecords();
-        records.push({ name, emoji, coins, level, date: new Date().toISOString() });
+        records.push({ name, emoji, char, coins, level, date: new Date().toISOString() });
         saveRecords(records.slice(-20));
     }
 
@@ -1905,17 +2032,18 @@
         playerName = nameInput.value.trim();
         savePlayer(playerName, playerChar, playerEmoji);
 
-        playerAvatar.textContent = playerEmoji;
+        // Устанавливаем аватар-картинку в верхней панели и в итогах
+        const charImgSrc = getCharImageSrc(playerChar);
+        playerAvatar.innerHTML = `<img src="${charImgSrc}" alt="${playerName}">`;
         playerNameLabel.textContent = playerName;
         cashierNameInReceipt.textContent = `${playerEmoji} ${playerName}`;
-        summaryAvatar.textContent = playerEmoji;
+        summaryAvatar.innerHTML = `<img src="${charImgSrc}" alt="${playerName}">`;
 
         showScreen(null);
 
         document.body.classList.add('shift-active');
         topBar.style.display = 'flex';
         gameArea.classList.add('active');
-        progressPanel.style.display = 'flex';
         bellContainer.style.display = 'block';
 
         coins = 0;
@@ -1924,11 +2052,12 @@
         stats = { served: 0, happy: 0, angry: 0, earned: 0, penalties: 0 };
         shiftRecorded = false;
         levelNum.textContent = '1';
+        updateProgress();
 
         Sound.click();
+        applyPricesForLevel();
         renderPriceList();
         updateCoinsDisplay();
-        updateProgress();
         newClient();
         bellBadge.textContent = '1';
 
@@ -1950,16 +2079,15 @@
         }
 
         const chosenKeys = shuffle(PRODUCT_KEYS).slice(0, numItems);
-        const availablePrices = config.prices;
 
         const items = chosenKeys.map(key => {
             const product = PRODUCTS[key];
             const maxQty = currentLevel >= 3 ? 7 : 5;
             const qty = randInt(2, maxQty);
-            const price = pick(availablePrices);
+            const price = product.price;
             return {
                 productKey: key,
-                product: { ...product, price },
+                product: { ...product },
                 qty, price,
                 total: price * qty,
                 unknown: null
@@ -1997,16 +2125,11 @@
     }
 
     // ============================================================
-    // ================ РЕНДЕР ====================================
+    // ================ РЕНДЕР ПРАЙС-ЛИСТА ========================
     // ============================================================
     function renderPriceList() {
+        applyPricesForLevel();
         priceList.innerHTML = '';
-        const config = getLevelConfig();
-        const assignedPrices = {};
-        PRODUCT_KEYS.forEach((key, i) => {
-            assignedPrices[key] = config.prices[i % config.prices.length];
-        });
-        PRODUCT_KEYS.forEach(key => { PRODUCTS[key].price = assignedPrices[key]; });
 
         Object.values(PRODUCTS).forEach(p => {
             const li = document.createElement('li');
@@ -2019,6 +2142,9 @@
         });
     }
 
+    // ============================================================
+    // ================ РЕНДЕР ЧЕКА ===============================
+    // ============================================================
     function renderReceipt() {
         receiptBody.innerHTML = '';
         taskText.textContent = currentTask.description;
@@ -2042,7 +2168,11 @@
             if (it.unknown === 'qty') {
                 qtyBlock.innerHTML = `
                     <div class="qty-label">Кол-во</div>
-                    <div class="qty-value unknown">?</div>
+                    <div class="answer-field qty-answer">
+                        <input type="text" inputmode="numeric" autocomplete="off"
+                               data-index="${index}" data-field="qty"
+                               value="" placeholder="?" maxlength="3">
+                    </div>
                 `;
             } else {
                 qtyBlock.innerHTML = `
@@ -2100,9 +2230,8 @@
             receiptBody.appendChild(row);
         });
 
-        // Итог
         if (currentTask.totalUnknown) {
-            totalLabel.textContent = 'ИТОГО (посчитай сам):';
+            totalLabel.textContent = 'ИТОГО:';
             totalInput.disabled = false;
             totalInput.value = '';
             totalInput.placeholder = '?';
@@ -2113,13 +2242,25 @@
         }
 
         checkoutBtn.disabled = false;
+
+        // ОТЛАДКА
+        setTimeout(() => {
+            if (!debugPanel || !currentTask) return;
+            const lines = [];
+            lines.push(`Тип: <b>${currentTask.type}</b>`);
+            currentTask.items.forEach((it, i) => {
+                lines.push(`#${i} ${it.product.name} | цена=${it.price} | кол=${it.qty} | стоим=${it.total} | искать=${it.unknown || '—'}`);
+            });
+            lines.push(`ИТОГО ожид=${currentTask.grandTotal} ${currentTask.totalUnknown ? '(искать)' : ''}`);
+            debugPanel.innerHTML = lines.join('<br>');
+            debugPanel.style.color = '#0f0';
+        }, 50);
     }
 
     // ============================================================
     // ================ ПРОВЕРКА ОТВЕТОВ ==========================
     // ============================================================
     function readNumber(inputEl) {
-        // Читаем только цифры из значения, преобразуем в число
         const raw = String(inputEl.value || '').replace(/[^0-9]/g, '');
         if (raw === '') return null;
         return parseInt(raw, 10);
@@ -2128,6 +2269,7 @@
     function checkAnswers() {
         let errorsCount = 0;
         const inputs = receiptBody.querySelectorAll('input:not([disabled])');
+        const log = ['=== ПРОВЕРКА ==='];
 
         inputs.forEach(inp => {
             const index = Number(inp.dataset.index);
@@ -2138,6 +2280,9 @@
             let correctValue = null;
             if (field === 'total') correctValue = it.total;
             else if (field === 'price') correctValue = it.price;
+            else if (field === 'qty')   correctValue = it.qty;
+
+            log.push(`idx=${index} field=${field} ввод="${inp.value}"(${userValue}) ожид=${correctValue} ${userValue === correctValue ? '✅' : '❌'}`);
 
             inp.classList.remove('correct', 'wrong', 'needs-fill');
 
@@ -2152,12 +2297,18 @@
         if (!totalInput.disabled) {
             totalInput.classList.remove('correct', 'wrong', 'needs-fill');
             const userTotal = readNumber(totalInput);
+            log.push(`ИТОГО ввод="${totalInput.value}"(${userTotal}) ожид=${currentTask.grandTotal} ${userTotal === currentTask.grandTotal ? '✅' : '❌'}`);
             if (userTotal === currentTask.grandTotal) {
                 totalInput.classList.add('correct');
             } else {
                 totalInput.classList.add('wrong');
                 errorsCount++;
             }
+        }
+
+        if (debugPanel) {
+            debugPanel.innerHTML = log.join('<br>');
+            debugPanel.style.color = errorsCount === 0 ? '#0f0' : '#f66';
         }
 
         return { allCorrect: errorsCount === 0, errorsCount };
@@ -2174,7 +2325,7 @@
     }
 
     function updateCoinsDisplay(bump = false) {
-        coinsDisplay.textContent = `💰 Монеты: ${coins}`;
+        coinsDisplay.textContent = `💰 ${coins}`;
         coinsDisplay.classList.toggle('negative', coins < 0);
         if (bump) {
             coinsDisplay.classList.remove('bump');
@@ -2185,10 +2336,8 @@
 
     function updateProgress() {
         const filled = correctStreak % 3;
-        const displayFilled = filled === 0 && correctStreak > 0 ? 0 : filled;
-        for (let i = 0; i < progressDots.length; i++) {
-            progressDots[i].classList.toggle('filled', i < displayFilled);
-        }
+        const display = (correctStreak > 0 && filled === 0) ? 0 : filled;
+        if (streakLabel) streakLabel.textContent = `${display}/3`;
     }
 
     // ============================================================
@@ -2277,15 +2426,14 @@
     }
 
     // ============================================================
-    // ================ ФИЛЬТР ВВОДА: ТОЛЬКО ЦИФРЫ ================
+    // ================ ФИЛЬТР ВВОДА ==============================
     // ============================================================
     document.addEventListener('input', (e) => {
-        if (e.target.matches('.answer-field input')) {
-            const cleaned = e.target.value.replace(/[^0-9]/g, '');
+        if (e.target.matches('.answer-field input, .qty-answer input')) {
+            const cleaned = e.target.value.replace(/[^0-9]/g, '').slice(0, 3);
             if (cleaned !== e.target.value) {
                 e.target.value = cleaned;
             }
-            // Сбрасываем подсветку при редактировании
             e.target.classList.remove('correct', 'wrong', 'needs-fill');
         }
     });
@@ -2294,19 +2442,16 @@
     // ================ ПРОБИТЬ ЧЕК ===============================
     // ============================================================
     checkoutBtn.addEventListener('click', () => {
-        // Очищаем ввод от мусора
         const allInputs = [
             ...receiptBody.querySelectorAll('input:not([disabled])'),
             ...(!totalInput.disabled ? [totalInput] : [])
         ];
         allInputs.forEach(inp => { inp.value = String(inp.value).replace(/[^0-9]/g, ''); });
 
-        // Проверяем пустые поля
         const emptyInputs = [...receiptBody.querySelectorAll('input:not([disabled])')]
-            .filter(inp => inp.value === '');
-        const totalEmpty = !totalInput.disabled && totalInput.value === '';
+            .filter(inp => String(inp.value).trim() === '');
+        const totalEmpty = !totalInput.disabled && String(totalInput.value).trim() === '';
 
-        // Если есть пустые — подсветить и попросить заполнить (БЕЗ ШТРАФА!)
         if (emptyInputs.length > 0 || totalEmpty) {
             emptyInputs.forEach(inp => {
                 inp.classList.remove('needs-fill');
@@ -2324,7 +2469,7 @@
             showToast(
                 `<span class="emoji">✍️</span>
                  Заполни все поля!<br>
-                 <span style="font-size:1rem;color:#6b5c3e;">Введи числа с клавиатуры.</span>`,
+                 <span style="font-size:0.95rem;color:#6b5c3e;">Введи числа с клавиатуры.</span>`,
                 'info', 2200
             );
             Sound.errorBuzz();
@@ -2349,7 +2494,7 @@
             showToast(
                 `<span class="emoji">🎉</span>
                  Клиент доволен!<br>
-                 <span style="font-size:1rem;color:#6b5c3e;">+${config.reward} монет</span>`,
+                 <span style="font-size:0.95rem;color:#6b5c3e;">+${config.reward} монет</span>`,
                 'success', 2000
             );
             checkoutBtn.disabled = true;
@@ -2381,7 +2526,7 @@
         document.getElementById('statLevel').textContent = currentLevel;
         document.getElementById('statPenalties').textContent = stats.penalties;
 
-        summaryAvatar.textContent = playerEmoji;
+        summaryAvatar.innerHTML = `<img src="${getCharImageSrc(playerChar)}" alt="${playerName}">`;
         summaryTitle.textContent = `${playerName}, смена закрыта!`;
         summarySub.textContent = `Твой уровень: «${LEVELS[currentLevel - 1].name}»`;
 
@@ -2403,7 +2548,7 @@
         }
 
         if (!shiftRecorded && stats.served > 0) {
-            addRecord(playerName, playerEmoji, coins, currentLevel);
+            addRecord(playerName, playerEmoji, playerChar, coins, currentLevel);
             shiftRecorded = true;
         }
 
@@ -2421,6 +2566,7 @@
         updateCoinsDisplay();
         updateProgress();
         shiftSummary.classList.remove('show');
+        applyPricesForLevel();
         renderPriceList();
         newClient();
     });
@@ -2437,7 +2583,6 @@
         document.body.classList.remove('shift-active');
         topBar.style.display = 'none';
         gameArea.classList.remove('active');
-        progressPanel.style.display = 'none';
         bellContainer.style.display = 'none';
 
         showScreen(welcomeScreen);
@@ -2449,6 +2594,7 @@
     // ============================================================
     restorePlayer();
     updateSoundIcon();
+    applyPricesForLevel();
 
 })();
 </script>
