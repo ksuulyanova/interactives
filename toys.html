@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Магазин игрушек: цвета и числа</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        body {
+            background: linear-gradient(145deg, #fde8cd 0%, #f7d9aa 100%);
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 8px;
+        }
+        .game-container {
+            background: #fff6e9;
+            border-radius: 32px;
+            box-shadow: 0 14px 24px rgba(0, 0, 0, 0.2), inset 0 2px 6px rgba(255, 255, 255, 0.8);
+            padding: 14px 20px 18px;
+            width: 100%;
+            height: 100%;
+            max-width: 1400px;
+            max-height: 820px;
+            border: 4px solid #e6c8a6;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        h1 {
+            text-align: center;
+            font-size: clamp(1.4rem, 2.6vh, 2rem);
+            font-weight: 700;
+            color: #a1582e;
+            text-shadow: 2px 2px 0 #f0d5b0;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        h1 span {
+            font-size: clamp(1.6rem, 3vh, 2.4rem);
+        }
+
+        .shop-layout {
+            display: flex;
+            gap: 16px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* Стеллаж */
+        .shelves-section {
+            flex: 1.8;
+            background: #c7a27b;
+            border-radius: 26px;
+            padding: 10px 10px 8px;
+            box-shadow: inset 0 -6px 0 #8b6b4a, 0 8px 14px rgba(0, 0, 0, 0.18);
+            border: 2px solid #a5835e;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 0;
+            overflow-y: auto;
+        }
+        .shelf-row {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: #b58e66;
+            padding: 5px 8px;
+            border-radius: 12px;
+            box-shadow: inset 0 -3px 0 #7a5d3f, 0 2px 4px rgba(0, 0, 0, 0.15);
+            gap: 6px;
+            border: 2px solid #9f7a53;
+            min-height: 0;
+            flex-shrink: 0;
+        }
+        .toy-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: grab;
+            transition: transform 0.1s ease;
+            filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, 0.2));
+            flex: 0 1 auto;
+            min-width: 0;
+        }
+        .toy-item:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+        .toy-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.9);
+        }
+        .toy-icon {
+            font-size: clamp(1.3rem, 3.2vh, 1.9rem);
+            line-height: 1;
+            transition: transform 0.1s;
+        }
+        .toy-label {
+            background: #fef7e9;
+            border-radius: 16px;
+            padding: 2px 7px;
+            font-size: clamp(0.52rem, 1vh, 0.65rem);
+            font-weight: 700;
+            color: #4a2e1b;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+            margin-top: 2px;
+            border: 1px solid #dbbd9a;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        /* Правая колонка: список + корзина */
+        .cart-section {
+            flex: 1.1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 0;
+            min-width: 240px;
+        }
+
+        /* Список покупок сверху */
+        .shopping-card {
+            background: #fffbee;
+            border-radius: 22px;
+            padding: 10px 14px;
+            border: 3px dashed #c49a6c;
+            box-shadow: 0 6px 0 #b58b5e, 0 6px 12px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .shopping-card h2 {
+            margin: 0 0 8px 0;
+            font-size: clamp(0.9rem, 1.7vh, 1.15rem);
+            color: #7b4f2b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-bottom: 2px solid #e7cfb5;
+            padding-bottom: 4px;
+            line-height: 1.2;
+        }
+        .shopping-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .shopping-list li {
+            background: #f5e5d2;
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-size: clamp(0.72rem, 1.5vh, 0.95rem);
+            font-weight: 600;
+            color: #322011;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 2px solid #dbbd9a;
+            transition: all 0.2s;
+            box-shadow: 0 2px 0 #b3926e;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+        .shopping-list li.completed {
+            background: #d4edc9;
+            border-color: #7fb073;
+            color: #2a5c1e;
+            text-decoration: line-through;
+            opacity: 0.85;
+            box-shadow: 0 2px 0 #5f8f53;
+        }
+        .shopping-list li .checkmark {
+            margin-left: auto;
+            font-size: clamp(0.85rem, 1.6vh, 1.1rem);
+            color: #2f7a1f;
+        }
+
+        /* Корзина снизу */
+        .basket-area {
+            background: #c9a77b;
+            border-radius: 22px;
+            padding: 10px 12px;
+            box-shadow: inset 0 -6px 0 #8a6949, 0 6px 12px rgba(0, 0, 0, 0.18);
+            border: 2px solid #a5835e;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .basket-area h3 {
+            margin: 0 0 6px 0;
+            color: #3e2c1c;
+            font-size: clamp(0.9rem, 1.7vh, 1.15rem);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-shadow: 1px 1px 0 #e9d3b8;
+            line-height: 1.2;
+            flex-shrink: 0;
+        }
+        .basket-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: center;
+            align-content: flex-start;
+            background: #b58e66;
+            border-radius: 16px;
+            padding: 8px;
+            border: 2px solid #9f7a53;
+            transition: background 0.2s;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+        }
+        .basket-items.drag-over {
+            background: #dbbd8a;
+            border-color: #f3e0b0;
+            box-shadow: inset 0 0 0 3px #f7e9c1;
+        }
+        .basket-toy {
+            font-size: clamp(1.3rem, 3.5vh, 2.2rem);
+            filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, 0.2));
+            animation: pop 0.3s ease;
+            line-height: 1;
+        }
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .empty-basket-msg {
+            color: #4d3623;
+            font-style: italic;
+            font-weight: 500;
+            text-align: center;
+            width: 100%;
+            opacity: 0.8;
+            font-size: clamp(0.75rem, 1.4vh, 0.9rem);
+            align-self: center;
+        }
+
+        /* Сообщение + кнопка */
+        .bottom-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .message-box {
+            flex: 1;
+            text-align: center;
+            font-size: clamp(0.8rem, 1.6vh, 1.1rem);
+            font-weight: 600;
+            min-height: 1.8em;
+            color: #6b3f1c;
+            transition: 0.2s;
+            line-height: 1.2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .win-message {
+            color: #1d7e2b;
+            font-size: clamp(0.95rem, 1.9vh, 1.3rem);
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(255, 255, 200, 0.8);
+        }
+        .button-reset {
+            background: #f3c26b;
+            border: none;
+            border-radius: 30px;
+            padding: 8px 16px;
+            font-size: clamp(0.8rem, 1.5vh, 1rem);
+            font-weight: 700;
+            color: #3e2a13;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #b57c2e, 0 3px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            letter-spacing: 0.5px;
+            border: 1px solid #e7b15e;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .button-reset:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #b57c2e, 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <h1>
+        <span>🧸</span> Toy Shop <span>🛒</span>
+    </h1>
+    <div class="shop-layout">
+        <!-- Полки с игрушками -->
+        <div class="shelves-section" id="shelvesSection"></div>
+
+        <!-- Правая колонка: список покупок + корзина -->
+        <div class="cart-section">
+            <div class="shopping-card">
+                <h2>📋 Shopping list</h2>
+                <ul class="shopping-list" id="shoppingList"></ul>
+            </div>
+            <div class="basket-area">
+                <h3>🛒 Basket</h3>
+                <div class="basket-items" id="basketItems">
+                    <div class="empty-basket-msg">Drag toys here</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bottom-controls">
+        <div class="message-box" id="messageBox"></div>
+        <button class="button-reset" id="resetBtn">🔄 New game</button>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ---------- ДАННЫЕ ----------
+        const TOY_TYPES = [
+            { name: 'lorry', label: 'Lorry', emoji: '🚚' },
+            { name: 'ball', label: 'Ball', emoji: '⚽' },
+            { name: 'robot', label: 'Robot', emoji: '🤖' },
+            { name: 'teddy', label: 'Teddy', emoji: '🧸' },
+            { name: 'car', label: 'Car', emoji: '🚗' },
+            { name: 'doll', label: 'Doll', emoji: '🪆' },
+            { name: 'kite', label: 'Kite', emoji: '🪁' },
+            { name: 'train', label: 'Train', emoji: '🚂' }
+        ];
+
+        const COLORS = [
+            { name: 'red', label: 'red', hex: '#e63946' },
+            { name: 'blue', label: 'blue', hex: '#1e6091' },
+            { name: 'yellow', label: 'yellow', hex: '#f4d03f' },
+            { name: 'green', label: 'green', hex: '#2a9d8f' },
+            { name: 'orange', label: 'orange', hex: '#f39c12' },
+            { name: 'purple', label: 'purple', hex: '#9b59b6' }
+        ];
+
+        function generateAllToys() {
+            const toys = [];
+            for (let color of COLORS) {
+                for (let type of TOY_TYPES) {
+                    toys.push({
+                        id: `${color.name}-${type.name}`,
+                        color: color.name,
+                        colorLabel: color.label,
+                        colorHex: color.hex,
+                        type: type.name,
+                        typeLabel: type.label,
+                        emoji: type.emoji,
+                    });
+                }
+            }
+            return toys;
+        }
+
+        const ALL_TOYS = generateAllToys();
+
+        // ---------- СОСТОЯНИЕ ----------
+        let currentShoppingList = [];
+        let basketItems = [];
+        let draggedToyId = null;
+
+        const shelvesSection = document.getElementById('shelvesSection');
+        const shoppingListEl = document.getElementById('shoppingList');
+        const basketItemsEl = document.getElementById('basketItems');
+        const messageBox = document.getElementById('messageBox');
+        const resetBtn = document.getElementById('resetBtn');
+
+        function getToyById(id) {
+            return ALL_TOYS.find(t => t.id === id);
+        }
+
+        function checkWin() {
+            if (currentShoppingList.length === 0) return false;
+            const allDone = currentShoppingList.every(item => item.collected >= item.count);
+            if (allDone) {
+                messageBox.innerHTML = '🎉 Great job! You did it! 🎉';
+                messageBox.classList.add('win-message');
+            } else {
+                messageBox.classList.remove('win-message');
+                messageBox.innerHTML = '';
+            }
+            return allDone;
+        }
+
+        function numberToWord(n) {
+            const words = ['zero', 'one', 'two', 'three', 'four', 'five'];
+            return words[n] || n;
+        }
+
+        function renderShoppingList() {
+            shoppingListEl.innerHTML = '';
+            currentShoppingList.forEach((item) => {
+                const li = document.createElement('li');
+                const isCompleted = item.collected >= item.count;
+                li.className = isCompleted ? 'completed' : '';
+                const countWord = numberToWord(item.count);
+                const plural = item.count > 1 ? 's' : '';
+                li.innerHTML = `
+                    <span>${countWord} ${item.color} ${item.typeLabel.toLowerCase()}${plural}</span>
+                    ${isCompleted ? '<span class="checkmark">✅</span>' : ''}
+                `;
+                shoppingListEl.appendChild(li);
+            });
+        }
+
+        function renderBasket() {
+            basketItemsEl.innerHTML = '';
+            if (basketItems.length === 0) {
+                basketItemsEl.innerHTML = '<div class="empty-basket-msg">Drag toys here</div>';
+                return;
+            }
+            basketItems.forEach((toy) => {
+                const span = document.createElement('span');
+                span.className = 'basket-toy';
+                span.textContent = toy.emoji;
+                span.style.filter = `drop-shadow(1px 2px 2px rgba(0,0,0,0.2))`;
+                span.title = `${toy.colorLabel} ${toy.typeLabel}`;
+                basketItemsEl.appendChild(span);
+            });
+        }
+
+        function renderShelves() {
+            // Перемешаем игрушки
+            const shuffled = [...ALL_TOYS].sort(() => Math.random() - 0.5);
+            const totalToys = shuffled.length; // 48 игрушек
+            const perRow = 5; // не более 5 игрушек на полке
+            const rowsCount = Math.ceil(totalToys / perRow); // 10 полок
+
+            shelvesSection.innerHTML = '';
+            for (let r = 0; r < rowsCount; r++) {
+                const rowToys = shuffled.slice(r * perRow, (r + 1) * perRow);
+                if (rowToys.length === 0) continue;
+
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'shelf-row';
+                rowToys.forEach(toy => {
+                    const toyEl = document.createElement('div');
+                    toyEl.className = 'toy-item';
+                    toyEl.setAttribute('draggable', 'true');
+                    toyEl.dataset.toyId = toy.id;
+                    toyEl.innerHTML = `
+                        <div class="toy-icon">${toy.emoji}</div>
+                        <div class="toy-label" style="background: ${toy.colorHex}20; border-color: ${toy.colorHex}">${toy.colorLabel} ${toy.typeLabel}</div>
+                    `;
+                    toyEl.addEventListener('dragstart', handleDragStart);
+                    toyEl.addEventListener('dragend', handleDragEnd);
+                    rowDiv.appendChild(toyEl);
+                });
+                shelvesSection.appendChild(rowDiv);
+            }
+        }
+
+        function handleDragStart(e) {
+            const toyEl = e.target.closest('.toy-item');
+            if (!toyEl) return;
+            const toyId = toyEl.dataset.toyId;
+            draggedToyId = toyId;
+            e.dataTransfer.setData('text/plain', toyId);
+            e.dataTransfer.effectAllowed = 'move';
+            toyEl.classList.add('dragging');
+        }
+
+        function handleDragEnd(e) {
+            const toyEl = e.target.closest('.toy-item');
+            if (toyEl) toyEl.classList.remove('dragging');
+        }
+
+        function setupBasketDropZone() {
+            basketItemsEl.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                basketItemsEl.classList.add('drag-over');
+            });
+            basketItemsEl.addEventListener('dragleave', () => {
+                basketItemsEl.classList.remove('drag-over');
+            });
+            basketItemsEl.addEventListener('drop', (e) => {
+                e.preventDefault();
+                basketItemsEl.classList.remove('drag-over');
+                const toyId = e.dataTransfer.getData('text/plain') || draggedToyId;
+                if (!toyId) return;
+                const toy = getToyById(toyId);
+                if (!toy) return;
+
+                const listItem = currentShoppingList.find(item =>
+                    item.color === toy.color && item.type === toy.type && item.collected < item.count
+                );
+
+                if (listItem) {
+                    basketItems.push(toy);
+                    listItem.collected += 1;
+                    renderBasket();
+                    renderShoppingList();
+                    checkWin();
+                } else {
+                    messageBox.innerHTML = `❌ "${toy.colorLabel} ${toy.typeLabel}" not needed!`;
+                    setTimeout(() => {
+                        if (!checkWin()) messageBox.innerHTML = '';
+                    }, 1500);
+                }
+                draggedToyId = null;
+            });
+        }
+
+        function generateShoppingList() {
+            const list = [];
+            const itemCount = 3 + Math.floor(Math.random() * 2);
+            const usedCombos = new Set();
+
+            for (let i = 0; i < itemCount; i++) {
+                let color, type;
+                let comboKey;
+                let attempts = 0;
+                do {
+                    color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                    type = TOY_TYPES[Math.floor(Math.random() * TOY_TYPES.length)];
+                    comboKey = `${color.name}-${type.name}`;
+                    attempts++;
+                } while (usedCombos.has(comboKey) && attempts < 50);
+                usedCombos.add(comboKey);
+
+                const count = Math.floor(Math.random() * 3) + 1;
+
+                list.push({
+                    color: color.name,
+                    colorLabel: color.label,
+                    type: type.name,
+                    typeLabel: type.label,
+                    count: count,
+                    collected: 0,
+                });
+            }
+            return list;
+        }
+
+        function resetGame() {
+            currentShoppingList = generateShoppingList();
+            basketItems = [];
+            draggedToyId = null;
+            messageBox.innerHTML = '';
+            messageBox.classList.remove('win-message');
+            renderShoppingList();
+            renderBasket();
+            renderShelves();
+            checkWin();
+        }
+
+        function init() {
+            resetGame();
+            setupBasketDropZone();
+            document.addEventListener('dragend', () => {
+                draggedToyId = null;
+            });
+            resetBtn.addEventListener('click', resetGame);
+        }
+
+        window.addEventListener('DOMContentLoaded', init);
+    })();
+</script>
+</body>
+</html>
