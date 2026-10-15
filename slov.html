@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Словарные слова — игра</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    color: #333;
+  }
+
+  .game {
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    padding: 32px;
+    max-width: 640px;
+    width: 100%;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 26px;
+    color: #4a3f8f;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  .progress-bar {
+    height: 10px;
+    background: #eee;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  .stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 24px;
+  }
+
+  .stats span b { color: #4a3f8f; }
+
+  .word-box {
+    background: #f7f7ff;
+    border-radius: 16px;
+    padding: 36px 20px;
+    margin-bottom: 24px;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .word {
+    font-size: 42px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: #333;
+    line-height: 1.4;
+  }
+
+  .word .missing {
+    color: #e74c3c;
+    border-bottom: 4px solid #e74c3c;
+    padding: 0 6px;
+  }
+
+  .hint {
+    font-size: 15px;
+    color: #888;
+    margin-bottom: 20px;
+    min-height: 22px;
+  }
+
+  .options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .option-btn {
+    padding: 18px 10px;
+    font-size: 24px;
+    font-weight: 700;
+    border: 3px solid #ddd;
+    border-radius: 14px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #4a3f8f;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    border-color: #667eea;
+    background: #f0f0ff;
+    transform: translateY(-2px);
+  }
+
+  .option-btn.correct {
+    border-color: #27ae60;
+    background: #d4f8e0;
+    color: #27ae60;
+  }
+
+  .option-btn.wrong {
+    border-color: #e74c3c;
+    background: #fde0e0;
+    color: #e74c3c;
+  }
+
+  .option-btn:disabled { cursor: default; }
+
+  .feedback {
+    font-size: 20px;
+    font-weight: 600;
+    min-height: 30px;
+    margin-bottom: 16px;
+  }
+
+  .feedback.ok { color: #27ae60; }
+  .feedback.no { color: #e74c3c; }
+
+  .next-btn {
+    padding: 14px 40px;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .next-btn.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .next-btn:hover { transform: scale(1.05); }
+
+  .final-screen { display: none; }
+  .final-screen.show { display: block; }
+
+  .final-screen h2 {
+    font-size: 28px;
+    color: #4a3f8f;
+    margin-bottom: 12px;
+  }
+
+  .final-screen p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 24px;
+  }
+
+  .final-screen .big-score {
+    font-size: 56px;
+    font-weight: 800;
+    color: #667eea;
+    margin-bottom: 16px;
+  }
+
+  .restart-btn {
+    padding: 14px 40px;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .restart-btn:hover { transform: scale(1.05); }
+
+  .mode-select {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .mode-btn {
+    padding: 16px 24px;
+    font-size: 17px;
+    font-weight: 600;
+    border: 3px solid #667eea;
+    border-radius: 14px;
+    background: #fff;
+    color: #4a3f8f;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .mode-btn:hover {
+    background: #667eea;
+    color: #fff;
+    transform: translateY(-2px);
+  }
+
+  .total-info {
+    font-size: 14px;
+    color: #888;
+    margin-top: 16px;
+  }
+
+  @media (max-width: 480px) {
+    .game { padding: 20px; }
+    .word { font-size: 28px; letter-spacing: 2px; }
+    .option-btn { font-size: 20px; padding: 14px 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="game">
+  <!-- СТАРТОВЫЙ ЭКРАН -->
+  <div id="startScreen">
+    <h1>📚 Словарные слова</h1>
+    <p class="subtitle">2 и 3 класс — выбери правильную букву</p>
+
+    <div class="mode-select">
+      <button class="mode-btn" onclick="startGame(10)">🎯 Быстрая игра (10 слов)</button>
+      <button class="mode-btn" onclick="startGame(20)">📖 Средняя игра (20 слов)</button>
+      <button class="mode-btn" onclick="startGame(30)">🔥 Длинная игра (30 слов)</button>
+      <button class="mode-btn" onclick="startGame('all')">🏆 ВСЕ слова (полный список)</button>
+      <button class="mode-btn" onclick="startGame('grade2')">✏️ Только 2 класс</button>
+      <button class="mode-btn" onclick="startGame('grade3')">📗 Только 3 класс</button>
+    </div>
+
+    <p class="total-info" id="totalInfo"></p>
+  </div>
+
+  <!-- ИГРОВОЙ ЭКРАН -->
+  <div id="gameScreen" style="display:none;">
+    <h1>📚 Словарные слова</h1>
+    <p class="subtitle">Выбери пропущенную букву</p>
+
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="stats">
+      <span>Вопрос <b id="qNum">1</b> из <b id="qTotal">10</b></span>
+      <span>Счёт: <b id="score">0</b></span>
+    </div>
+
+    <div class="word-box">
+      <div class="word" id="wordDisplay"></div>
+    </div>
+
+    <div class="hint" id="hint"></div>
+
+    <div class="options" id="options"></div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Далее →</button>
+  </div>
+
+  <!-- ФИНАЛЬНЫЙ ЭКРАН -->
+  <div id="finalScreen" class="final-screen">
+    <h2>Игра завершена!</h2>
+    <div class="big-score" id="finalScore">0 / 0</div>
+    <p id="finalMessage"></p>
+    <button class="restart-btn" onclick="backToMenu()">В меню</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// ВСЕ СЛОВАРНЫЕ СЛОВА (2 и 3 класс)
+// ============================================================
+const WORDS_2_CLASS_1 = [
+  { word: "воробей", letter: "о", options: ["о","а","ы"] },
+  { word: "ворона", letter: "о", options: ["о","а","ы"] },
+  { word: "пенал", letter: "е", options: ["е","и","я"] },
+  { word: "карандаш", letter: "а", options: ["а","о","ы"] },
+  { word: "лисица", letter: "и", options: ["и","е","я"] },
+  { word: "сорока", letter: "о", options: ["о","а","ы"] },
+  { word: "собака", letter: "о", options: ["о","а","ы"] },
+  { word: "пальто", letter: "а", options: ["а","о","е"] },
+  { word: "весело", letter: "е", options: ["е","и","я"] },
+  { word: "хорошо", letter: "о", options: ["о","а","ы"] },
+  { word: "ученик", letter: "е", options: ["е","и","я"] },
+  { word: "ученица", letter: "е", options: ["е","и","я"] },
+  { word: "учитель", letter: "и", options: ["и","е","я"] },
+  { word: "деревня", letter: "е", options: ["е","и","я"] },
+  { word: "петух", letter: "е", options: ["е","и","я"] },
+  { word: "заяц", letter: "я", options: ["я","е","и"] },
+  { word: "корова", letter: "о", options: ["о","а","ы"] },
+  { word: "молоко", letter: "о", options: ["о","а","ы"] },
+  { word: "класс", letter: "а", options: ["а","о","е"] },
+  { word: "дежурный", letter: "е", options: ["е","и","я"] },
+  { word: "ребята", letter: "е", options: ["е","и","я"] },
+  { word: "тетрадь", letter: "е", options: ["е","и","я"] },
+  { word: "медведь", letter: "е", options: ["е","и","я"] },
+  { word: "работа", letter: "а", options: ["а","о","ы"] },
+  { word: "девочка", letter: "е", options: ["е","и","я"] },
+  { word: "машина", letter: "а", options: ["а","о","ы"] },
+  { word: "Москва", letter: "о", options: ["о","а","ы"] },
+  { word: "Здравствуй", letter: "в", options: ["в","ф","б"] },
+  { word: "Прощай", letter: "а", options: ["а","о","ы"] },
+  { word: "сентябрь", letter: "е", options: ["е","и","я"] },
+  { word: "родина", letter: "о", options: ["о","а","ы"] },
+  { word: "скоро", letter: "о", options: ["о","а","ы"] },
+  { word: "быстро", letter: "ы", options: ["ы","и","а"] },
+  { word: "ветер", letter: "е", options: ["е","и","я"] },
+  { word: "ветерок", letter: "е", options: ["е","и","я"] },
+  { word: "рисунок", letter: "и", options: ["и","е","я"] },
+  { word: "рисовать", letter: "и", options: ["и","е","я"] },
+  { word: "подлежащее", letter: "е", options: ["е","и","я"] },
+  { word: "сказуемое", letter: "а", options: ["а","о","ы"] },
+  { word: "яблоня", letter: "я", options: ["я","е","и"] },
+  { word: "яблоко", letter: "я", options: ["я","е","и"] },
+  { word: "берёза", letter: "е", options: ["е","и","я"] },
+  { word: "лопата", letter: "о", options: ["о","а","ы"] },
+  { word: "ягода", letter: "я", options: ["я","е","и"] },
+  { word: "дорога", letter: "о", options: ["о","а","ы"] },
+  { word: "синонимы", letter: "и", options: ["и","е","я"] },
+  { word: "осина", letter: "о", options: ["о","а","ы"] },
+  { word: "антонимы", letter: "а", options: ["а","о","ы"] },
+  { word: "до свидания", letter: "о", options: ["о","а","ы"] },
+  { word: "сахар", letter: "а", options: ["а","о","ы"] },
+  { word: "извини(те)", letter: "и", options: ["и","е","я"] },
+  { word: "капуста", letter: "а", options: ["а","о","ы"] },
+  { word: "жёлтый", letter: "ё", options: ["ё","о","е"] },
+  { word: "посуда", letter: "о", options: ["о","а","ы"] },
+  { word: "октябрь", letter: "о", options: ["о","а","ы"] },
+  { word: "алфавит", letter: "а", options: ["а","о","ы"] },
+  { word: "ноябрь", letter: "о", options: ["о","а","ы"] },
+  { word: "одежда", letter: "о", options: ["о","а","ы"] },
+  { word: "снегирь", letter: "е", options: ["е","и","я"] },
+  { word: "лягушка", letter: "я", options: ["я","е","и"] },
+  { word: "земляника", letter: "е", options: ["е","и","я"] },
+  { word: "малина", letter: "а", options: ["а","о","ы"] },
+  { word: "молоток", letter: "о", options: ["о","а","ы"] },
+  { word: "мороз", letter: "о", options: ["о","а","ы"] },
+  { word: "урожай", letter: "о", options: ["о","а","ы"] },
+  { word: "суббота", letter: "б", options: ["б","п","д"] },
+  { word: "декабрь", letter: "е", options: ["е","и","я"] },
+  { word: "мебель", letter: "е", options: ["е","и","я"] },
+  { word: "коньки", letter: "о", options: ["о","а","ы"] }
+];
+
+const WORDS_2_CLASS_2 = [
+  { word: "тарелка", letter: "а", options: ["а","о","ы"] },
+  { word: "товарищ", letter: "о", options: ["о","а","ы"] },
+  { word: "щавель", letter: "а", options: ["а","о","ы"] },
+  { word: "метель", letter: "е", options: ["е","и","я"] },
+  { word: "морковь", letter: "о", options: ["о","а","ы"] },
+  { word: "народ", letter: "о", options: ["о","а","ы"] },
+  { word: "вдруг", letter: "г", options: ["г","к","х"] },
+  { word: "завод", letter: "о", options: ["о","а","ы"] },
+  { word: "сапог", letter: "а", options: ["а","о","ы"] },
+  { word: "обезьяна", letter: "е", options: ["е","и","я"] },
+  { word: "месяц", letter: "е", options: ["е","и","я"] },
+  { word: "январь", letter: "я", options: ["я","е","и"] },
+  { word: "февраль", letter: "е", options: ["е","и","я"] },
+  { word: "картина", letter: "а", options: ["а","о","ы"] },
+  { word: "отец", letter: "о", options: ["о","а","ы"] },
+  { word: "фамилия", letter: "а", options: ["а","о","ы"] },
+  { word: "Россия", letter: "о", options: ["о","а","ы"] },
+  { word: "город", letter: "о", options: ["о","а","ы"] },
+  { word: "улица", letter: "и", options: ["и","е","я"] },
+  { word: "топор", letter: "о", options: ["о","а","ы"] },
+  { word: "обед", letter: "о", options: ["о","а","ы"] },
+  { word: "магазин", letter: "а", options: ["а","о","ы"] },
+  { word: "облако", letter: "о", options: ["о","а","ы"] },
+  { word: "метро", letter: "е", options: ["е","и","я"] },
+  { word: "платок", letter: "а", options: ["а","о","ы"] },
+  { word: "потому что", letter: "о", options: ["о","а","ы"] },
+  { word: "так как", letter: "а", options: ["а","о","ы"] },
+  { word: "апрель", letter: "а", options: ["а","о","ы"] },
+  { word: "шёл", letter: "ё", options: ["ё","о","е"] }
+];
+
+const WORDS_3_CLASS_1 = [
+  { word: "Праздник", letter: "а", options: ["а","о","ы"] },
+  { word: "Вместе", letter: "е", options: ["е","и","я"] },
+  { word: "Восток", letter: "о", options: ["о","а","ы"] },
+  { word: "Орех", letter: "о", options: ["о","а","ы"] },
+  { word: "Овёс", letter: "о", options: ["о","а","ы"] },
+  { word: "Заря", letter: "а", options: ["а","о","ы"] },
+  { word: "Пшеница", letter: "е", options: ["е","и","я"] },
+  { word: "Альбом", letter: "а", options: ["а","о","ы"] },
+  { word: "Погода", letter: "о", options: ["о","а","ы"] },
+  { word: "Понедельник", letter: "о", options: ["о","а","ы"] },
+  { word: "Ракета", letter: "а", options: ["а","о","ы"] },
+  { word: "Трактор", letter: "а", options: ["а","о","ы"] },
+  { word: "Чёрный", letter: "ё", options: ["ё","о","е"] },
+  { word: "Четыре", letter: "е", options: ["е","и","я"] },
+  { word: "Восемь", letter: "о", options: ["о","а","ы"] },
+  { word: "Вторник", letter: "о", options: ["о","а","ы"] },
+  { word: "Среда", letter: "е", options: ["е","и","я"] },
+  { word: "Картофель", letter: "а", options: ["а","о","ы"] },
+  { word: "Петрушка", letter: "е", options: ["е","и","я"] },
+  { word: "Овощи", letter: "о", options: ["о","а","ы"] },
+  { word: "Горох", letter: "о", options: ["о","а","ы"] },
+  { word: "Огурец", letter: "о", options: ["о","а","ы"] },
+  { word: "Помидор", letter: "о", options: ["о","а","ы"] },
+  { word: "Огород", letter: "о", options: ["о","а","ы"] },
+  { word: "Компьютер", letter: "о", options: ["о","а","ы"] },
+  { word: "Столица", letter: "о", options: ["о","а","ы"] },
+  { word: "обед", letter: "о", options: ["о","а","ы"] },
+  { word: "ужин", letter: "у", options: ["у","о","а"] },
+  { word: "пирог", letter: "и", options: ["и","е","я"] },
+  { word: "шоссе", letter: "о", options: ["о","а","ы"] },
+  { word: "четверг", letter: "е", options: ["е","и","я"] },
+  { word: "север", letter: "е", options: ["е","и","я"] },
+  { word: "берег", letter: "е", options: ["е","и","я"] },
+  { word: "пороша", letter: "о", options: ["о","а","ы"] },
+  { word: "чувство", letter: "в", options: ["в","ф","б"] },
+  { word: "лестница", letter: "е", options: ["е","и","я"] },
+  { word: "интересный", letter: "е", options: ["е","и","я"] },
+  { word: "интересно", letter: "е", options: ["е","и","я"] },
+  { word: "коллектив", letter: "л", options: ["л","лл","л"] },
+  { word: "коллекция", letter: "л", options: ["л","лл","л"] },
+  { word: "аккуратный", letter: "к", options: ["к","кк","к"] },
+  { word: "аккуратно", letter: "к", options: ["к","кк","к"] },
+  { word: "грамм", letter: "м", options: ["м","мм","м"] },
+  { word: "килограмм", letter: "м", options: ["м","мм","м"] }
+];
+
+const WORDS_3_CLASS_2 = [
+  { word: "желать", letter: "е", options: ["е","и","я"] },
+  { word: "Самолёт", letter: "о", options: ["о","а","ы"] },
+  { word: "Комната", letter: "о", options: ["о","а","ы"] },
+  { word: "Однажды", letter: "о", options: ["о","а","ы"] },
+  { word: "Кровать", letter: "о", options: ["о","а","ы"] },
+  { word: "Трамвай", letter: "а", options: ["а","о","ы"] },
+  { word: "Пятница", letter: "я", options: ["я","е","и"] },
+  { word: "Около", letter: "о", options: ["о","а","ы"] },
+  { word: "Солома", letter: "о", options: ["о","а","ы"] },
+  { word: "Потом", letter: "о", options: ["о","а","ы"] },
+  { word: "Вокруг", letter: "о", options: ["о","а","ы"] },
+  { word: "Приветливо", letter: "и", options: ["и","е","я"] },
+  { word: "Красная площадь", letter: "а", options: ["а","о","ы"] },
+  { word: "Московский Кремль", letter: "о", options: ["о","а","ы"] },
+  { word: "Ромашка", letter: "о", options: ["о","а","ы"] },
+  { word: "Растение", letter: "а", options: ["а","о","ы"] },
+  { word: "Сирень", letter: "и", options: ["и","е","я"] },
+  { word: "Поэт", letter: "о", options: ["о","а","ы"] },
+  { word: "Гвоздика", letter: "о", options: ["о","а","ы"] },
+  { word: "Животное", letter: "и", options: ["и","е","я"] },
+  { word: "Одуванчик", letter: "о", options: ["о","а","ы"] },
+  { word: "Воскресенье", letter: "о", options: ["о","а","ы"] },
+  { word: "Завтрак", letter: "а", options: ["а","о","ы"] },
+  { word: "Песок", letter: "е", options: ["е","и","я"] },
+  { word: "Квартира", letter: "а", options: ["а","о","ы"] },
+  { word: "Герой", letter: "е", options: ["е","и","я"] },
+  { word: "солдат", letter: "о", options: ["о","а","ы"] }
+];
+
+// Объединяем всё
+const ALL_WORDS = [
+  ...WORDS_2_CLASS_1,
+  ...WORDS_2_CLASS_2,
+  ...WORDS_3_CLASS_1,
+  ...WORDS_3_CLASS_2
+];
+
+// ============================================================
+// ЛОГИКА ИГРЫ
+// ============================================================
+let currentQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let answered = false;
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function findLetterIndex(word, letter) {
+  const lower = word.toLowerCase();
+  const idx = lower.indexOf(letter.toLowerCase());
+  return idx === -1 ? 0 : idx;
+}
+
+function buildWordDisplay(word, letter) {
+  const idx = findLetterIndex(word, letter);
+  const before = word.slice(0, idx);
+  const after = word.slice(idx + 1);
+  return `${before}<span class="missing">?</span>${after}`;
+}
+
+function getHint(word) {
+  const hints = {
+    "воробей": "птица", "ворона": "птица", "сорока": "птица",
+    "петух": "птица", "снегирь": "птица",
+    "корова": "животное", "собака": "животное", "лисица": "животное",
+    "медведь": "животное", "заяц": "животное", "обезьяна": "животное",
+    "лягушка": "животное", "Животное": "категория",
+    "пенал": "школьная принадлежность", "карандаш": "школьная принадлежность",
+    "тетрадь": "школьная принадлежность", "Альбом": "школьная принадлежность",
+    "ученик": "человек", "ученица": "человек", "учитель": "человек",
+    "девочка": "человек", "ребята": "люди", "товарищ": "человек",
+    "дежурный": "человек", "отец": "человек", "Герой": "человек",
+    "солдат": "человек", "Поэт": "человек", "народ": "люди",
+    "пальто": "одежда", "одежда": "категория", "платок": "одежда",
+    "сапог": "обувь", "коньки": "обувь/спорт",
+    "молоко": "продукт", "сахар": "продукт", "капуста": "овощ",
+    "морковь": "овощ", "Картофель": "овощ", "Петрушка": "овощ",
+    "Овощи": "категория", "Горох": "овощ", "Огурец": "овощ",
+    "Помидор": "овощ", "яблоко": "фрукт", "ягода": "ягода",
+    "земляника": "ягода", "малина": "ягода",
+    "берёза": "дерево", "осина": "дерево", "яблоня": "дерево",
+    "Растение": "категория", "Сирень": "растение", "Ромашка": "цветок",
+    "Гвоздика": "цветок", "Одуванчик": "цветок",
+    "Москва": "город", "Россия": "страна", "город": "место",
+    "деревня": "место", "улица": "место", "родина": "место",
+    "Столица": "место", "метро": "транспорт", "Трамвай": "транспорт",
+    "машина": "транспорт", "Самолёт": "транспорт", "Ракета": "транспорт",
+    "Трактор": "техника", "Компьютер": "техника", "молоток": "инструмент",
+    "топор": "инструмент", "лопата": "инструмент",
+    "посуда": "категория", "тарелка": "посуда",
+    "мебель": "категория", "Кровать": "мебель",
+    "класс": "место", "Комната": "место", "Квартира": "место",
+    "магазин": "место", "завод": "место", "Огород": "место",
+    "обед": "приём пищи", "ужин": "приём пищи", "Завтрак": "приём пищи",
+    "пирог": "еда", "Песок": "природа", "облако": "природа",
+    "ветер": "природа", "ветерок": "природа", "мороз": "природа",
+    "метель": "природа", "пороша": "природа", "Заря": "природа",
+    "урожай": "природа", "Пшеница": "растение", "Овёс": "растение",
+    "Орех": "растение", "щавель": "растение",
+    "месяц": "время", "январь": "месяц", "февраль": "месяц",
+    "апрель": "месяц", "сентябрь": "месяц", "октябрь": "месяц",
+    "ноябрь": "месяц", "декабрь": "месяц",
+    "Понедельник": "день недели", "Вторник": "день недели",
+    "Среда": "день недели", "четверг": "день недели",
+    "Пятница": "день недели", "суббота": "день недели",
+    "Воскресенье": "день недели",
+    "Праздник": "событие", "рисунок": "творчество", "картина": "творчество",
+    "фамилия": "имя", "подлежащее": "термин", "сказуемое": "термин",
+    "синонимы": "термин", "антонимы": "термин", "алфавит": "термин",
+    "чувство": "понятие", "коллектив": "группа", "коллекция": "собрание",
+    "работа": "занятие", "желать": "действие",
+    "Здравствуй": "приветствие", "Прощай": "прощание",
+    "извини(те)": "извинение", "до свидания": "прощание",
+    "Красная площадь": "место в Москве", "Московский Кремль": "место в Москве",
+    "потому что": "союз", "так как": "союз",
+    "Вместе": "наречие", "Восток": "сторона света", "Север": "сторона света",
+    "берег": "место", "шоссе": "дорога", "дорога": "путь",
+    "весело": "наречие", "хорошо": "наречие", "скоро": "наречие",
+    "быстро": "наречие", "Однажды": "наречие", "Потом": "наречие",
+    "Вокруг": "наречие", "Около": "наречие", "Приветливо": "наречие",
+    "интересно": "наречие", "аккуратно": "наречие",
+    "Чёрный": "цвет", "жёлтый": "цвет",
+    "Четыре": "число", "Восемь": "число",
+    "грамм": "мера веса", "килограмм": "мера веса",
+    "интересный": "прилагательное", "аккуратный": "прилагательное",
+    "лестница": "сооружение", "Солома": "материал",
+    "шёл": "глагол", "рисовать": "глагол"
+  };
+  return hints[word] ? `Подсказка: ${hints[word]}` : "";
+}
+
+function startGame(mode) {
+  let pool;
+  let count;
+
+  if (mode === 'all') {
+    pool = ALL_WORDS;
+    count = ALL_WORDS.length;
+  } else if (mode === 'grade2') {
+    pool = [...WORDS_2_CLASS_1, ...WORDS_2_CLASS_2];
+    count = pool.length;
+  } else if (mode === 'grade3') {
+    pool = [...WORDS_3_CLASS_1, ...WORDS_3_CLASS_2];
+    count = pool.length;
+  } else {
+    pool = ALL_WORDS;
+    count = mode;
+  }
+
+  const shuffled = shuffle(pool);
+  currentQuestions = shuffled.slice(0, Math.min(count, pool.length));
+  currentIndex = 0;
+  score = 0;
+  answered = false;
+
+  document.getElementById("startScreen").style.display = "none";
+  document.getElementById("gameScreen").style.display = "block";
+  document.getElementById("finalScreen").classList.remove("show");
+
+  document.getElementById("qTotal").textContent = currentQuestions.length;
+  document.getElementById("score").textContent = "0";
+
+  showQuestion();
+}
+
+function showQuestion() {
+  answered = false;
+  const q = currentQuestions[currentIndex];
+
+  const progress = (currentIndex / currentQuestions.length) * 100;
+  document.getElementById("progressFill").style.width = progress + "%";
+  document.getElementById("qNum").textContent = currentIndex + 1;
+
+  document.getElementById("wordDisplay").innerHTML = buildWordDisplay(q.word, q.letter);
+  document.getElementById("hint").textContent = getHint(q.word) || "";
+
+  const optionsDiv = document.getElementById("options");
+  optionsDiv.innerHTML = "";
+  q.options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "option-btn";
+    btn.textContent = opt;
+    btn.onclick = () => checkAnswer(btn, opt, q.letter);
+    optionsDiv.appendChild(btn);
+  });
+
+  document.getElementById("feedback").textContent = "";
+  document.getElementById("feedback").className = "feedback";
+  document.getElementById("nextBtn").classList.remove("show");
+  document.getElementById("nextBtn").textContent = (currentIndex === currentQuestions.length - 1)
+    ? "Результат →" : "Далее →";
+}
+
+function checkAnswer(btn, chosen, correct) {
+  if (answered) return;
+  answered = true;
+
+  const isCorrect = chosen.toLowerCase() === correct.toLowerCase();
+  const buttons = document.querySelectorAll(".option-btn");
+
+  buttons.forEach(b => {
+    b.disabled = true;
+    if (b.textContent.toLowerCase() === correct.toLowerCase()) {
+      b.classList.add("correct");
+    }
+  });
+
+  if (isCorrect) {
+    score++;
+    document.getElementById("score").textContent = score;
+    document.getElementById("feedback").textContent = "✅ Верно!";
+    document.getElementById("feedback").className = "feedback ok";
+  } else {
+    btn.classList.add("wrong");
+    document.getElementById("feedback").textContent = `❌ Ошибка! Правильно: «${correct}»`;
+    document.getElementById("feedback").className = "feedback no";
+  }
+
+  document.getElementById("nextBtn").classList.add("show");
+}
+
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex >= currentQuestions.length) {
+    endGame();
+  } else {
+    showQuestion();
+  }
+}
+
+function endGame() {
+  document.getElementById("gameScreen").style.display = "none";
+  document.getElementById("finalScreen").classList.add("show");
+
+  const total = currentQuestions.length;
+  document.getElementById("finalScore").textContent = `${score} / ${total}`;
+
+  let msg = "";
+  const pct = score / total;
+  if (pct === 1) msg = "🏆 Отлично! Все слова знаешь наизусть!";
+  else if (pct >= 0.8) msg = "🌟 Молодец! Очень хороший результат!";
+  else if (pct >= 0.6) msg = "👍 Неплохо! Есть над чем поработать.";
+  else if (pct >= 0.4) msg = "📖 Стоит повторить словарные слова.";
+  else msg = "💪 Не сдавайся! Повтори слова и попробуй снова.";
+
+  document.getElementById("finalMessage").textContent = msg;
+}
+
+function backToMenu() {
+  document.getElementById("finalScreen").classList.remove("show");
+  document.getElementById("gameScreen").style.display = "none";
+  document.getElementById("startScreen").style.display = "block";
+}
+
+// Показать общее количество слов
+document.getElementById("totalInfo").textContent =
+  `Всего в игре: ${ALL_WORDS.length} слов (2 класс: ${WORDS_2_CLASS_1.length + WORDS_2_CLASS_2.length}, 3 класс: ${WORDS_3_CLASS_1.length + WORDS_3_CLASS_2.length})`;
+</script>
+
+</body>
+</html>
