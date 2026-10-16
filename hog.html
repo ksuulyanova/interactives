@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Проверка тетрадей — Хогвартс</title>
+<style>
+  :root{
+    --bg: url('https://i.pinimg.com/736x/f2/fe/fc/f2fefc7e47f9228fbb4251f9bac56af9.jpg');
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    font-family:'Georgia',serif;
+    background:var(--bg) center/cover no-repeat fixed;
+    display:flex;align-items:center;justify-content:center;
+    color:#3a2a12;overflow-x:hidden;padding:20px;
+  }
+  .overlay{position:fixed;inset:0;
+    background:radial-gradient(circle at 50% 40%, rgba(0,0,0,.15), rgba(0,0,0,.7));
+    pointer-events:none;}
+  .stage{position:relative;z-index:2;width:min(960px,96vw);
+    display:flex;flex-direction:column;align-items:center;gap:20px;}
+
+  .start-btn{
+    padding:22px 70px;font-size:30px;font-family:'Georgia',serif;
+    letter-spacing:3px;color:#f4e3b2;
+    background:linear-gradient(#5b3a1a,#2f1c08);
+    border:3px solid #d8b463;border-radius:14px;cursor:pointer;
+    text-shadow:0 0 12px #ffcf6b;
+    box-shadow:0 0 25px rgba(255,200,90,.45),inset 0 0 20px rgba(0,0,0,.6);
+    transition:.3s;animation:pulse 2.2s infinite;
+  }
+  .start-btn:hover{transform:scale(1.07);color:#fff3d0;
+    box-shadow:0 0 45px rgba(255,210,110,.9),inset 0 0 25px rgba(0,0,0,.6);}
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 20px rgba(255,200,90,.4),inset 0 0 20px rgba(0,0,0,.6);}
+    50%{box-shadow:0 0 45px rgba(255,215,120,.85),inset 0 0 20px rgba(0,0,0,.6);}
+  }
+
+  .parchment{
+    display:none;width:100%;padding:44px 40px 38px;
+    background:
+      radial-gradient(ellipse at 8% 6%, rgba(140,90,30,.22), transparent 22%),
+      radial-gradient(ellipse at 92% 8%, rgba(140,90,30,.20), transparent 20%),
+      radial-gradient(ellipse at 5% 94%, rgba(120,75,20,.25), transparent 22%),
+      radial-gradient(ellipse at 95% 92%, rgba(120,75,20,.22), transparent 20%),
+      radial-gradient(ellipse at 50% 45%, rgba(255,250,225,.85), transparent 65%),
+      linear-gradient(135deg,#f7e9c4 0%,#efdba8 35%,#e6cd90 70%,#d8ba78 100%);
+    border-radius:8px;border:1px solid #b48a4a;
+    box-shadow:0 25px 60px rgba(0,0,0,.75),0 0 0 8px rgba(120,80,30,.15),
+      inset 0 0 80px rgba(150,100,40,.35),inset 0 0 20px rgba(255,255,255,.5);
+    position:relative;animation:unroll .9s ease;text-align:center;
+    background-blend-mode:multiply,multiply,multiply,multiply,screen,normal;
+  }
+  @keyframes unroll{from{opacity:0;transform:scaleY(.15);}to{opacity:1;transform:scaleY(1);}}
+  .parchment::before,.parchment::after{
+    content:"";position:absolute;left:-12px;right:-12px;height:22px;
+    background:linear-gradient(180deg,#a37b3e 0%,#7d5a25 45%,#5e4115 55%,#8a6630 100%);
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,220,150,.5),inset 0 -2px 4px rgba(0,0,0,.4);
+  }
+  .parchment::before{top:-14px;} .parchment::after{bottom:-14px;}
+  .parchment .corner{position:absolute;font-size:34px;color:#8a6532;
+    opacity:.55;line-height:1;pointer-events:none;
+    text-shadow:1px 1px 0 rgba(255,255,255,.4);}
+  .parchment .corner.tl{top:10px;left:14px;}
+  .parchment .corner.tr{top:10px;right:14px;transform:scaleX(-1);}
+  .parchment .corner.bl{bottom:10px;left:14px;transform:scaleY(-1);}
+  .parchment .corner.br{bottom:10px;right:14px;transform:scale(-1,-1);}
+  .crest{font-size:52px;display:block;margin-bottom:10px;
+    filter:drop-shadow(0 3px 6px rgba(0,0,0,.4));}
+  .parchment h1{font-size:30px;margin-bottom:18px;color:#4a2508;letter-spacing:1px;
+    text-shadow:0 1px 0 rgba(255,255,255,.6),0 2px 4px rgba(120,75,20,.35);}
+  .parchment p{font-size:18px;line-height:1.65;margin-bottom:12px;color:#4a3517;}
+
+  .notebook{
+    display:none;width:100%;
+    background:linear-gradient(180deg,#fffef9 0%,#fbf5e2 40%,#f5ecd3 100%);
+    border-radius:6px;padding:0 0 30px;
+    box-shadow:0 25px 60px rgba(0,0,0,.75),0 0 0 1px #c9a86a,inset 0 0 60px rgba(200,160,90,.15);
+    position:relative;overflow:hidden;
+  }
+  .notebook::before{content:"";position:absolute;top:0;bottom:0;left:56px;
+    width:2px;background:rgba(211,60,60,.45);box-shadow:0 0 4px rgba(211,60,60,.3);z-index:1;}
+  .notebook::after{content:"";position:absolute;top:0;bottom:0;left:0;width:56px;
+    background:linear-gradient(90deg, rgba(120,80,30,.35) 0%, rgba(120,80,30,.08) 40%, transparent 100%);
+    pointer-events:none;}
+
+  .notebook-header{
+    position:relative;padding:26px 34px 22px 78px;
+    background:linear-gradient(180deg, rgba(255,240,205,.95) 0%, rgba(248,225,175,.85) 60%, rgba(240,210,150,.55) 100%);
+    border-bottom:3px double #b48a4a;
+    box-shadow:inset 0 -8px 18px rgba(160,110,40,.15);
+  }
+  .notebook-header .top-line{
+    font-size:13px;letter-spacing:3px;color:#8a6532;
+    text-transform:uppercase;margin-bottom:6px;
+  }
+  .notebook-header .owner{
+    font-size:32px;font-weight:bold;color:#7a1c1c;
+    letter-spacing:.5px;line-height:1.15;margin-bottom:4px;
+    text-shadow:0 1px 0 rgba(255,255,255,.7),0 2px 6px rgba(120,30,30,.35);
+  }
+  .notebook-header .owner .name{
+    color:#1e3a8a;font-family:'Comic Sans MS','Segoe Print',cursive;
+    font-size:36px;border-bottom:2px dashed rgba(30,58,138,.5);
+    padding:0 6px 2px;display:inline-block;
+    animation:nameIn .5s ease;
+  }
+  @keyframes nameIn{
+    from{opacity:0;transform:translateY(-8px) scale(.9);}
+    to{opacity:1;transform:translateY(0) scale(1);}
+  }
+  .notebook-header .meta{
+    display:flex;flex-wrap:wrap;gap:18px;
+    font-size:15px;color:#5a3d17;margin-top:8px;
+  }
+  .notebook-header .meta span b{color:#7a1c1c;}
+
+  .notebook-header .stamp{
+    position:absolute;top:18px;right:26px;
+    width:82px;height:82px;border-radius:50%;
+    border:3px double #7a1c1c;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;text-align:center;color:#7a1c1c;
+    font-weight:bold;letter-spacing:1px;line-height:1.15;
+    transform:rotate(-12deg);opacity:.85;
+    background:radial-gradient(circle,rgba(255,235,200,.6),rgba(255,220,170,.15));
+    text-transform:uppercase;padding:6px;
+    box-shadow:inset 0 0 10px rgba(120,30,30,.25);
+    transition:all .5s ease;
+  }
+  .notebook-header .stamp::before{
+    content:"";position:absolute;inset:5px;border-radius:50%;
+    border:1px solid currentColor;opacity:.6;
+  }
+  .stamp.gryffindor{color:#8a1c1c;border-color:#8a1c1c;background:radial-gradient(circle,rgba(255,220,180,.7),rgba(255,180,120,.2));}
+  .stamp.slytherin{color:#1c5a2a;border-color:#1c5a2a;background:radial-gradient(circle,rgba(200,255,210,.7),rgba(140,220,160,.2));}
+  .stamp.ravenclaw{color:#1c3a7a;border-color:#1c3a7a;background:radial-gradient(circle,rgba(200,225,255,.7),rgba(140,180,240,.2));}
+  .stamp.hufflepuff{color:#8a6a0a;border-color:#8a6a0a;background:radial-gradient(circle,rgba(255,245,180,.7),rgba(240,210,120,.2));}
+
+  .notebook-body{padding:22px 34px 10px 78px;position:relative;}
+  .text-title{
+    font-size:19px;color:#4a2f0e;margin:6px 0 16px;
+    font-weight:bold;font-style:italic;display:inline-block;
+    border-bottom:2px solid rgba(180,138,74,.6);padding-bottom:2px;
+  }
+  .work-text{
+    font-family:'Comic Sans MS','Segoe Print',cursive;
+    font-size:23px;line-height:2.2;color:#1e3a8a;min-height:200px;
+  }
+  .work-text .line{display:block;margin-bottom:16px;}
+
+  .word{position:relative;cursor:pointer;padding:0 1px;border-radius:4px;transition:.2s;display:inline-block;}
+  .word.wrong:hover{background:rgba(255,220,120,.65);box-shadow:0 0 0 2px rgba(255,200,90,.5);}
+  .word.fixed{cursor:default;background:transparent;box-shadow:none;}
+  .word .fix{
+    position:absolute;left:50%;top:-24px;transform:translateX(-50%) scale(0);
+    color:#d32020;font-family:'Comic Sans MS',cursive;
+    font-size:21px;font-weight:bold;white-space:nowrap;
+    text-shadow:0 1px 0 rgba(255,255,255,.85);
+    transition:transform .4s cubic-bezier(.2,1.6,.5,1),opacity .3s;
+    opacity:0;pointer-events:none;
+  }
+  .word .fix::after{
+    content:"";position:absolute;left:50%;bottom:-3px;transform:translateX(-50%);
+    width:110%;height:2px;background:#d32020;border-radius:2px;
+  }
+  .word.fixed .fix{transform:translateX(-50%) scale(1);opacity:1;}
+  .word.fixed .orig{color:#9a9a9a;text-decoration:line-through;
+    text-decoration-color:#d32020;text-decoration-thickness:2px;}
+
+  .score-bar{
+    display:flex;justify-content:space-between;align-items:center;
+    margin:22px 34px 0 78px;padding:16px 20px;
+    background:linear-gradient(#f8ecd0,#e9d5a4);
+    border:1px solid #c9a86a;border-radius:8px;
+    font-size:16px;color:#5a3d17;flex-wrap:wrap;gap:10px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
+  }
+  .score-bar b{color:#d32020;font-size:20px;}
+
+  .grade-panel{
+    display:none;
+    margin:20px 34px 0 78px;
+    padding:22px 24px 20px;
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(255,250,225,.9), transparent 70%),
+      linear-gradient(135deg,#f8e6be,#e6c98a);
+    border:2px dashed #b48a4a;border-radius:10px;text-align:center;
+    animation:gradePanelIn .6s cubic-bezier(.2,1.6,.5,1);
+  }
+  @keyframes gradePanelIn{
+    from{opacity:0;transform:scale(.9) translateY(-10px);}
+    to{opacity:1;transform:scale(1) translateY(0);}
+  }
+  .grade-panel.show{display:block;}
+  .grade-panel .gp-title{
+    font-size:20px;color:#4a2508;margin-bottom:6px;font-weight:bold;
+    text-shadow:0 1px 0 rgba(255,255,255,.6);
+  }
+  .grade-panel .gp-sub{font-size:15px;color:#8a6532;margin-bottom:16px;font-style:italic;}
+  .grade-row{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;}
+  .grade-btn{
+    width:82px;height:82px;border-radius:50%;
+    font-size:32px;font-family:'Georgia',serif;font-weight:bold;
+    cursor:pointer;border:4px double #7a1c1c;
+    background:radial-gradient(circle at 35% 30%, #fff7e0, #e9d3a2 70%, #c9a86a);
+    color:#7a1c1c;transition:.25s;position:relative;
+    box-shadow:0 6px 14px rgba(0,0,0,.35),inset 0 2px 6px rgba(255,255,255,.6);
+  }
+  .grade-btn:hover{transform:scale(1.12) rotate(-4deg);
+    box-shadow:0 0 30px #ffcf6b,0 6px 14px rgba(0,0,0,.35);}
+  .grade-btn.chosen{
+    border-color:#d32020;color:#d32020;
+    background:radial-gradient(circle at 35% 30%, #fff2c8, #ffd27a 70%, #e0a54a);
+    box-shadow:0 0 40px #ffae4a,0 0 0 4px rgba(255,180,90,.35);
+    transform:scale(1.15) rotate(0deg);
+  }
+  .verdict{font-size:17px;font-style:italic;color:#5a3d17;min-height:24px;margin-top:16px;padding:0 10px;}
+  .next-btn{
+    padding:12px 30px;font-size:16px;font-family:'Georgia',serif;
+    border-radius:10px;cursor:pointer;border:2px solid #8a6532;
+    background:linear-gradient(#e6cf9d,#c9a86a);color:#3a2a12;transition:.2s;
+  }
+  .next-btn:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,.4);}
+  .next-btn:disabled{opacity:.45;cursor:not-allowed;}
+
+  .grade-panel .next-after{
+    display:none;margin:18px auto 0;
+    padding:14px 40px;font-size:17px;font-family:'Georgia',serif;
+    border-radius:10px;cursor:pointer;border:2px solid #d8b463;
+    background:linear-gradient(#5b3a1a,#2f1c08);color:#f4e3b2;transition:.25s;
+    text-shadow:0 0 8px rgba(255,200,90,.5);
+  }
+  .grade-panel .next-after.show{display:inline-block;animation:gradePanelIn .4s ease;}
+  .grade-panel .next-after:hover{transform:scale(1.05);
+    box-shadow:0 0 30px rgba(255,205,110,.8);}
+
+  /* ============ ЭКРАН ВЫБОРА УЧЕНИКА ============ */
+  .choose-screen{
+    display:none;width:100%;text-align:center;padding:44px 40px 38px;
+    background:
+      radial-gradient(ellipse at 50% 45%, rgba(255,250,225,.9), transparent 65%),
+      linear-gradient(135deg,#f7e9c4 0%,#efdba8 40%,#e0c890 100%);
+    border-radius:8px;border:1px solid #b48a4a;
+    box-shadow:0 25px 60px rgba(0,0,0,.75),0 0 0 8px rgba(120,80,30,.15),
+      inset 0 0 80px rgba(150,100,40,.35);
+    position:relative;
+    animation:unroll .6s ease;
+  }
+  .choose-screen::before,.choose-screen::after{
+    content:"";position:absolute;left:-12px;right:-12px;height:22px;
+    background:linear-gradient(180deg,#a37b3e,#7d5a25 45%,#5e4115 55%,#8a6630);
+    border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,220,150,.5);
+  }
+  .choose-screen::before{top:-14px;} .choose-screen::after{bottom:-14px;}
+  .choose-screen h2{
+    font-size:28px;color:#4a2508;margin-bottom:8px;
+    text-shadow:0 1px 0 rgba(255,255,255,.6),0 2px 4px rgba(120,75,20,.35);
+  }
+  .choose-screen .sub{
+    font-size:16px;color:#8a6532;margin-bottom:24px;font-style:italic;
+  }
+  .student-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+    gap:16px;
+    max-width:760px;margin:0 auto;
+  }
+  .student-card{
+    position:relative;
+    padding:18px 16px 16px;
+    background:linear-gradient(#fff8e2,#f0ddb4);
+    border:2px solid #b8914f;border-radius:12px;
+    cursor:pointer;transition:.25s;text-align:center;
+    box-shadow:0 8px 20px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.7);
+  }
+  .student-card:hover:not(.done){
+    transform:translateY(-6px) scale(1.03);
+    box-shadow:0 14px 30px rgba(0,0,0,.5),0 0 25px rgba(255,205,110,.5);
+    border-color:#d8b463;
+  }
+  .student-card.done{
+    cursor:default;opacity:.85;
+    background:linear-gradient(#e8f6d8,#c8e6b0);
+    border-color:#7dc46a;
+  }
+  .student-card .avatar{
+    font-size:42px;display:block;margin-bottom:8px;
+    filter:drop-shadow(0 2px 4px rgba(0,0,0,.25));
+  }
+  .student-card .s-name{
+    font-size:18px;color:#4a2508;font-weight:bold;margin-bottom:4px;
+    font-family:'Georgia',serif;
+  }
+  .student-card .s-house{
+    font-size:13px;color:#8a6532;letter-spacing:1px;text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  .student-card .s-task{
+    font-size:14px;color:#5a3d17;font-style:italic;
+  }
+  .student-card .s-mark{
+    position:absolute;top:-10px;right:-10px;
+    width:44px;height:44px;border-radius:50%;
+    border:3px double #d32020;color:#d32020;
+    background:radial-gradient(circle,rgba(255,240,200,.95),rgba(255,220,170,.6));
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;font-weight:bold;
+    transform:rotate(-10deg);
+    box-shadow:0 3px 10px rgba(120,30,30,.35);
+    animation:stampIn .5s cubic-bezier(.2,1.6,.5,1);
+  }
+  @keyframes stampIn{
+    0%{transform:rotate(-10deg) scale(2.5);opacity:0;}
+    60%{transform:rotate(-10deg) scale(.9);opacity:1;}
+    100%{transform:rotate(-10deg) scale(1);opacity:1;}
+  }
+  .student-card .check{
+    position:absolute;top:8px;left:10px;
+    color:#3a8a3a;font-size:22px;font-weight:bold;
+  }
+
+  /* ============== ЖУРНАЛ ============== */
+  .journal-toggle{
+    display:none;position:fixed;top:20px;right:20px;z-index:50;
+    padding:12px 22px;font-size:15px;font-family:'Georgia',serif;
+    border-radius:30px;cursor:pointer;border:2px solid #d8b463;
+    background:linear-gradient(#5b3a1a,#2f1c08);color:#f4e3b2;letter-spacing:1px;
+    box-shadow:0 6px 20px rgba(0,0,0,.6),0 0 20px rgba(255,200,90,.3);
+    transition:.25s;text-shadow:0 0 8px rgba(255,200,90,.5);
+  }
+  .journal-toggle:hover{transform:scale(1.06);
+    box-shadow:0 6px 24px rgba(0,0,0,.7),0 0 30px rgba(255,210,110,.7);}
+  .journal-toggle.visible{display:block;}
+
+  .journal-screen{
+    display:none;position:fixed;inset:0;z-index:100;
+    background:rgba(20,10,5,.85);backdrop-filter:blur(4px);
+    align-items:center;justify-content:center;padding:20px;
+    animation:fadeIn .3s ease;
+  }
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  .journal-screen.open{display:flex;}
+
+  .journal-paper{
+    width:min(700px,96vw);max-height:90vh;overflow-y:auto;
+    padding:40px 36px 34px;
+    background:
+      radial-gradient(ellipse at 8% 6%, rgba(140,90,30,.22), transparent 22%),
+      radial-gradient(ellipse at 92% 8%, rgba(140,90,30,.20), transparent 20%),
+      radial-gradient(ellipse at 50% 45%, rgba(255,250,225,.9), transparent 65%),
+      linear-gradient(135deg,#f7e9c4 0%,#efdba8 40%,#e0c890 100%);
+    border-radius:8px;border:1px solid #b48a4a;
+    box-shadow:0 30px 70px rgba(0,0,0,.85),0 0 0 8px rgba(120,80,30,.2),
+      inset 0 0 80px rgba(150,100,40,.3);
+    position:relative;text-align:center;animation:unroll .5s ease;
+  }
+  .journal-paper::before,.journal-paper::after{
+    content:"";position:absolute;left:-12px;right:-12px;height:22px;
+    background:linear-gradient(180deg,#a37b3e,#7d5a25 45%,#5e4115 55%,#8a6630);
+    border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,220,150,.5);
+  }
+  .journal-paper::before{top:-14px;} .journal-paper::after{bottom:-14px;}
+  .journal-paper h2{font-size:28px;color:#4a2508;margin-bottom:6px;
+    text-shadow:0 1px 0 rgba(255,255,255,.6),0 2px 4px rgba(120,75,20,.35);}
+  .journal-paper .subtitle{font-size:14px;color:#8a6532;letter-spacing:2px;
+    text-transform:uppercase;margin-bottom:24px;}
+  .journal-table{border:2px solid #b48a4a;border-radius:8px;
+    background:rgba(255,250,230,.55);overflow:hidden;
+    box-shadow:inset 0 0 20px rgba(160,110,40,.15);}
+  .journal-head{display:grid;grid-template-columns:1fr 100px 90px;
+    background:linear-gradient(#e6cf9d,#c9a86a);
+    font-size:13px;color:#4a2508;letter-spacing:1px;
+    text-transform:uppercase;font-weight:bold;}
+  .journal-head div{padding:12px 14px;text-align:left;}
+  .journal-head div:nth-child(2),
+  .journal-head div:nth-child(3){text-align:center;}
+  .journal-item{display:grid;grid-template-columns:1fr 100px 90px;
+    align-items:center;border-top:1px dashed rgba(180,138,74,.5);
+    font-size:17px;color:#3a2a12;transition:background .3s;}
+  .journal-item:hover{background:rgba(255,240,200,.5);}
+  .journal-item .j-name{padding:12px 14px;text-align:left;}
+  .journal-item .j-name .house{font-size:13px;color:#8a6532;display:block;margin-top:2px;}
+  .journal-item .j-errors{text-align:center;font-size:14px;color:#5a3d17;padding:12px;}
+  .journal-item .j-errors b{color:#d32020;font-size:16px;}
+  .journal-item .j-mark-cell{display:flex;justify-content:center;padding:8px;}
+  .journal-item .j-mark{width:52px;height:52px;border-radius:50%;
+    border:3px double #d32020;color:#d32020;
+    display:flex;align-items:center;justify-content:center;
+    font-size:24px;font-weight:bold;transform:rotate(-8deg);
+    background:radial-gradient(circle,rgba(255,240,200,.8),rgba(255,220,170,.3));
+    box-shadow:0 2px 8px rgba(120,30,30,.3);}
+  .journal-item .j-mark.empty{border-color:#b8a070;color:#b8a070;
+    background:radial-gradient(circle,rgba(255,250,230,.6),rgba(240,220,180,.3));
+    box-shadow:none;font-size:20px;transform:rotate(0deg);}
+  .journal-item .j-mark.stamped{animation:stampIn .55s cubic-bezier(.2,1.6,.5,1);}
+  .journal-footer{margin-top:26px;display:flex;justify-content:center;gap:14px;flex-wrap:wrap;}
+  .close-journal{padding:12px 34px;font-size:16px;font-family:'Georgia',serif;
+    border-radius:10px;cursor:pointer;border:2px solid #8a6532;
+    background:linear-gradient(#e6cf9d,#c9a86a);color:#3a2a12;transition:.2s;}
+  .close-journal:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,.4);}
+
+  /* ============== ФИНАЛ ============== */
+  .final{
+    display:none;width:100%;text-align:center;padding:44px 40px 38px;
+    background:
+      radial-gradient(ellipse at 50% 45%, rgba(255,250,225,.9), transparent 65%),
+      linear-gradient(135deg,#f7e9c4 0%,#efdba8 40%,#e0c890 100%);
+    border-radius:8px;border:1px solid #b48a4a;
+    box-shadow:0 25px 60px rgba(0,0,0,.75),0 0 0 8px rgba(120,80,30,.15),
+      inset 0 0 80px rgba(150,100,40,.35);
+    position:relative;
+  }
+  .final::before,.final::after{
+    content:"";position:absolute;left:-12px;right:-12px;height:22px;
+    background:linear-gradient(180deg,#a37b3e,#7d5a25 45%,#5e4115 55%,#8a6630);
+    border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,220,150,.5);
+  }
+  .final::before{top:-14px;} .final::after{bottom:-14px;}
+  .final h2{font-size:30px;margin-bottom:16px;color:#4a2508;
+    text-shadow:0 1px 0 rgba(255,255,255,.6),0 2px 4px rgba(120,75,20,.35);}
+  .final .info{font-size:19px;margin:10px 0;color:#2b3a8f;}
+  .final .info b{color:#d32020;font-size:22px;}
+  .again-btn{
+    margin-top:20px;padding:16px 44px;font-size:19px;font-family:'Georgia',serif;
+    border-radius:10px;cursor:pointer;border:2px solid #d8b463;
+    background:linear-gradient(#5b3a1a,#2f1c08);color:#f4e3b2;transition:.25s;
+    text-shadow:0 0 8px rgba(255,200,90,.5);
+  }
+  .again-btn:hover{box-shadow:0 0 30px rgba(255,205,110,.8);transform:scale(1.05);}
+
+  @media(max-width:640px){
+    .start-btn{font-size:22px;padding:18px 40px;}
+    .work-text{font-size:19px;line-height:2;}
+    .word .fix{font-size:17px;top:-19px;}
+    .grade-btn{width:64px;height:64px;font-size:26px;}
+    .notebook-header .owner{font-size:24px;}
+    .notebook-header .owner .name{font-size:27px;}
+    .notebook-header .stamp{width:60px;height:60px;font-size:9px;top:12px;right:14px;}
+    .notebook-header{padding:20px 20px 18px 60px;}
+    .notebook-body{padding:18px 20px 10px 60px;}
+    .score-bar{margin:18px 20px 0 60px;}
+    .grade-panel{margin:18px 20px 0 60px;padding:18px 16px;}
+    .journal-head,.journal-item{grid-template-columns:1fr 70px 70px;font-size:14px;}
+    .journal-item .j-mark{width:44px;height:44px;font-size:20px;}
+    .journal-toggle{top:10px;right:10px;padding:10px 16px;font-size:13px;}
+    .student-grid{grid-template-columns:1fr 1fr;gap:10px;}
+    .student-card{padding:14px 10px;}
+    .student-card .avatar{font-size:32px;}
+    .student-card .s-name{font-size:15px;}
+  }
+</style>
+</head>
+<body>
+<div class="overlay"></div>
+
+<button class="journal-toggle" id="journalToggle">📖 Журнал</button>
+
+<div class="stage">
+
+  <button class="start-btn" id="startBtn">НАЧАТЬ</button>
+
+  <!-- ПРАВИЛА -->
+  <div class="parchment" id="parchment">
+    <span class="corner tl">❧</span><span class="corner tr">❧</span>
+    <span class="corner bl">❧</span><span class="corner br">❧</span>
+    <span class="crest">📚 ✒️ 🕯</span>
+    <h1>Ты — учитель словесности в Хогвартсе!</h1>
+    <p>Тебе сдали тетради <b>семь учеников</b>. В каждой спрятались ошибки.</p>
+    <p>Ты сам выбираешь, <b>чью тетрадь проверить первой</b> — жми на карточку ученика.</p>
+    <p>Нажимай на <b>слова с ошибками</b> — над ними появится <span style="color:#d32020;font-weight:bold;">красное исправление</span>.</p>
+    <p>Когда все ошибки исправлены — <b>сразу поставь оценку</b> этому ученику. И выбирай следующего.</p>
+    <div style="margin-top:22px;">
+      <button class="next-btn" id="toChoose">Показать список учеников</button>
+    </div>
+  </div>
+
+  <!-- ЭКРАН ВЫБОРА УЧЕНИКА -->
+  <div class="choose-screen" id="chooseScreen">
+    <h2>📚 Чью тетрадь проверим?</h2>
+    <div class="sub">Выбери любого ученика — порядок не важен</div>
+    <div class="student-grid" id="studentGrid"></div>
+  </div>
+
+  <!-- ТЕТРАДЬ -->
+  <div class="notebook" id="notebook">
+    <div class="notebook-header">
+      <div class="top-line">✦ Тетрадь по русскому языку ✦</div>
+      <div class="owner">Ученик: <span class="name" id="studentName">—</span></div>
+      <div class="meta">
+        <span>Факультет: <b id="studentHouse">—</b></span>
+        <span>Класс: <b id="studentClass">—</b></span>
+        <span>Учитель: <b>профессор Словесности</b></span>
+      </div>
+      <div class="stamp" id="houseStamp">Хогвартс</div>
+    </div>
+
+    <div class="notebook-body">
+      <div class="text-title" id="textTitle"></div>
+      <div class="work-text" id="workText"></div>
+    </div>
+
+    <div class="score-bar">
+      <span>Найдено ошибок: <b id="foundCount">0</b> из <b id="totalCount">0</b></span>
+      <span id="statusText" style="font-style:italic;color:#8a6532;">Ищи ошибки в тексте…</span>
+    </div>
+
+    <div class="grade-panel" id="gradePanel">
+      <div class="gp-title">Все ошибки найдены! ✨</div>
+      <div class="gp-sub">Какую оценку ты поставишь этому ученику?</div>
+      <div class="grade-row" id="gradeRow">
+        <button class="grade-btn" data-grade="2">2</button>
+        <button class="grade-btn" data-grade="3">3</button>
+        <button class="grade-btn" data-grade="4">4</button>
+        <button class="grade-btn" data-grade="5">5</button>
+      </div>
+      <div class="verdict" id="verdict"></div>
+      <button class="next-after" id="nextAfter">Выбрать следующего ученика →</button>
+    </div>
+  </div>
+
+  <!-- ФИНАЛ -->
+  <div class="final" id="final">
+    <h2>✦ Все тетради проверены! ✦</h2>
+    <div class="info" id="finalInfo"></div>
+    <div class="info" style="font-size:17px;color:#5a3d17;margin-top:10px;">
+      Загляни в журнал — там все оценки!
+    </div>
+    <button class="again-btn" id="againBtn">Проверить снова</button>
+  </div>
+
+</div>
+
+<!-- ЖУРНАЛ -->
+<div class="journal-screen" id="journalScreen">
+  <div class="journal-paper">
+    <h2>📖 Журнал успеваемости</h2>
+    <div class="subtitle">Школа волшебства Хогвартс · 5 класс</div>
+    <div class="journal-table">
+      <div class="journal-head">
+        <div>Ученик</div><div>Ошибки</div><div>Оценка</div>
+      </div>
+      <div id="journalBody"></div>
+    </div>
+    <div class="journal-footer">
+      <button class="close-journal" id="closeJournal">Закрыть журнал</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= ДАННЫЕ — теперь 7 тетрадей ================= */
+const TEXTS = [
+  {
+    student: "Гарри Поттер", house: "Гриффиндор", houseKey: "gryffindor",
+    class: "5 «А»", avatar: "⚡",
+    title: "Диктант №1. Школьные новости",
+    words: [
+      ["Серёзные","Серьёзные"],["рибята","ребята"],["получили",null],
+      ["радосное","радостное"],["известие.",null],
+      ["Всюду",null],["звенят",null],["децкие","детские"],["галаса.","голоса."],
+      ["Вшколу","В школу"],["при",null],["ехал",null],["извесный","известный"],
+      ["песатель.","писатель."],["Он",null],["будет",null],["четать","читать"],
+      ["сваи","свои"],["интерестные","интересные"],["рассказы.",null],
+      ["Щясливые","Счастливые"],["школьники",null],["собрались",null],
+      ["на",null],["месный","местный"],["празник.","праздник."]
+    ]
+  },
+  {
+    student: "Рон Уизли", house: "Гриффиндор", houseKey: "gryffindor",
+    class: "5 «А»", avatar: "🧡",
+    title: "Диктант №2. На лесном озере",
+    words: [
+      ["В",null],["канце","конце"],["синтибря","сентября"],["стаяла","стояла"],
+      ["чюдесная","чудесная"],["пагода.","погода."],
+      ["В",null],["субботу",null],["у",null],["друзий","друзей"],
+      ["появилось",null],["прекрасная",null],["едея","идея"],["–",null],
+      ["схадить","сходить"],["на",null],["лисное","лесное"],["озиро.","озеро."],
+      ["Бирига","Берега"],["озира","озера"],["парасли","поросли"],
+      ["трасником.","тростником."],
+      ["Вакруг","Вокруг"],["тешена","тишина"],["–",null],["нехруснет","не хрустнет"],
+      ["ведка,","ветка,"],["несвиснет","не свистнет"],["птица.",null],
+      ["Лучи",null],["сонца","солнца"],["мягко",null],["асвищяли","освещали"],
+      ["прелесную","прелестную"],["окресность.","окрестность."],
+      ["Наступил",null],["позний","поздний"],["вечер.",null],
+      ["Рибято","Ребята"],["развили","развели"],["кастёр.","костёр."],
+      ["Как",null],["вкусна",null],["пичёная","печёная"],
+      ["на",null],["углях",null],["картошка!",null]
+    ]
+  },
+  {
+    student: "Гермиона Грейнджер", house: "Гриффиндор", houseKey: "gryffindor",
+    class: "5 «А»", avatar: "📖",
+    title: "Диктант №3. Синички",
+    words: [
+      ["Стаит","Стоит"],["чюдесный","чудесный"],["земний","зимний"],
+      ["динёк.","денёк."],
+      ["Яркае","Яркое"],["сонце","солнце"],["асвищает","освещает"],
+      ["окресность.","окрестность."],
+      ["Под",null],["маё","моё"],["акошко","окошко"],["прилители","прилетели"],
+      ["прелестные",null],["птечки.","птички."],
+      ["НА","На"],["галофке","головке"],["чорная","чёрная"],["шапачка.","шапочка."],
+      ["Спина,",null],["крылья",null],["и",null],["хвост",null],
+      ["жёлтые.",null],["Это",null],["сенички.","синички."],
+      ["Их",null],["много",null],["жевёт","живёт"],["в",null],
+      ["нашей",null],["месности.","местности."],
+      ["Адна","Одна"],["из",null],["них",null],["радасно","радостно"],
+      ["свиснула.","свистнула."],
+      ["Анп","А потом"],["уведили","увидели"],["на",null],["ниточьке","ниточке"],
+      ["пад","под"],["акном","окном"],["фкусное","вкусное"],["сала.","сало."]
+    ]
+  },
+  {
+    student: "Драко Малфой", house: "Слизерин", houseKey: "slytherin",
+    class: "5 «Б»", avatar: "🐍",
+    title: "Диктант №4. Поздняя осень",
+    words: [
+      ["Наступила",null],["позняя","поздняя"],["осинь.","осень."],
+      ["С",null],["утра",null],["густой",null],["туман.",null],
+      ["Акутал","Окутал"],["акресность.","окрестность."],
+      ["Вись","Весь"],["ден","день"],["стаит","стоит"],
+      ["ненасная","ненастная"],["пагода.","погода."],
+      ["Ярасный","Яростный"],["ветер",null],["гонит",null],["над",null],
+      ["зимлёй","землёй"],["клочя","клочья"],["туч,",null],
+      ["ламает","ломает"],["сучя,","сучья,"],["срывает",null],["листя","листья"],
+      ["с",null],["диревев,","деревьев,"],["бётся","бьётся"],["в",null],
+      ["акно.","окно."],
+      ["Грусный","Грустный"],["стаит","стоит"],["лес.",null]
+    ]
+  },
+  /* === НОВЫЕ ТЕТРАДИ === */
+  {
+    student: "Невилл Долгопупс", house: "Гриффиндор", houseKey: "gryffindor",
+    class: "5 «А»", avatar: "🌿",
+    title: "Диктант №5. На море",
+    words: [
+      ["Был",null],["июль.",null],["мы",null],["жыли","жили"],["на",null],
+      ["юге.",null],
+      ["Наш",null],["дом",null],["стаял","стоял"],["у",null],["моря.",null],
+      ["Марские","Морские"],
+      ["волны",null],["высоки.",null],["по",null],["морю",null],
+      ["плавали",null],["суда.",null],
+      ["Кружыли","Кружили"],["белые",null],["чяйки.","чайки."],
+      ["Мой",null],["дед",null],["был",null],["маряком.","моряком."],
+      ["он",null],["служыл","служил"],["на",null],["флоте.",null]
+    ]
+  },
+  {
+    student: "Луна Лавгуд", house: "Когтевран", houseKey: "ravenclaw",
+    class: "5 «В»", avatar: "🌙",
+    title: "Диктант №6. Белка",
+    words: [
+      ["В",null],["лису","лесу"],["растёт",null],["старая",null],
+      ["сасна.","сосна."],["Там",null],["дупло.",null],
+      ["в",null],["дупле",null],["жывёт","живёт"],["рыжая",null],
+      ["белка.",null],["у",null],["белки",null],["детки.",null],
+      ["Насушыла","Насушила"],["она",null],["грибов.",null],
+      ["собрала",null],["орехи",null],["и",null],["шышки.","шишки."],
+      ["в",null],["дупле",null],["большые","большие"],["запасы.",null],
+      ["Будет",null],["звирькам","зверькам"],["корм",null],
+      ["на",null],["всю",null],["зиму.",null]
+    ]
+  },
+  {
+    student: "Седрик Диггори", house: "Пуффендуй", houseKey: "hufflepuff",
+    class: "5 «Б»", avatar: "🦡",
+    title: "Диктант №7. Котёнок",
+    words: [
+      ["У",null],["дины","Дины"],["жыл","жил"],["рыжый","рыжий"],
+      ["катёнок.","котёнок."],["Он",null],["был",null],["весёлый",null],
+      ["и",null],["пушыстый.","пушистый."],
+      ["звали",null],["катёнка","котёнка"],["мурзик.","Мурзик."],
+      ["Любил",null],["мурзик","Мурзик"],["спать",null],["под",null],
+      ["кроватью.",null],
+      ["один","Один"],["раз",null],["залез",null],["он",null],
+      ["в",null],["корзину",null],["и",null],["заснул.",null],
+      ["Дина",null],["взяла",null],["корзину",null],["и",null],
+      ["унесла",null],["в",null],["чюлан.","чулан."],
+      ["Долго",null],["искала",null],["дина","Дина"],["любимца.",null],
+      ["только","Только"],["вечером",null],["вспомнила",null],
+      ["про",null],["корзину.",null],
+      ["Мурзик",null],["был",null],["найден",null],["."]
+    ]
+  }
+];
+
+/* ================= состояние ================= */
+let textIndex = 0;
+let found = 0;
+let totalWrong = 0;
+let grades = [];
+let foundPerText = [];
+let doneTexts = [];
+
+/* ================= элементы ================= */
+const startBtn = document.getElementById('startBtn');
+const parchment = document.getElementById('parchment');
+const chooseScreen = document.getElementById('chooseScreen');
+const studentGrid = document.getElementById('studentGrid');
+const notebook = document.getElementById('notebook');
+const finalEl = document.getElementById('final');
+const textTitle = document.getElementById('textTitle');
+const workText = document.getElementById('workText');
+const foundCount = document.getElementById('foundCount');
+const totalCount = document.getElementById('totalCount');
+const statusText = document.getElementById('statusText');
+const finalInfo = document.getElementById('finalInfo');
+const studentName = document.getElementById('studentName');
+const studentHouse = document.getElementById('studentHouse');
+const studentClass = document.getElementById('studentClass');
+const houseStamp = document.getElementById('houseStamp');
+const journalToggle = document.getElementById('journalToggle');
+const journalScreen = document.getElementById('journalScreen');
+const journalBody = document.getElementById('journalBody');
+const gradePanel = document.getElementById('gradePanel');
+const verdict = document.getElementById('verdict');
+const nextAfter = document.getElementById('nextAfter');
+
+/* ================= старт ================= */
+startBtn.addEventListener('click', () => {
+  startBtn.style.display = 'none';
+  parchment.style.display = 'block';
+  journalToggle.classList.add('visible');
+});
+
+document.getElementById('toChoose').addEventListener('click', () => {
+  parchment.style.display = 'none';
+  /* сброс */
+  grades = new Array(TEXTS.length).fill(null);
+  foundPerText = new Array(TEXTS.length).fill(0);
+  doneTexts = new Array(TEXTS.length).fill(false);
+  showChooseScreen();
+});
+
+/* ================= экран выбора ученика ================= */
+function showChooseScreen(){
+  chooseScreen.style.display = 'block';
+  notebook.style.display = 'none';
+  finalEl.style.display = 'none';
+  renderStudentGrid();
+}
+
+function renderStudentGrid(){
+  studentGrid.innerHTML = '';
+
+  TEXTS.forEach((t, i) => {
+    const totalInText = t.words.filter(w => w[1] !== null).length;
+    const foundInText = foundPerText[i] || 0;
+    const isDone = doneTexts[i];
+    const grade = grades[i];
+
+    const card = document.createElement('div');
+    card.className = 'student-card' + (isDone ? ' done' : '');
+    card.innerHTML =
+      `${isDone ? '<span class="check">✓</span>' : ''}
+       ${grade ? `<span class="s-mark">${grade}</span>` : ''}
+       <span class="avatar">${t.avatar}</span>
+       <div class="s-name">${t.student}</div>
+       <div class="s-house">${t.house} · ${t.class}</div>
+       <div class="s-task">${t.title}</div>`;
+
+    if (!isDone){
+      card.addEventListener('click', () => openNotebook(i));
+    }
+    studentGrid.appendChild(card);
+  });
+
+  /* все проверены? покажем итог */
+  if (doneTexts.every(d => d)){
+    chooseScreen.style.display = 'none';
+    showFinal();
+  }
+}
+
+/* ================= открыть тетрадь ученика ================= */
+function openNotebook(i){
+  textIndex = i;
+  chooseScreen.style.display = 'none';
+  notebook.style.display = 'block';
+  renderText();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ================= рендер тетради ================= */
+function renderText(){
+  const t = TEXTS[textIndex];
+
+  studentName.textContent = t.student;
+  studentHouse.textContent = t.house;
+  studentClass.textContent = t.class;
+  houseStamp.className = 'stamp ' + t.houseKey;
+  houseStamp.innerHTML = t.house + '<br>•<br>' + t.class;
+
+  studentName.style.animation = 'none';
+  void studentName.offsetWidth;
+  studentName.style.animation = '';
+
+  textTitle.textContent = t.title;
+  totalWrong = t.words.filter(w => w[1] !== null).length;
+  found = foundPerText[textIndex] || 0;
+
+  workText.innerHTML = '';
+  const line = document.createElement('span');
+  line.className = 'line';
+
+  t.words.forEach(([word, correct]) => {
+    const span = document.createElement('span');
+    span.className = 'word' + (correct ? ' wrong' : '');
+    span.innerHTML =
+      `<span class="orig">${word}</span>` +
+      (correct ? `<span class="fix">${correct}</span>` : '');
+    if (correct){
+      span.addEventListener('click', () => fixWord(span));
+    }
+    line.appendChild(span);
+    line.appendChild(document.createTextNode(' '));
+  });
+  workText.appendChild(line);
+
+  gradePanel.classList.remove('show');
+  nextAfter.classList.remove('show');
+  verdict.textContent = '';
+  document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('chosen'));
+
+  foundCount.textContent = found;
+  totalCount.textContent = totalWrong;
+
+  if (found >= totalWrong && totalWrong > 0){
+    statusText.textContent = 'Все ошибки найдены! Поставь оценку ниже ✨';
+    setTimeout(() => showGradePanel(), 500);
+  } else {
+    statusText.textContent = 'Ищи ошибки в тексте…';
+  }
+}
+
+/* ================= исправление ================= */
+function fixWord(el){
+  if (el.classList.contains('fixed')) return;
+  el.classList.add('fixed');
+  found++;
+  foundPerText[textIndex] = found;
+  foundCount.textContent = found;
+
+  if (found === totalWrong){
+    statusText.textContent = 'Все ошибки найдены! Поставь оценку ниже ✨';
+    setTimeout(() => showGradePanel(), 500);
+  }
+}
+
+function showGradePanel(){
+  gradePanel.classList.add('show');
+  gradePanel.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+/* ================= оценка ================= */
+document.querySelectorAll('.grade-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const g = +btn.dataset.grade;
+    grades[textIndex] = g;
+    doneTexts[textIndex] = true;
+
+    document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('chosen'));
+    btn.classList.add('chosen');
+
+    const student = TEXTS[textIndex].student;
+    const texts = {
+      5: `⭐ Отлично, ${student}! Все ошибки найдены.`,
+      4: `👍 Хорошо, ${student}. Хорошая работа!`,
+      3: `📖 Удовлетворительно, ${student}. Есть над чем поработать.`,
+      2: `🕯 Слабо, ${student}. Придётся перечитать тетрадь.`
+    };
+    verdict.textContent = texts[g];
+
+    nextAfter.classList.add('show');
+    const allDone = doneTexts.every(d => d);
+    nextAfter.textContent = allDone
+      ? 'Завершить проверку →'
+      : 'Выбрать следующего ученика →';
+
+    updateJournalButton();
+  });
+});
+
+/* ================= кнопка «дальше» ================= */
+nextAfter.addEventListener('click', () => {
+  notebook.style.transition = 'opacity .25s';
+  notebook.style.opacity = '0';
+  setTimeout(() => {
+    notebook.style.opacity = '1';
+    if (doneTexts.every(d => d)){
+      notebook.style.display = 'none';
+      showFinal();
+    } else {
+      showChooseScreen();
+    }
+    window.scrollTo({top:0, behavior:'smooth'});
+  }, 250);
+});
+
+/* ================= финал ================= */
+function showFinal(){
+  finalEl.style.display = 'block';
+  const totalFound = TEXTS.reduce((s,t) => s + t.words.filter(w => w[1] !== null).length, 0);
+  const avg = (grades.reduce((s,g)=>s+(g||0),0) / grades.length).toFixed(1);
+  finalInfo.innerHTML =
+    `Ты проверил <b>${TEXTS.length}</b> тетрадей и нашёл <b>${totalFound}</b> ошибок.<br>` +
+    `Средний балл класса: <b>${avg}</b>.`;
+  updateJournalButton();
+}
+
+/* ================= ЖУРНАЛ ================= */
+journalToggle.addEventListener('click', () => {
+  renderJournal();
+  journalScreen.classList.add('open');
+});
+document.getElementById('closeJournal').addEventListener('click', () => {
+  journalScreen.classList.remove('open');
+});
+journalScreen.addEventListener('click', (e) => {
+  if (e.target === journalScreen) journalScreen.classList.remove('open');
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') journalScreen.classList.remove('open');
+});
+
+function renderJournal(){
+  journalBody.innerHTML = '';
+  TEXTS.forEach((t, i) => {
+    const totalInText = t.words.filter(w => w[1] !== null).length;
+    const foundInText = foundPerText[i] || 0;
+    const done = doneTexts[i];
+    const grade = grades[i];
+
+    const item = document.createElement('div');
+    item.className = 'journal-item';
+
+    const markHTML = grade
+      ? `<span class="j-mark stamped">${grade}</span>`
+      : `<span class="j-mark empty">—</span>`;
+
+    item.innerHTML =
+      `<div class="j-name">${t.student}
+        <span class="house">${t.house} · ${t.class}</span>
+      </div>
+      <div class="j-errors">${done ? `<b>${foundInText}</b>` : foundInText} / ${totalInText}</div>
+      <div class="j-mark-cell">${markHTML}</div>`;
+
+    journalBody.appendChild(item);
+  });
+}
+
+function updateJournalButton(){
+  const totalGrades = grades.filter(g => g).length;
+  journalToggle.textContent = totalGrades > 0
+    ? `📖 Журнал (${totalGrades}/${TEXTS.length})`
+    : '📖 Журнал';
+}
+
+/* ================= заново ================= */
+document.getElementById('againBtn').addEventListener('click', () => {
+  grades = new Array(TEXTS.length).fill(null);
+  foundPerText = new Array(TEXTS.length).fill(0);
+  doneTexts = new Array(TEXTS.length).fill(false);
+  finalEl.style.display = 'none';
+  updateJournalButton();
+  showChooseScreen();
+});
+</script>
+</body>
+</html>
