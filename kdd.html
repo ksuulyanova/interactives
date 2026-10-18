@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Футбол: Звёзды vs Новички</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  body {
+    font-family: 'Arial Black', Arial, sans-serif;
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+  }
+
+  #scale-wrap {
+    width: 960px;
+    height: 640px;
+    transform-origin: center center;
+  }
+
+  #game {
+    position: relative;
+    width: 960px;
+    height: 640px;
+    overflow: hidden;
+    border: 6px solid #fff;
+    border-radius: 12px;
+    box-shadow: 0 0 40px rgba(0,0,0,0.8);
+  }
+
+  /* ФОН-СТАДИОН */
+  #field {
+    position: absolute;
+    inset: 0;
+    background: url('https://i.pinimg.com/736x/96/c8/3f/96c83f5e48910a72c395b985f3341419.jpg') center/cover no-repeat;
+    filter: brightness(0.92);
+  }
+
+  /* ТАБЛО */
+  #scoreboard {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 10px 28px;
+    border-radius: 12px;
+    border: 3px solid #ffd700;
+    font-size: 24px;
+    letter-spacing: 1px;
+    z-index: 10;
+    white-space: nowrap;
+    box-shadow: 0 0 20px rgba(255,215,0,0.4);
+  }
+  #scoreboard .stars   { color: #ffd700; }
+  #scoreboard .rookies { color: #4fc3f7; }
+  #scoreboard .score   { font-size: 32px; margin: 0 14px; }
+
+  /* КНОПКА СМЕНЫ УРОВНЯ */
+  #level-btn {
+    position: absolute;
+    top: 12px;
+    right: 66px;
+    height: 44px;
+    padding: 0 16px;
+    border-radius: 22px;
+    border: 3px solid #4fc3f7;
+    background: rgba(0,0,0,0.85);
+    color: #4fc3f7;
+    font-size: 15px;
+    font-weight: 900;
+    cursor: pointer;
+    z-index: 15;
+    font-family: 'Arial Black', Arial, sans-serif;
+    transition: transform 0.2s, background 0.2s;
+  }
+  #level-btn:hover { transform: scale(1.08); background: rgba(79,195,247,0.2); }
+
+  /* КНОПКА "?" */
+  #help-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 3px solid #ffd700;
+    background: rgba(0,0,0,0.85);
+    color: #ffd700;
+    font-size: 24px;
+    font-weight: 900;
+    cursor: pointer;
+    z-index: 15;
+    transition: transform 0.2s, background 0.2s;
+  }
+  #help-btn:hover { transform: scale(1.12); background: rgba(255,215,0,0.2); }
+
+  /* ВОРОТА */
+  .goal {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 90px;
+    height: 220px;
+    border: 5px solid #fff;
+    border-radius: 6px;
+    background: repeating-linear-gradient(
+      45deg, rgba(255,255,255,0.12) 0 10px, transparent 10px 20px
+    );
+    z-index: 3;
+  }
+  #goal-left  { left: 8px; }
+  #goal-right { right: 8px; }
+
+  /* ВРАТАРИ */
+  .keeper {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 70px;
+    z-index: 4;
+    transition: transform 0.25s;
+  }
+  #keeper-left  { left: 40px; }
+  #keeper-right { right: 40px; }
+  .keeper.save { transform: translateY(-50%) scale(1.3); }
+
+  /* МЯЧ */
+  #ball {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 60px;
+    height: 60px;
+    margin-left: -30px;
+    margin-top: -30px;
+    font-size: 54px;
+    line-height: 60px;
+    text-align: center;
+    z-index: 5;
+    transition: left 1.4s cubic-bezier(0.4, 0, 0.2, 1),
+                top  1.4s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.4s;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));
+  }
+  #ball.idle { animation: idleBounce 1.6s infinite ease-in-out; }
+  @keyframes idleBounce {
+    0%,100% { transform: translateY(0); }
+    50%     { transform: translateY(-8px); }
+  }
+
+  /* КАРТОЧКИ */
+  .cards-panel {
+    position: absolute;
+    top: 90px;
+    left: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 8;
+  }
+  .cards-panel.right { left: auto; right: 12px; }
+
+  .cards-title {
+    color: #ffd700;
+    font-size: 13px;
+    text-align: center;
+    margin-bottom: 2px;
+    text-shadow: 0 0 8px #000;
+  }
+  .cards-panel.right .cards-title { color: #4fc3f7; }
+
+  .card {
+    width: 158px;
+    background: linear-gradient(145deg, #1e2a44, #0d1526);
+    border: 2px solid #ffd700;
+    border-radius: 10px;
+    padding: 5px 7px;
+    color: #fff;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s, opacity 0.3s;
+    opacity: 0.5;
+  }
+  .card .avatar {
+    font-size: 22px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .card .info { flex: 1; min-width: 0; }
+  .card .name { font-weight: bold; font-size: 12px; line-height: 1.1; }
+  .card .pos  { font-size: 9px; color: #aaa; }
+  .card .power{
+    margin-left: auto;
+    font-size: 15px;
+    color: #ffd700;
+    font-weight: 900;
+  }
+  .card.active {
+    opacity: 1;
+    transform: scale(1.1);
+    border-color: #4fc3f7;
+    box-shadow: 0 0 18px #4fc3f7;
+    animation: cardPulse 1.2s infinite;
+    z-index: 9;
+  }
+  @keyframes cardPulse {
+    0%,100% { box-shadow: 0 0 12px #4fc3f7; }
+    50%     { box-shadow: 0 0 26px #4fc3f7; }
+  }
+  .cards-panel.right .card { border-color: #4fc3f7; }
+  .cards-panel.right .card .power { color: #4fc3f7; }
+
+  /* ПАНЕЛЬ ВОПРОСА */
+  #panel {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.9);
+    color: #fff;
+    padding: 12px 26px;
+    border-radius: 14px;
+    border: 3px solid #fff;
+    text-align: center;
+    z-index: 10;
+    min-width: 440px;
+  }
+  #commentator {
+    font-size: 15px;
+    color: #ffd700;
+    margin-bottom: 6px;
+    font-style: italic;
+    min-height: 20px;
+  }
+  #question {
+    font-size: 38px;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  #answer {
+    font-size: 30px;
+    width: 220px;
+    text-align: center;
+    padding: 6px;
+    border-radius: 8px;
+    border: 2px solid #ffd700;
+    outline: none;
+    background: #fff;
+    color: #000;
+  }
+  #answer:focus { border-color: #4fc3f7; box-shadow: 0 0 12px #4fc3f7; }
+  #hint { font-size: 12px; color: #aaa; margin-top: 4px; min-height: 16px; }
+
+  /* ВСПЛЫВАЮЩИЕ НАДПИСИ */
+  .flash {
+    position: absolute;
+    top: 38%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    font-size: 90px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 20px #000, 0 0 40px #ffd700;
+    z-index: 20;
+    pointer-events: none;
+    opacity: 0;
+    white-space: nowrap;
+  }
+  .flash.show { animation: flashPop 1.6s ease-out forwards; }
+  @keyframes flashPop {
+    0%   { transform: translate(-50%,-50%) scale(0.3); opacity: 0; }
+    30%  { transform: translate(-50%,-50%) scale(1.2); opacity: 1; }
+    70%  { transform: translate(-50%,-50%) scale(1);   opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(1.4); opacity: 0; }
+  }
+
+  /* ФИНАЛ */
+  #final {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    color: #fff;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 30;
+    text-align: center;
+    padding: 20px;
+  }
+  #final h1 { font-size: 54px; color: #ffd700; margin-bottom: 20px; }
+  #final button {
+    font-size: 24px;
+    padding: 12px 30px;
+    border-radius: 12px;
+    border: none;
+    background: #ffd700;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.2s;
+  }
+  #final button:hover { transform: scale(1.08); }
+
+  /* ЭКРАН ПРАВИЛ — компактный, без прокрутки */
+  #rules {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 12, 25, 0.97);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 40;
+    padding: 14px 24px;
+    overflow: hidden;
+  }
+  #rules h2 {
+    font-size: 26px;
+    color: #ffd700;
+    margin-bottom: 10px;
+    text-align: center;
+    text-shadow: 0 0 16px rgba(255,215,0,0.6);
+  }
+  #rules .rules-body {
+    background: rgba(255,255,255,0.06);
+    border: 2px solid #4fc3f7;
+    border-radius: 12px;
+    padding: 12px 18px;
+    max-width: 780px;
+    width: 100%;
+    font-size: 13.5px;
+    line-height: 1.4;
+    font-family: Arial, sans-serif;
+    font-weight: normal;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 20px;
+  }
+  #rules .rules-body p { margin-bottom: 5px; }
+  #rules .rules-body b { color: #ffd700; }
+  #rules .rules-body .blue { color: #4fc3f7; }
+  #rules .rules-body ul { margin: 3px 0 6px 18px; }
+  #rules .rules-body li { margin-bottom: 2px; }
+  #rules .rules-body .highlight {
+    background: rgba(79,195,247,0.15);
+    border-left: 4px solid #4fc3f7;
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin: 4px 0;
+  }
+  #rules .rules-body .col-wide { grid-column: 1 / -1; }
+  #rules button {
+    margin-top: 12px;
+    font-size: 22px;
+    padding: 10px 38px;
+    border-radius: 12px;
+    border: 3px solid #ffd700;
+    background: #ffd700;
+    color: #000;
+    cursor: pointer;
+    font-weight: 900;
+    font-family: 'Arial Black', Arial, sans-serif;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  #rules button:hover { transform: scale(1.06); box-shadow: 0 0 24px #ffd700; }
+
+  /* ЭКРАН ВЫБОРА УРОВНЯ */
+  #level-screen {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 12, 25, 0.97);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 45;
+    padding: 20px;
+    overflow: hidden;
+  }
+  #level-screen h2 {
+    font-size: 34px;
+    color: #ffd700;
+    margin-bottom: 22px;
+    text-shadow: 0 0 16px rgba(255,215,0,0.6);
+  }
+  .levels {
+    display: flex;
+    gap: 18px;
+    flex-wrap: nowrap;
+    justify-content: center;
+  }
+  .level-btn {
+    width: 200px;
+    padding: 18px 12px;
+    border-radius: 16px;
+    border: 3px solid;
+    background: linear-gradient(145deg, #1e2a44, #0d1526);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Arial Black', Arial, sans-serif;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .level-btn:hover { transform: translateY(-6px) scale(1.04); }
+  .level-btn.easy   { border-color: #4caf50; }
+  .level-btn.medium { border-color: #ffc107; }
+  .level-btn.hard   { border-color: #f44336; }
+  .level-btn.easy:hover   { box-shadow: 0 0 26px #4caf50; }
+  .level-btn.medium:hover { box-shadow: 0 0 26px #ffc107; }
+  .level-btn.hard:hover   { box-shadow: 0 0 26px #f44336; }
+  .lvl-emoji { font-size: 38px; }
+  .lvl-name  { font-size: 20px; letter-spacing: 1px; }
+  .lvl-desc  { font-size: 11px; color: #aaa; font-family: Arial, sans-serif; font-weight: normal; text-align: center; }
+</style>
+</head>
+<body>
+<div id="scale-wrap">
+<div id="game">
+  <div id="field"></div>
+
+  <div id="scoreboard">
+    <span class="stars">⭐ ЗВЁЗДЫ</span>
+    <span class="score" id="score">0 : 0</span>
+    <span class="rookies">НОВИЧКИ</span>
+  </div>
+
+  <button id="level-btn" title="Сменить уровень" onclick="changeLevel()">🟡 Средний</button>
+  <button id="help-btn" title="Правила игры" onclick="openRules()">?</button>
+
+  <div class="goal" id="goal-left"></div>
+  <div class="goal" id="goal-right"></div>
+  <div class="keeper" id="keeper-left">🧤</div>
+  <div class="keeper" id="keeper-right">🧤</div>
+
+  <div id="ball">⚽</div>
+
+  <div class="cards-panel" id="cards-stars">
+    <div class="cards-title">СОСТАВ ЗВЁЗД</div>
+  </div>
+  <div class="cards-panel right" id="cards-rookies">
+    <div class="cards-title">СОСТАВ НОВИЧКОВ</div>
+  </div>
+
+  <div class="flash" id="flash"></div>
+
+  <div id="panel">
+    <div id="commentator">Первый тайм начинается...</div>
+    <div id="question">—</div>
+    <input id="answer" type="text" inputmode="numeric" autocomplete="off" placeholder="?">
+    <div id="hint">Введи ответ и нажми Enter</div>
+  </div>
+
+  <div id="final">
+    <h1 id="final-text"></h1>
+    <button onclick="restartWithLevel()">Играть снова</button>
+  </div>
+
+  <!-- ЭКРАН ПРАВИЛ -->
+  <div id="rules">
+    <h2>⚽ ПРАВИЛА ИГРЫ ⚽</h2>
+    <div class="rules-body">
+      <p class="col-wide">Ты играешь <b>за команду ЗВЁЗД</b> (Роналду, Месси, Пеле, Марадона, Неймар) против команды <span class="blue"><b>НОВИЧКОВ</b></span>.</p>
+
+      <div class="highlight col-wide">
+        🎯 <b>Твоя задача:</b> решать примеры и забивать голы!
+      </div>
+
+      <div>
+        <p><b>Как играть:</b></p>
+        <ul>
+          <li>Внизу появляется пример (3 класс).</li>
+          <li>Введи ответ и нажми <b>Enter</b>.</li>
+          <li><b>Верно</b> → <b>ГОЛ!</b> Счёт звёзд растёт.</li>
+          <li><b>Ошибся</b> → вратарь ловит, <span class="blue">новички забивают в ответ</span>.</li>
+        </ul>
+      </div>
+
+      <div>
+        <p><b>Особые ответы:</b></p>
+        <ul>
+          <li><b>Деление с остатком:</b> два числа через пробел — частное и остаток (пример: <b>7 5</b>).</li>
+          <li><b>Сравнение:</b> знак <b>&lt;</b>, <b>&gt;</b> или <b>=</b>.</li>
+          <li><b>Уравнение:</b> найди <b>x</b> и введи число.</li>
+        </ul>
+      </div>
+
+      <div>
+        <p><b>Карточки игроков:</b></p>
+        <ul>
+          <li>Слева — твои звёзды, справа — новички.</li>
+          <li>Подсвеченная карточка = <b>кто сейчас бьёт</b>.</li>
+          <li>Каждый гол — новый бомбардир!</li>
+        </ul>
+      </div>
+
+      <div>
+        <p><b>Управление:</b></p>
+        <ul>
+          <li>Кнопка <b>📊 Уровень</b> — сменить сложность (матч начнётся заново).</li>
+          <li>Кнопка <b>?</b> — открыть правила.</li>
+          <li>Первый до <b>5 голов</b> — победа!</li>
+        </ul>
+      </div>
+    </div>
+    <button onclick="startGame()">НАЧАТЬ МАТЧ ⚽</button>
+  </div>
+
+  <!-- ЭКРАН ВЫБОРА УРОВНЯ -->
+  <div id="level-screen">
+    <h2>Выбери уровень ⚽</h2>
+    <div class="levels">
+      <button class="level-btn easy" onclick="selectLevel('easy')">
+        <span class="lvl-emoji">🟢</span>
+        <span class="lvl-name">ЛЁГКИЙ</span>
+        <span class="lvl-desc">+/− до 100, таблица умножения</span>
+      </button>
+      <button class="level-btn medium" onclick="selectLevel('medium')">
+        <span class="lvl-emoji">🟡</span>
+        <span class="lvl-name">СРЕДНИЙ</span>
+        <span class="lvl-desc">+/− до 1000, × на однозначное</span>
+      </button>
+      <button class="level-btn hard" onclick="selectLevel('hard')">
+        <span class="lvl-emoji">🔴</span>
+        <span class="lvl-name">СЛОЖНЫЙ</span>
+        <span class="lvl-desc">Все типы: остаток, уравнения, единицы</span>
+      </button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+/* ============ МАСШТАБИРОВАНИЕ ============ */
+function fitGame() {
+  const wrap = document.getElementById('scale-wrap');
+  const W = 960, H = 640;
+  const scale = Math.min(window.innerWidth / W, window.innerHeight / H, 1);
+  wrap.style.transform = `scale(${scale})`;
+  wrap.style.width = W + 'px';
+  wrap.style.height = H + 'px';
+}
+window.addEventListener('resize', fitGame);
+fitGame();
+
+/* ============ НАСТРОЙКИ ============ */
+const GOAL_LIMIT  = 5;
+const PLAYER_TEAM = 'stars';
+const COM_TEAM    = 'rookies';
+
+/* ============ УРОВЕНЬ ============ */
+let currentLevel = 'medium';
+
+/* ============ ИГРОКИ ============ */
+const STAR_PLAYERS = [
+  { name: 'Роналду',  emoji: '🇵🇹', pos: 'Нападающий',   power: 95 },
+  { name: 'Месси',    emoji: '🇦🇷', pos: 'Нападающий',   power: 96 },
+  { name: 'Пеле',     emoji: '🇧🇷', pos: 'Нападающий',   power: 94 },
+  { name: 'Марадона', emoji: '🇦🇷', pos: 'Полузащитник', power: 93 },
+  { name: 'Неймар',   emoji: '🇧🇷', pos: 'Нападающий',   power: 90 },
+];
+
+const ROOKIE_PLAYERS = [
+  { name: 'Новичок 1', emoji: '🧒', pos: 'Нападающий', power: 60 },
+  { name: 'Новичок 2', emoji: '👦', pos: 'Защитник',   power: 58 },
+  { name: 'Новичок 3', emoji: '👧', pos: 'Вратарь',    power: 55 },
+];
+
+/* ============ СОСТОЯНИЕ ============ */
+const score = { stars: 0, rookies: 0 };
+let currentExample = null;
+let locked = false;
+let strikerIndex = 0;
+let rookieIndex = 0;
+let gameStarted = false;
+let matchToken = 0;   // защита от старых таймеров
+
+/* ============ ЭЛЕМЕНТЫ ============ */
+const ball       = document.getElementById('ball');
+const questionEl = document.getElementById('question');
+const answerEl   = document.getElementById('answer');
+const scoreEl    = document.getElementById('score');
+const commentEl  = document.getElementById('commentator');
+const flashEl    = document.getElementById('flash');
+const hintEl     = document.getElementById('hint');
+const keeperL    = document.getElementById('keeper-left');
+const keeperR    = document.getElementById('keeper-right');
+const rulesEl    = document.getElementById('rules');
+const levelScreenEl = document.getElementById('level-screen');
+const levelBtn   = document.getElementById('level-btn');
+
+/* ============ УТИЛИТЫ ============ */
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+/* ============ ГЕНЕРАТОР ПРИМЕРОВ ============ */
+function generateExample() {
+  const allowedByLevel = {
+    easy:   [15, 16, 17, 8, 7],
+    medium: [1, 3, 5, 8, 11, 7],
+    hard:   [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+  };
+  const pool = allowedByLevel[currentLevel] || allowedByLevel.medium;
+  const type = pool[rand(0, pool.length - 1)];
+
+  let text, answer, isRemainder = false, isEquation = false, isCompare = false;
+  let quotient, remainder;
+
+  if (type === 15) {
+    let a, b;
+    do { a = rand(10, 80); b = rand(10, 99 - a); } while (a + b > 99);
+    text = `${a} + ${b}`; answer = a + b;
+
+  } else if (type === 16) {
+    const a = rand(30, 99);
+    const b = rand(10, a - 5);
+    text = `${a} − ${b}`; answer = a - b;
+
+  } else if (type === 17) {
+    const a = rand(2, 9), b = rand(2, 9);
+    text = `${a} × ${b}`; answer = a * b;
+
+  } else if (type === 1) {
+    let a, b;
+    do {
+      a = rand(120, 780);
+      b = rand(120, 1000 - a);
+    } while ((a % 10) + (b % 10) < 10 && (a % 100) + (b % 100) < 100);
+    text = `${a} + ${b}`; answer = a + b;
+
+  } else if (type === 2) {
+    let a, b, c;
+    do {
+      a = rand(100, 400); b = rand(100, 400); c = rand(100, 1000 - a - b);
+    } while (a + b + c > 1000 || a + b + c < 300);
+    text = `${a} + ${b} + ${c}`; answer = a + b + c;
+
+  } else if (type === 3) {
+    let a, b;
+    do {
+      a = rand(300, 1000); b = rand(100, a - 50);
+    } while ((a % 10) >= (b % 10) && (a % 100) >= (b % 100));
+    text = `${a} − ${b}`; answer = a - b;
+
+  } else if (type === 4) {
+    const a = rand(2, 9) * 100;
+    const b = rand(111, a - 100);
+    text = `${a} − ${b}`; answer = a - b;
+
+  } else if (type === 5) {
+    const a = rand(11, 99), b = rand(2, 9);
+    text = `${a} × ${b}`; answer = a * b;
+
+  } else if (type === 6) {
+    let a, b;
+    do { a = rand(101, 499); b = rand(2, 9); } while (a * b > 1000);
+    text = `${a} × ${b}`; answer = a * b;
+
+  } else if (type === 7) {
+    const a = rand(11, 99);
+    const mult = Math.random() < 0.5 ? 10 : 100;
+    text = `${a} × ${mult}`; answer = a * mult;
+
+  } else if (type === 8) {
+    const b = rand(2, 9);
+    const q = currentLevel === 'easy' ? rand(2, 9) : rand(11, 120);
+    text = `${b * q} ÷ ${b}`; answer = q;
+
+  } else if (type === 9) {
+    const b = rand(2, 9), q = rand(2, 9) * 10;
+    text = `${b * q} ÷ ${b}`; answer = q;
+
+  } else if (type === 10) {
+    const b = rand(3, 9);
+    quotient = rand(5, 40);
+    remainder = rand(1, b - 1);
+    const a = b * quotient + remainder;
+    text = `${a} ÷ ${b}`; answer = `${quotient} ${remainder}`;
+    isRemainder = true;
+
+  } else if (type === 11) {
+    const variant = rand(1, 3);
+    if (variant === 1) {
+      const a = rand(10, 50), b = rand(2, 9), c = rand(2, 9);
+      text = `${a} + ${b} × ${c}`; answer = a + b * c;
+    } else if (variant === 2) {
+      const a = rand(2, 9), b = rand(2, 9), c = rand(5, 40);
+      text = `${a} × ${b} − ${c}`; answer = a * b - c;
+    } else {
+      const a = rand(2, 9), b = rand(2, 9), c = rand(2, 9);
+      text = `(${a} + ${b}) × ${c}`; answer = (a + b) * c;
+    }
+
+  } else if (type === 12) {
+    const variant = rand(1, 3);
+    if (variant === 1) {
+      const x = rand(10, 90), a = rand(10, 90);
+      text = `x + ${a} = ${x + a}`; answer = x;
+    } else if (variant === 2) {
+      const x = rand(30, 120), a = rand(10, x - 10);
+      text = `x − ${a} = ${x - a}`; answer = x;
+    } else {
+      const x = rand(3, 20), a = rand(2, 9);
+      text = `x × ${a} = ${x * a}`; answer = x;
+    }
+    isEquation = true;
+
+  } else if (type === 13) {
+    const variant = rand(1, 4);
+    if (variant === 1) { const n = rand(2, 9); text = `${n} м = ? см`; answer = n * 100; }
+    else if (variant === 2) { const n = rand(2, 9); text = `${n} км = ? м`; answer = n * 1000; }
+    else if (variant === 3) { const n = rand(2, 9); text = `${n} дм = ? см`; answer = n * 10; }
+    else { const n = rand(2, 9); text = `${n} т = ? кг`; answer = n * 1000; }
+
+  } else {
+    const variant = rand(1, 2);
+    let left, right;
+    if (variant === 1) {
+      const a = rand(100, 500), b = rand(50, 400);
+      left = a + b; right = rand(200, 900);
+      text = `${a} + ${b} ? ${right}`;
+    } else {
+      const a = rand(400, 900), b = rand(50, 300);
+      left = a - b; right = rand(100, 600);
+      text = `${a} − ${b} ? ${right}`;
+    }
+    if (left > right) answer = '>';
+    else if (left < right) answer = '<';
+    else answer = '=';
+    isCompare = true;
+  }
+
+  return { text, answer, isRemainder, isEquation, isCompare, quotient, remainder };
+}
+
+/* ============ КАРТОЧКИ ============ */
+function renderCards() {
+  const starsBox = document.getElementById('cards-stars');
+  const rookiesBox = document.getElementById('cards-rookies');
+
+  starsBox.innerHTML = '<div class="cards-title">СОСТАВ ЗВЁЗД</div>' +
+    STAR_PLAYERS.map((p, i) => `
+      <div class="card" id="star-card-${i}">
+        <div class="avatar">${p.emoji}</div>
+        <div class="info">
+          <div class="name">${p.name}</div>
+          <div class="pos">${p.pos}</div>
+        </div>
+        <div class="power">${p.power}</div>
+      </div>
+    `).join('');
+
+  rookiesBox.innerHTML = '<div class="cards-title">СОСТАВ НОВИЧКОВ</div>' +
+    ROOKIE_PLAYERS.map((p, i) => `
+      <div class="card" id="rookie-card-${i}">
+        <div class="avatar">${p.emoji}</div>
+        <div class="info">
+          <div class="name">${p.name}</div>
+          <div class="pos">${p.pos}</div>
+        </div>
+        <div class="power">${p.power}</div>
+      </div>
+    `).join('');
+}
+
+function highlightCard(team, index) {
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  const id = team === 'stars' ? `star-card-${index}` : `rookie-card-${index}`;
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
+/* ============ РАУНД ============ */
+function newRound(attacker = PLAYER_TEAM) {
+  locked = false;
+  currentExample = null;
+  ball.classList.add('idle');
+
+  ball.style.transition = 'left 0.5s, top 0.5s, transform 0.5s';
+  ball.style.left = '50%';
+  ball.style.top = '50%';
+  ball.style.transform = '';
+
+  if (attacker === 'stars') {
+    highlightCard('stars', strikerIndex);
+    const p = STAR_PLAYERS[strikerIndex];
+    commentEl.textContent = `Бьёт ${p.name}! ${p.emoji}`;
+  } else {
+    highlightCard('rookies', rookieIndex);
+    const p = ROOKIE_PLAYERS[rookieIndex];
+    commentEl.textContent = `${p.name} выходит на удар...`;
+  }
+
+  const ex = generateExample();
+  currentExample = ex;
+
+  if (ex.isRemainder) {
+    questionEl.textContent = ex.text + ' = ? (ост. ?)';
+    hintEl.textContent = 'Введи частное и остаток через пробел, например: 7 5';
+    answerEl.placeholder = 'частное остаток';
+  } else if (ex.isEquation) {
+    questionEl.textContent = ex.text + '  →  x = ?';
+    hintEl.textContent = 'Найди x и введи число';
+    answerEl.placeholder = 'x = ?';
+  } else if (ex.isCompare) {
+    questionEl.textContent = ex.text;
+    hintEl.textContent = 'Введи знак:  <  ,  >  или  =';
+    answerEl.placeholder = '< > =';
+  } else {
+    questionEl.textContent = ex.text + ' = ?';
+    hintEl.textContent = 'Введи ответ и нажми Enter';
+    answerEl.placeholder = '?';
+  }
+
+  answerEl.value = '';
+  answerEl.disabled = false;
+  answerEl.focus();
+}
+
+/* ============ АНИМАЦИЯ ГОЛА ============ */
+function animateGoal(team) {
+  ball.classList.remove('idle');
+  ball.style.transition = 'left 1.4s cubic-bezier(0.4,0,0.2,1), top 1.4s cubic-bezier(0.4,0,0.2,1), transform 1.4s';
+
+  const goingRight = team === PLAYER_TEAM;
+  const targetLeft = goingRight ? 'calc(100% - 130px)' : 'calc(0% + 70px)';
+  const targetTop  = (rand(38, 62)) + '%';
+
+  ball.style.left = goingRight ? '70%' : '30%';
+  ball.style.top  = '30%';
+
+  setTimeout(() => {
+    ball.style.left = targetLeft;
+    ball.style.top  = targetTop;
+    ball.style.transform = 'rotate(720deg) scale(0.85)';
+  }, 120);
+}
+
+/* ============ АНИМАЦИЯ ПРОМАХА ============ */
+function animateMiss(team) {
+  ball.classList.remove('idle');
+  ball.style.transition = 'left 1.2s ease-out, top 1.2s ease-out, transform 1.2s';
+
+  const goingRight = team === PLAYER_TEAM;
+  const keeper = goingRight ? keeperR : keeperL;
+
+  ball.style.left = goingRight ? 'calc(100% - 120px)' : 'calc(0% + 100px)';
+  ball.style.top  = '50%';
+  ball.style.transform = 'rotate(180deg)';
+
+  setTimeout(() => {
+    keeper.classList.add('save');
+    setTimeout(() => keeper.classList.remove('save'), 500);
+  }, 900);
+}
+
+/* ============ ВСПЫШКА ============ */
+function showFlash(text, color) {
+  flashEl.textContent = text;
+  flashEl.style.color = color;
+  flashEl.classList.remove('show');
+  void flashEl.offsetWidth;
+  flashEl.classList.add('show');
+}
+
+/* ============ ТАБЛО ============ */
+function updateScoreboard() {
+  scoreEl.textContent = `${score.stars} : ${score.rookies}`;
+}
+
+/* ============ ПРОВЕРКА ОТВЕТА ============ */
+function submitAnswer() {
+  if (!gameStarted || locked || currentExample === null) return;
+  const rawInput = answerEl.value.trim();
+  if (rawInput === '') return;
+
+  let correct = false;
+
+  if (currentExample.isRemainder) {
+    const parts = rawInput.split(/\s+/).map(Number);
+    if (parts.length !== 2 || parts.some(isNaN)) {
+      hintEl.textContent = '⚠️ Введи ДВА числа через пробел: частное и остаток';
+      return;
+    }
+    correct = parts[0] === currentExample.quotient && parts[1] === currentExample.remainder;
+
+  } else if (currentExample.isCompare) {
+    if (!['<', '>', '='].includes(rawInput)) {
+      hintEl.textContent = '⚠️ Введи один из знаков:  <  >  =';
+      return;
+    }
+    correct = rawInput === currentExample.answer;
+
+  } else {
+    const userVal = parseInt(rawInput, 10);
+    if (isNaN(userVal)) return;
+    correct = userVal === currentExample.answer;
+  }
+
+  locked = true;
+  answerEl.disabled = true;
+
+  const attackingTeam = PLAYER_TEAM;
+  const tokenAtSubmit = matchToken;   // запоминаем текущий матч
+
+  if (correct) {
+    score.stars++;
+    updateScoreboard();
+    showFlash('ГОЛ! ⚽', '#ffd700');
+    const scorer = STAR_PLAYERS[strikerIndex];
+    commentEl.textContent = `${scorer.name} забивает! ГООООЛ!`;
+    animateGoal(attackingTeam);
+    strikerIndex = (strikerIndex + 1) % STAR_PLAYERS.length;
+  } else {
+    score.rookies++;
+    updateScoreboard();
+    showFlash('МИМО!', '#ff5252');
+    commentEl.textContent = 'Вратарь ловит! Новички перехватили мяч...';
+    animateMiss(attackingTeam);
+
+    setTimeout(() => {
+      if (tokenAtSubmit !== matchToken) return;   // матч сменили
+      if (score.rookies >= GOAL_LIMIT) return checkFinish();
+      showFlash('ГОЛ НОВИЧКОВ', '#4fc3f7');
+      animateGoal(COM_TEAM);
+      const rookie = ROOKIE_PLAYERS[rookieIndex];
+      commentEl.textContent = `${rookie.name} забивает в ответ!`;
+      rookieIndex = (rookieIndex + 1) % ROOKIE_PLAYERS.length;
+    }, 1600);
+  }
+
+  setTimeout(() => {
+    if (tokenAtSubmit !== matchToken) return;   // матч сменили
+    if (checkFinish()) return;
+    newRound(PLAYER_TEAM);
+  }, correct ? 2200 : 3400);
+}
+
+/* ============ ФИНАЛ ============ */
+function checkFinish() {
+  if (score.stars >= GOAL_LIMIT || score.rookies >= GOAL_LIMIT) {
+    const finalEl = document.getElementById('final');
+    const finalText = document.getElementById('final-text');
+    if (score.stars >= GOAL_LIMIT) {
+      finalText.textContent = `🏆 ПОБЕДА! ${score.stars} : ${score.rookies}`;
+      finalText.style.color = '#ffd700';
+    } else {
+      finalText.textContent = `😢 Поражение ${score.stars} : ${score.rookies}`;
+      finalText.style.color = '#4fc3f7';
+    }
+    finalEl.style.display = 'flex';
+    gameStarted = false;
+    return true;
+  }
+  return false;
+}
+
+/* ============ ПРАВИЛА ============ */
+function openRules() {
+  rulesEl.style.display = 'flex';
+  if (gameStarted) {
+    locked = true;
+    answerEl.disabled = true;
+  }
+}
+
+/* ============ СМЕНА УРОВНЯ ВО ВРЕМЯ ИГРЫ ============ */
+function changeLevel() {
+  if (gameStarted) {
+    locked = true;
+    answerEl.disabled = true;
+  }
+  levelScreenEl.style.display = 'flex';
+}
+
+/* ============ ВЫБОР УРОВНЯ ============ */
+function openLevelSelect() {
+  levelScreenEl.style.display = 'flex';
+}
+
+function selectLevel(level) {
+  currentLevel = level;
+  levelScreenEl.style.display = 'none';
+
+  // сброс счёта — честный новый матч
+  score.stars = 0;
+  score.rookies = 0;
+  strikerIndex = 0;
+  rookieIndex = 0;
+  updateScoreboard();
+
+  // скрыть финал, если был
+  document.getElementById('final').style.display = 'none';
+
+  // защита от старых таймеров
+  matchToken++;
+
+  // подпись уровня на кнопке
+  levelBtn.textContent =
+    level === 'easy' ? '🟢 Лёгкий' :
+    level === 'hard' ? '🔴 Сложный' : '🟡 Средний';
+
+  gameStarted = true;
+  newRound(PLAYER_TEAM);
+}
+
+/* ============ СТАРТ ИГРЫ ============ */
+function startGame() {
+  rulesEl.style.display = 'none';
+  if (!gameStarted) {
+    openLevelSelect();
+  } else {
+    locked = false;
+    answerEl.disabled = false;
+    answerEl.focus();
+  }
+}
+
+/* ============ ПЕРЕЗАПУСК С ТЕМ ЖЕ УРОВНЕМ ============ */
+function restartWithLevel() {
+  score.stars = 0;
+  score.rookies = 0;
+  strikerIndex = 0;
+  rookieIndex = 0;
+  updateScoreboard();
+  document.getElementById('final').style.display = 'none';
+  matchToken++;
+  gameStarted = true;
+  newRound(PLAYER_TEAM);
+}
+
+/* ============ ВВОД ============ */
+answerEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') submitAnswer();
+});
+answerEl.addEventListener('input', () => {
+  if (currentExample && currentExample.isCompare) {
+    answerEl.value = answerEl.value.replace(/[^<>=]/g, '').slice(0, 1);
+  } else if (currentExample && currentExample.isRemainder) {
+    answerEl.value = answerEl.value.replace(/[^\d\s]/g, '');
+  } else {
+    answerEl.value = answerEl.value.replace(/[^\d]/g, '');
+  }
+});
+
+/* ============ СТАРТ ============ */
+renderCards();
+updateScoreboard();
+rulesEl.style.display = 'flex';
+levelScreenEl.style.display = 'none';
+levelBtn.textContent = '🟡 Средний';
+</script>
+</body>
+</html>
