@@ -1,0 +1,268 @@
+from pathlib import Path
+
+html = r'''<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Детективное бюро «Чёрный кот»</title>
+<style>
+:root{--paper:#ead7b0;--paper2:#f5e8cb;--ink:#2b211a;--muted:#705744;--red:#8d3025;--gold:#b88945;--green:#46543b}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font-family:Georgia,'Times New Roman',serif;background:#211b17;background-image:radial-gradient(ellipse at top,#59432f 0%,#211b17 70%);min-height:100vh;padding:22px}
+button,input{font:inherit}
+button{cursor:pointer}
+.shell{max-width:1120px;margin:auto;border:8px solid #171310;box-shadow:0 18px 55px #0009;background:#c3a071;padding:10px;position:relative}
+.shell:before{content:"";position:absolute;inset:7px;border:1px solid #6c4a2b;pointer-events:none}
+.top{display:grid;grid-template-columns:1.25fr .75fr;gap:12px;position:relative}
+.paper{background:var(--paper);border:1px solid #a98a5e;box-shadow:3px 5px 0 #6b4a2d33;padding:22px;position:relative}
+.paper:after{content:"";position:absolute;inset:5px;border:1px solid #c3a77a;pointer-events:none}
+.stamp{display:inline-block;color:var(--red);border:3px double var(--red);padding:5px 10px;transform:rotate(-3deg);font-weight:bold;letter-spacing:2px}
+h1{font-size:clamp(2rem,5vw,4rem);line-height:.92;text-transform:uppercase;margin:14px 0 10px;letter-spacing:2px}
+h2{font-size:1.5rem;margin:0 0 12px;text-transform:uppercase}
+h3{font-size:1.1rem;margin:0 0 8px;text-transform:uppercase;letter-spacing:1px}
+.subtitle{font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:2px;font-size:.8rem;color:#6d4a31}
+.catcard{display:flex;flex-direction:column;justify-content:space-between;min-height:250px;background:#302720;color:#ead7b0;border:5px solid #8a6946;padding:16px;position:relative;overflow:hidden}
+.cat{font-size:6rem;text-align:center;filter:grayscale(1);line-height:1.2}
+.catcard p{margin:0;font-style:italic;text-align:center}
+.casebar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:14px 0}
+.pill{background:#33271e;color:#f0ddb8;padding:8px 12px;font-size:.9rem;border:1px solid #8b6843}
+.progress{height:8px;background:#6f5437;margin-top:8px;border:1px solid #4b3827}
+.progress span{display:block;height:100%;width:0;background:#a13a2c;transition:width .3s}
+.layout{display:grid;grid-template-columns:250px 1fr;gap:12px;margin-top:12px}
+.side{display:flex;flex-direction:column;gap:12px}
+.clue{background:#dfc79a;padding:14px;border-left:5px solid var(--red);font-size:.98rem;line-height:1.45}
+.clue small{display:block;text-transform:uppercase;letter-spacing:1px;font-weight:bold;color:#7a3328;margin-bottom:7px}
+.case-main{min-height:400px}
+.case-title{display:flex;align-items:center;gap:10px;border-bottom:2px solid #b89a6a;padding-bottom:12px;margin-bottom:16px}
+.case-title .number{font-size:2rem;color:var(--red);font-weight:bold}
+.story{font-size:1.08rem;line-height:1.6;margin:12px 0 18px}
+.question{font-size:1.25rem;font-weight:bold;line-height:1.4;margin:18px 0}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.answer{background:#f3e5c4;border:2px solid #b99b6c;padding:13px;text-align:left;transition:.15s;color:var(--ink)}
+.answer:hover{transform:translateY(-2px);border-color:var(--red)}
+.answer:focus{outline:3px solid #9c3d2f}
+.answer.correct{background:#d5d7b8;border-color:#52613e}
+.answer.wrong{background:#e4c0a8;border-color:#963c2b}
+.feedback{margin-top:14px;padding:13px;background:#ddc59a;border-left:5px solid var(--gold);line-height:1.5;display:none}
+.feedback.show{display:block}
+.controls{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:18px;flex-wrap:wrap}
+.btn{border:0;background:#33271e;color:#f5e8cb;padding:12px 18px;font-weight:bold;letter-spacing:.5px}
+.btn.red{background:var(--red)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+input[type=text]{background:#f8edcf;border:1px solid #9d8058;padding:10px;min-width:0;width:100%;margin-top:8px}
+.footer{color:#d7bd91;text-align:center;padding:14px 0 4px;font:12px Arial,sans-serif;letter-spacing:2px;text-transform:uppercase}
+.hidden{display:none!important}
+.end{text-align:center;padding:25px 8px}
+.bigseal{font-size:4rem}
+@media(max-width:740px){body{padding:7px}.shell{padding:6px;border-width:5px}.top{grid-template-columns:1fr}.catcard{min-height:140px;display:grid;grid-template-columns:100px 1fr;align-items:center}.cat{font-size:4rem}.layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr}.paper{padding:16px}.answers{grid-template-columns:1fr}.case-main{min-height:0}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top">
+    <section class="paper">
+      <span class="stamp">ДЕЛО № 013 · СЕКРЕТНО</span>
+      <h1>Чёрный<br>кот</h1>
+      <div class="subtitle">Детективное бюро математических расследований</div>
+      <p class="story">В городе пропала шкатулка с уликами. Чтобы найти её, придётся читать показания, вычислять, сравнивать и замечать то, что ускользнуло от других.</p>
+      <div class="casebar">
+        <span class="pill">АГЕНТ: <span id="agentName">Новичок</span></span>
+        <span class="pill">УЛИКИ: <b id="score">0</b> / 6</span>
+      </div>
+      <div class="progress"><span id="progress"></span></div>
+    </section>
+    <aside class="catcard">
+      <div class="cat">🐈‍⬛</div>
+      <div><h2 style="text-align:center">Инспектор Уголь</h2><p>«В каждом деле есть число, которое всё объясняет. Найди его».</p></div>
+    </aside>
+  </div>
+
+  <div id="intro" class="paper" style="margin-top:12px">
+    <h2>Перед началом расследования</h2>
+    <p>Инспектор Уголь доверяет дело только внимательным сыщикам. Впиши имя и приступай к шести этапам расследования. На каждом этапе сначала изучи материалы, затем выбери ответ. Ошибка — не провал: она оставит тебе подсказку.</p>
+    <label for="name"><b>Имя сыщика</b></label>
+    <input id="name" type="text" maxlength="24" placeholder="Например, Маша">
+    <div class="controls"><span class="subtitle">6 улик · задачи 3 класса</span><button class="btn red" id="start">Открыть дело →</button></div>
+  </div>
+
+  <div id="game" class="layout hidden">
+    <aside class="side">
+      <div class="paper"><h3>Карточка дела</h3><p><b>Подозреваемый:</b><br>неизвестен</p><p><b>Место:</b><br>Старый городской архив</p><p><b>Главная задача:</b><br>собрать все улики</p></div>
+      <div class="clue"><small>Записка инспектора</small><span id="hint">Не торопись. Прочитай условие дважды.</span></div>
+      <div class="paper"><h3>Доказательства</h3><div id="evidence">Пока нет ни одной улики.</div></div>
+    </aside>
+    <main class="paper case-main">
+      <div id="questionView"></div>
+      <div id="feedback" class="feedback" aria-live="polite"></div>
+      <div class="controls"><button class="btn" id="hintBtn">Нужна подсказка</button><button class="btn red" id="next" disabled>Следующая улика →</button></div>
+    </main>
+  </div>
+
+  <section id="ending" class="paper end hidden">
+    <div class="bigseal">🔎</div><span class="stamp">ДЕЛО ЗАКРЫТО</span>
+    <h2 id="endingTitle">Расследование завершено!</h2>
+    <p id="endingText" class="story"></p>
+    <div id="finalEvidence"></div>
+    <button class="btn red" onclick="location.reload()">Начать новое расследование ↻</button>
+  </section>
+  <div class="footer">Точность · Логика · Внимательность · Бюро «Чёрный кот»</div>
+</div>
+<script>
+const cases = [
+ {title:"Следы у архива",tag:"Улика № 1 · Вычисления",story:"Ночной сторож заметил, что у двери архива лежали 3 коробки с уликами. В каждой коробке было по 24 карточки. До утра сыщик успел изучить 17 карточек. Сколько карточек осталось изучить?",q:"Какое выражение поможет найти остаток карточек?",hint:"Сначала найди, сколько карточек было во всех трёх коробках. Потом вычти уже изученные 17.",answers:["24 × 3 − 17 = 55","24 + 3 − 17 = 10","24 × 17 − 3 = 405","24 × 3 + 17 = 89"],correct:0,explain:"В трёх коробках 24 × 3 = 72 карточки. Из них изучили 17: 72 − 17 = 55. Первая улика найдена — у двери осталась карточка с отпечатком лапы.",evidence:"Отпечаток лапы",skill:"Умножение и вычитание"},
+ {title:"Показания библиотекаря",tag:"Улика № 2 · Цена, количество, стоимость",story:"Библиотекарь купил для архива 4 одинаковых блокнота. За всю покупку он заплатил 360 рублей. В чеке указано, что сдачи не было. Детективу нужно узнать цену одного блокнота.",q:"Сколько стоит один блокнот?",hint:"Чтобы найти цену одной вещи, общую стоимость раздели на количество одинаковых вещей.",answers:["90 рублей","80 рублей","120 рублей","1440 рублей"],correct:0,explain:"360 : 4 = 90 рублей. Значит, каждый блокнот стоил 90 рублей. Библиотекарь вспомнил: на одном блокноте была нарисована башня.",evidence:"Рисунок башни",skill:"Деление и стоимость"},
+ {title:"Зашифрованный маршрут",tag:"Улика № 3 · Задача в два действия",story:"От архива до старого моста 280 метров. От моста до площади — на 160 метров больше. Сыщик прошёл весь путь от архива через мост до площади. Какое расстояние он прошёл?",q:"Выбери верное решение.",hint:"Сначала вычисли расстояние от моста до площади: к 280 прибавь 160. Затем прибавь путь от архива до моста.",answers:["280 + (280 + 160) = 720 м","280 + 160 = 440 м","280 × 160 = 44 800 м","280 + 280 − 160 = 400 м"],correct:0,explain:"От моста до площади: 280 + 160 = 440 м. Весь маршрут: 280 + 440 = 720 м. На карте обнаружилась отметка у часовой башни.",evidence:"Карта маршрута",skill:"Составная задача"},
+ {title:"Часы свидетеля",tag:"Улика № 4 · Время",story:"Свидетель вошёл в архив в 14 часов 20 минут. Он провёл внутри 1 час 35 минут и сразу ушёл. В журнале пропусков нужно отметить время его ухода.",q:"Во сколько свидетель покинул архив?",hint:"Прибавь сначала 1 час, а затем 35 минут. Помни: в одном часе 60 минут.",answers:["15 ч 55 мин","15 ч 35 мин","14 ч 55 мин","16 ч 05 мин"],correct:0,explain:"14:20 + 1 час = 15:20. Ещё 35 минут — 15:55. В журнале напротив этой записи обнаружился знак в виде ключа.",evidence:"Запись о времени",skill:"Единицы времени"},
+ {title:"Вес подозрительной посылки",tag:"Улика № 5 · Единицы величин",story:"В архив доставили посылку массой 3 кг 400 г. Внутри нашли металлический футляр массой 850 г и записку. Чтобы внести данные в протокол, нужно узнать массу остального содержимого.",q:"Какова масса остального содержимого?",hint:"Переведи 3 кг 400 г в граммы, затем вычти 850 г.",answers:["2550 г","340 г","4250 г","2450 г"],correct:0,explain:"3 кг 400 г = 3400 г. 3400 − 850 = 2550 г. В оставшемся содержимом нашёлся маленький ключ — последняя деталь перед финалом.",evidence:"Маленький ключ",skill:"Килограммы и граммы"},
+ {title:"Последний замок",tag:"Улика № 6 · Логика и порядок действий",story:"Шкатулка заперта кодовым замком. Инспектор оставил правило: «Умножь число 8 на 7, затем вычти 16 и раздели результат на 4». Получившееся число — код.",q:"Какой код откроет шкатулку?",hint:"Соблюдай порядок действий: сначала умножение, затем вычитание, затем деление.",answers:["10","12","14","8"],correct:0,explain:"8 × 7 = 56; 56 − 16 = 40; 40 : 4 = 10. Замок щёлкнул! В шкатулке лежало письмо: все улики были спрятаны, чтобы проверить нового сыщика.",evidence:"Код шкатулки: 10",skill:"Порядок действий"}
+];
+let index=0,score=0,solved=false,usedHint=false,found=[];
+const $=id=>document.getElementById(id);
+$("start").addEventListener("click",()=>{const name=$("name").value.trim();$("agentName").textContent=name||"Новичок";$("intro").classList.add("hidden");$("game").classList.remove("hidden");render()});
+function render(){solved=false;usedHint=false;$("next").disabled=true;$("feedback").className="feedback";$("feedback").textContent="";$("hint").textContent="Не торопись. Прочитай условие дважды.";const c=cases[index];$("questionView").innerHTML=`<div class="case-title"><span class="number">0${index+1}</span><div><div class="subtitle">${c.tag}</div><h2>${c.title}</h2></div></div><div class="story">${c.story}</div><div class="question">${c.q}</div><div class="answers">${c.answers.map((a,i)=>`<button class="answer" data-i="${i}">${String.fromCharCode(1040+i)}. ${a}</button>`).join("")}</div>`;document.querySelectorAll(".answer").forEach(b=>b.addEventListener("click",()=>choose(Number(b.dataset.i))));$("progress").style.width=(index/cases.length*100)+"%"}
+function choose(n){if(solved)return;const c=cases[index];const buttons=[...document.querySelectorAll(".answer")];if(n===c.correct){solved=true;score++;found.push(c.evidence);buttons[n].classList.add("correct");buttons.forEach(b=>b.disabled=true);$("score").textContent=score;$("progress").style.width=((index+1)/cases.length*100)+"%";$("feedback").innerHTML="<b>Верно, улика ваша!</b><br>"+c.explain;$("feedback").classList.add("show");$("next").disabled=false;$("next").textContent=index===cases.length-1?"Завершить расследование ✓":"Следующая улика →";$("evidence").innerHTML=found.map((e,i)=>`<p>✓ ${e}</p>`).join("");$("hint").textContent="Отличная работа. Зафиксируй улику в деле."}else{buttons[n].classList.add("wrong");$("feedback").innerHTML="<b>Пока не сходится.</b><br>Проверь, что именно нужно узнать, и попробуй ещё раз. Ошибка — это зацепка, а не конец расследования.";$("feedback").classList.add("show");$("hint").textContent="Подумай, какое действие отвечает на вопрос задачи."}}
+$("hintBtn").addEventListener("click",()=>{usedHint=true;$("hint").textContent=cases[index].hint;$("feedback").innerHTML="<b>Подсказка инспектора</b><br>"+cases[index].hint;$("feedback").classList.add("show")});
+$("next").addEventListener("click",()=>{if(index<cases.length-1){index++;render()}else finish()});
+function finish(){$("game").classList.add("hidden");$("ending").classList.remove("hidden");$("progress").style.width="100%";$("endingTitle").textContent=score===6?"Расследование раскрыто блестяще!":"Дело раскрыто!";$("endingText").textContent=`${$("agentName").textContent}, ты собрал(а) ${score} из 6 улик и помог(ла) инспектору Углю открыть шкатулку. Настоящий детектив не боится сложных задач: он проверяет версии, ищет связи и исправляет ошибки.`;$("finalEvidence").innerHTML="<h3>Собранные улики</h3>"+found.map(e=>`<span class='pill' style='display:inline-block;margin:4px'>${e}</span>`).join("")}
+</script>
+</body>
+</html>'''
+
+path = Path("/mnt/data/detektiv_cherny_kot.html")
+path.write_text(html, encoding="utf-8")
+print(f"Создан файл: {path}")
+from pathlib import Path
+
+html = r'''<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Детективное бюро «Чёрный кот»</title>
+<style>
+:root{--paper:#ead7b0;--paper2:#f5e8cb;--ink:#2b211a;--muted:#705744;--red:#8d3025;--gold:#b88945;--green:#46543b}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font-family:Georgia,'Times New Roman',serif;background:#211b17;background-image:radial-gradient(ellipse at top,#59432f 0%,#211b17 70%);min-height:100vh;padding:22px}
+button,input{font:inherit}
+button{cursor:pointer}
+.shell{max-width:1120px;margin:auto;border:8px solid #171310;box-shadow:0 18px 55px #0009;background:#c3a071;padding:10px;position:relative}
+.shell:before{content:"";position:absolute;inset:7px;border:1px solid #6c4a2b;pointer-events:none}
+.top{display:grid;grid-template-columns:1.25fr .75fr;gap:12px;position:relative}
+.paper{background:var(--paper);border:1px solid #a98a5e;box-shadow:3px 5px 0 #6b4a2d33;padding:22px;position:relative}
+.paper:after{content:"";position:absolute;inset:5px;border:1px solid #c3a77a;pointer-events:none}
+.stamp{display:inline-block;color:var(--red);border:3px double var(--red);padding:5px 10px;transform:rotate(-3deg);font-weight:bold;letter-spacing:2px}
+h1{font-size:clamp(2rem,5vw,4rem);line-height:.92;text-transform:uppercase;margin:14px 0 10px;letter-spacing:2px}
+h2{font-size:1.5rem;margin:0 0 12px;text-transform:uppercase}
+h3{font-size:1.1rem;margin:0 0 8px;text-transform:uppercase;letter-spacing:1px}
+.subtitle{font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:2px;font-size:.8rem;color:#6d4a31}
+.catcard{display:flex;flex-direction:column;justify-content:space-between;min-height:250px;background:#302720;color:#ead7b0;border:5px solid #8a6946;padding:16px;position:relative;overflow:hidden}
+.cat{font-size:6rem;text-align:center;filter:grayscale(1);line-height:1.2}
+.catcard p{margin:0;font-style:italic;text-align:center}
+.casebar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:14px 0}
+.pill{background:#33271e;color:#f0ddb8;padding:8px 12px;font-size:.9rem;border:1px solid #8b6843}
+.progress{height:8px;background:#6f5437;margin-top:8px;border:1px solid #4b3827}
+.progress span{display:block;height:100%;width:0;background:#a13a2c;transition:width .3s}
+.layout{display:grid;grid-template-columns:250px 1fr;gap:12px;margin-top:12px}
+.side{display:flex;flex-direction:column;gap:12px}
+.clue{background:#dfc79a;padding:14px;border-left:5px solid var(--red);font-size:.98rem;line-height:1.45}
+.clue small{display:block;text-transform:uppercase;letter-spacing:1px;font-weight:bold;color:#7a3328;margin-bottom:7px}
+.case-main{min-height:400px}
+.case-title{display:flex;align-items:center;gap:10px;border-bottom:2px solid #b89a6a;padding-bottom:12px;margin-bottom:16px}
+.case-title .number{font-size:2rem;color:var(--red);font-weight:bold}
+.story{font-size:1.08rem;line-height:1.6;margin:12px 0 18px}
+.question{font-size:1.25rem;font-weight:bold;line-height:1.4;margin:18px 0}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.answer{background:#f3e5c4;border:2px solid #b99b6c;padding:13px;text-align:left;transition:.15s;color:var(--ink)}
+.answer:hover{transform:translateY(-2px);border-color:var(--red)}
+.answer:focus{outline:3px solid #9c3d2f}
+.answer.correct{background:#d5d7b8;border-color:#52613e}
+.answer.wrong{background:#e4c0a8;border-color:#963c2b}
+.feedback{margin-top:14px;padding:13px;background:#ddc59a;border-left:5px solid var(--gold);line-height:1.5;display:none}
+.feedback.show{display:block}
+.controls{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:18px;flex-wrap:wrap}
+.btn{border:0;background:#33271e;color:#f5e8cb;padding:12px 18px;font-weight:bold;letter-spacing:.5px}
+.btn.red{background:var(--red)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+input[type=text]{background:#f8edcf;border:1px solid #9d8058;padding:10px;min-width:0;width:100%;margin-top:8px}
+.footer{color:#d7bd91;text-align:center;padding:14px 0 4px;font:12px Arial,sans-serif;letter-spacing:2px;text-transform:uppercase}
+.hidden{display:none!important}
+.end{text-align:center;padding:25px 8px}
+.bigseal{font-size:4rem}
+@media(max-width:740px){body{padding:7px}.shell{padding:6px;border-width:5px}.top{grid-template-columns:1fr}.catcard{min-height:140px;display:grid;grid-template-columns:100px 1fr;align-items:center}.cat{font-size:4rem}.layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr}.paper{padding:16px}.answers{grid-template-columns:1fr}.case-main{min-height:0}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top">
+    <section class="paper">
+      <span class="stamp">ДЕЛО № 013 · СЕКРЕТНО</span>
+      <h1>Чёрный<br>кот</h1>
+      <div class="subtitle">Детективное бюро математических расследований</div>
+      <p class="story">В городе пропала шкатулка с уликами. Чтобы найти её, придётся читать показания, вычислять, сравнивать и замечать то, что ускользнуло от других.</p>
+      <div class="casebar">
+        <span class="pill">АГЕНТ: <span id="agentName">Новичок</span></span>
+        <span class="pill">УЛИКИ: <b id="score">0</b> / 6</span>
+      </div>
+      <div class="progress"><span id="progress"></span></div>
+    </section>
+    <aside class="catcard">
+      <div class="cat">🐈‍⬛</div>
+      <div><h2 style="text-align:center">Инспектор Уголь</h2><p>«В каждом деле есть число, которое всё объясняет. Найди его».</p></div>
+    </aside>
+  </div>
+
+  <div id="intro" class="paper" style="margin-top:12px">
+    <h2>Перед началом расследования</h2>
+    <p>Инспектор Уголь доверяет дело только внимательным сыщикам. Впиши имя и приступай к шести этапам расследования. На каждом этапе сначала изучи материалы, затем выбери ответ. Ошибка — не провал: она оставит тебе подсказку.</p>
+    <label for="name"><b>Имя сыщика</b></label>
+    <input id="name" type="text" maxlength="24" placeholder="Например, Маша">
+    <div class="controls"><span class="subtitle">6 улик · задачи 3 класса</span><button class="btn red" id="start">Открыть дело →</button></div>
+  </div>
+
+  <div id="game" class="layout hidden">
+    <aside class="side">
+      <div class="paper"><h3>Карточка дела</h3><p><b>Подозреваемый:</b><br>неизвестен</p><p><b>Место:</b><br>Старый городской архив</p><p><b>Главная задача:</b><br>собрать все улики</p></div>
+      <div class="clue"><small>Записка инспектора</small><span id="hint">Не торопись. Прочитай условие дважды.</span></div>
+      <div class="paper"><h3>Доказательства</h3><div id="evidence">Пока нет ни одной улики.</div></div>
+    </aside>
+    <main class="paper case-main">
+      <div id="questionView"></div>
+      <div id="feedback" class="feedback" aria-live="polite"></div>
+      <div class="controls"><button class="btn" id="hintBtn">Нужна подсказка</button><button class="btn red" id="next" disabled>Следующая улика →</button></div>
+    </main>
+  </div>
+
+  <section id="ending" class="paper end hidden">
+    <div class="bigseal">🔎</div><span class="stamp">ДЕЛО ЗАКРЫТО</span>
+    <h2 id="endingTitle">Расследование завершено!</h2>
+    <p id="endingText" class="story"></p>
+    <div id="finalEvidence"></div>
+    <button class="btn red" onclick="location.reload()">Начать новое расследование ↻</button>
+  </section>
+  <div class="footer">Точность · Логика · Внимательность · Бюро «Чёрный кот»</div>
+</div>
+<script>
+const cases = [
+ {title:"Следы у архива",tag:"Улика № 1 · Вычисления",story:"Ночной сторож заметил, что у двери архива лежали 3 коробки с уликами. В каждой коробке было по 24 карточки. До утра сыщик успел изучить 17 карточек. Сколько карточек осталось изучить?",q:"Какое выражение поможет найти остаток карточек?",hint:"Сначала найди, сколько карточек было во всех трёх коробках. Потом вычти уже изученные 17.",answers:["24 × 3 − 17 = 55","24 + 3 − 17 = 10","24 × 17 − 3 = 405","24 × 3 + 17 = 89"],correct:0,explain:"В трёх коробках 24 × 3 = 72 карточки. Из них изучили 17: 72 − 17 = 55. Первая улика найдена — у двери осталась карточка с отпечатком лапы.",evidence:"Отпечаток лапы",skill:"Умножение и вычитание"},
+ {title:"Показания библиотекаря",tag:"Улика № 2 · Цена, количество, стоимость",story:"Библиотекарь купил для архива 4 одинаковых блокнота. За всю покупку он заплатил 360 рублей. В чеке указано, что сдачи не было. Детективу нужно узнать цену одного блокнота.",q:"Сколько стоит один блокнот?",hint:"Чтобы найти цену одной вещи, общую стоимость раздели на количество одинаковых вещей.",answers:["90 рублей","80 рублей","120 рублей","1440 рублей"],correct:0,explain:"360 : 4 = 90 рублей. Значит, каждый блокнот стоил 90 рублей. Библиотекарь вспомнил: на одном блокноте была нарисована башня.",evidence:"Рисунок башни",skill:"Деление и стоимость"},
+ {title:"Зашифрованный маршрут",tag:"Улика № 3 · Задача в два действия",story:"От архива до старого моста 280 метров. От моста до площади — на 160 метров больше. Сыщик прошёл весь путь от архива через мост до площади. Какое расстояние он прошёл?",q:"Выбери верное решение.",hint:"Сначала вычисли расстояние от моста до площади: к 280 прибавь 160. Затем прибавь путь от архива до моста.",answers:["280 + (280 + 160) = 720 м","280 + 160 = 440 м","280 × 160 = 44 800 м","280 + 280 − 160 = 400 м"],correct:0,explain:"От моста до площади: 280 + 160 = 440 м. Весь маршрут: 280 + 440 = 720 м. На карте обнаружилась отметка у часовой башни.",evidence:"Карта маршрута",skill:"Составная задача"},
+ {title:"Часы свидетеля",tag:"Улика № 4 · Время",story:"Свидетель вошёл в архив в 14 часов 20 минут. Он провёл внутри 1 час 35 минут и сразу ушёл. В журнале пропусков нужно отметить время его ухода.",q:"Во сколько свидетель покинул архив?",hint:"Прибавь сначала 1 час, а затем 35 минут. Помни: в одном часе 60 минут.",answers:["15 ч 55 мин","15 ч 35 мин","14 ч 55 мин","16 ч 05 мин"],correct:0,explain:"14:20 + 1 час = 15:20. Ещё 35 минут — 15:55. В журнале напротив этой записи обнаружился знак в виде ключа.",evidence:"Запись о времени",skill:"Единицы времени"},
+ {title:"Вес подозрительной посылки",tag:"Улика № 5 · Единицы величин",story:"В архив доставили посылку массой 3 кг 400 г. Внутри нашли металлический футляр массой 850 г и записку. Чтобы внести данные в протокол, нужно узнать массу остального содержимого.",q:"Какова масса остального содержимого?",hint:"Переведи 3 кг 400 г в граммы, затем вычти 850 г.",answers:["2550 г","340 г","4250 г","2450 г"],correct:0,explain:"3 кг 400 г = 3400 г. 3400 − 850 = 2550 г. В оставшемся содержимом нашёлся маленький ключ — последняя деталь перед финалом.",evidence:"Маленький ключ",skill:"Килограммы и граммы"},
+ {title:"Последний замок",tag:"Улика № 6 · Логика и порядок действий",story:"Шкатулка заперта кодовым замком. Инспектор оставил правило: «Умножь число 8 на 7, затем вычти 16 и раздели результат на 4». Получившееся число — код.",q:"Какой код откроет шкатулку?",hint:"Соблюдай порядок действий: сначала умножение, затем вычитание, затем деление.",answers:["10","12","14","8"],correct:0,explain:"8 × 7 = 56; 56 − 16 = 40; 40 : 4 = 10. Замок щёлкнул! В шкатулке лежало письмо: все улики были спрятаны, чтобы проверить нового сыщика.",evidence:"Код шкатулки: 10",skill:"Порядок действий"}
+];
+let index=0,score=0,solved=false,usedHint=false,found=[];
+const $=id=>document.getElementById(id);
+$("start").addEventListener("click",()=>{const name=$("name").value.trim();$("agentName").textContent=name||"Новичок";$("intro").classList.add("hidden");$("game").classList.remove("hidden");render()});
+function render(){solved=false;usedHint=false;$("next").disabled=true;$("feedback").className="feedback";$("feedback").textContent="";$("hint").textContent="Не торопись. Прочитай условие дважды.";const c=cases[index];$("questionView").innerHTML=`<div class="case-title"><span class="number">0${index+1}</span><div><div class="subtitle">${c.tag}</div><h2>${c.title}</h2></div></div><div class="story">${c.story}</div><div class="question">${c.q}</div><div class="answers">${c.answers.map((a,i)=>`<button class="answer" data-i="${i}">${String.fromCharCode(1040+i)}. ${a}</button>`).join("")}</div>`;document.querySelectorAll(".answer").forEach(b=>b.addEventListener("click",()=>choose(Number(b.dataset.i))));$("progress").style.width=(index/cases.length*100)+"%"}
+function choose(n){if(solved)return;const c=cases[index];const buttons=[...document.querySelectorAll(".answer")];if(n===c.correct){solved=true;score++;found.push(c.evidence);buttons[n].classList.add("correct");buttons.forEach(b=>b.disabled=true);$("score").textContent=score;$("progress").style.width=((index+1)/cases.length*100)+"%";$("feedback").innerHTML="<b>Верно, улика ваша!</b><br>"+c.explain;$("feedback").classList.add("show");$("next").disabled=false;$("next").textContent=index===cases.length-1?"Завершить расследование ✓":"Следующая улика →";$("evidence").innerHTML=found.map((e,i)=>`<p>✓ ${e}</p>`).join("");$("hint").textContent="Отличная работа. Зафиксируй улику в деле."}else{buttons[n].classList.add("wrong");$("feedback").innerHTML="<b>Пока не сходится.</b><br>Проверь, что именно нужно узнать, и попробуй ещё раз. Ошибка — это зацепка, а не конец расследования.";$("feedback").classList.add("show");$("hint").textContent="Подумай, какое действие отвечает на вопрос задачи."}}
+$("hintBtn").addEventListener("click",()=>{usedHint=true;$("hint").textContent=cases[index].hint;$("feedback").innerHTML="<b>Подсказка инспектора</b><br>"+cases[index].hint;$("feedback").classList.add("show")});
+$("next").addEventListener("click",()=>{if(index<cases.length-1){index++;render()}else finish()});
+function finish(){$("game").classList.add("hidden");$("ending").classList.remove("hidden");$("progress").style.width="100%";$("endingTitle").textContent=score===6?"Расследование раскрыто блестяще!":"Дело раскрыто!";$("endingText").textContent=`${$("agentName").textContent}, ты собрал(а) ${score} из 6 улик и помог(ла) инспектору Углю открыть шкатулку. Настоящий детектив не боится сложных задач: он проверяет версии, ищет связи и исправляет ошибки.`;$("finalEvidence").innerHTML="<h3>Собранные улики</h3>"+found.map(e=>`<span class='pill' style='display:inline-block;margin:4px'>${e}</span>`).join("")}
+</script>
+</body>
+</html>'''
+
+path = Path("/mnt/data/detektiv_cherny_kot.html")
+path.write_text(html, encoding="utf-8")
+print(f"Создан файл: {path}")
