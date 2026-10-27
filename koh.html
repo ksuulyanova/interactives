@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Игры для коррекции дислексии — 4 класс</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-1: #0b1026; --bg-2: #1a1a4e; --bg-3: #2d1b4e;
+    --accent: #a78bfa; --accent-2: #f472b6; --accent-3: #38bdf8;
+    --gold: #fbbf24; --green: #4ade80; --red: #f87171;
+    --glass: rgba(255,255,255,0.07); --glass-border: rgba(255,255,255,0.14);
+  }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Nunito', 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, var(--bg-1), var(--bg-2), var(--bg-3));
+    color: #fff; padding: 8px 12px;
+    display: flex; flex-direction: column;
+    height: 100vh;
+  }
+  .container {
+    max-width: 1200px; width: 100%; margin: 0 auto;
+    display: flex; flex-direction: column;
+    height: 100%; min-height: 0;
+  }
+
+  .header { text-align: center; flex-shrink: 0; margin-bottom: 4px; }
+  h1 {
+    font-size: 20px; font-weight: 900; letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #fff, var(--accent), var(--accent-3));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle { color: rgba(255,255,255,0.55); font-size: 11px; font-weight: 600; }
+
+  /* Табы */
+  .tabs {
+    display: flex; justify-content: center; gap: 6px; flex-wrap: wrap;
+    margin-bottom: 6px; flex-shrink: 0;
+  }
+  .tab {
+    padding: 7px 16px; border-radius: 10px; font-weight: 800; font-size: 12px;
+    cursor: pointer; transition: all 0.25s;
+    border: 1px solid var(--glass-border);
+    background: var(--glass); color: rgba(255,255,255,0.7);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tab:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
+  .tab.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff; border-color: transparent;
+    box-shadow: 0 6px 18px rgba(167,139,250,0.45);
+  }
+
+  /* Игровой экран — flex-колонка на всю высоту */
+  .game-screen {
+    flex: 1 1 auto; min-height: 0;
+    display: flex; flex-direction: column;
+  }
+
+  .stats {
+    display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 4px; flex-shrink: 0;
+  }
+  .stat {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; padding: 2px 12px; font-weight: 700; font-size: 10px;
+    color: rgba(255,255,255,0.6); display: flex; flex-direction: column;
+    align-items: center; min-width: 58px; line-height: 1.15;
+  }
+  .stat .val {
+    font-size: 15px; font-weight: 900;
+    background: linear-gradient(135deg, var(--accent), var(--accent-3));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  .target { flex-shrink: 0; text-align: center; margin-bottom: 4px; }
+  .target .label {
+    font-size: 10px; color: rgba(255,255,255,0.5); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 2px;
+  }
+  .answer-slots {
+    display: flex; justify-content: center; gap: 6px; flex-wrap: wrap;
+    min-height: 48px; align-items: center;
+  }
+  .answer-slot {
+    min-width: 70px; min-height: 48px;
+    border: 3px dashed rgba(255,255,255,0.25);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    padding: 4px 12px;
+    font-size: 24px; font-weight: 900; color: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.03); transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .answer-slot.filled {
+    border-style: solid; border-color: var(--accent);
+    background: linear-gradient(135deg, rgba(167,139,250,0.25), rgba(56,189,248,0.15));
+    color: #fff; box-shadow: 0 0 14px rgba(167,139,250,0.3);
+  }
+  .answer-slot.correct { border-color: var(--green); background: rgba(74,222,128,0.2); color: var(--green); }
+  .answer-slot.wrong { border-color: var(--red); background: rgba(248,113,113,0.2); color: var(--red); }
+
+  /* Общее поле — занимает всё оставшееся место */
+  .play-area {
+    flex: 1 1 auto; min-height: 0;
+    position: relative; margin: 4px 0;
+    border-radius: 16px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ===== ИГРА 1: ЗВЁЗДНОЕ НЕБО ===== */
+  .sky {
+    width: 100%; height: 100%;
+    background: radial-gradient(ellipse at center, rgba(30,30,80,0.85), rgba(6,6,20,0.98));
+    padding: 12px 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sky::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background-image:
+      radial-gradient(1px 1px at 8% 15%, #fff, transparent),
+      radial-gradient(1px 1px at 25% 72%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 48% 12%, #fff, transparent),
+      radial-gradient(1px 1px at 72% 80%, #fff, transparent),
+      radial-gradient(1px 1px at 92% 30%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 14% 50%, #fff, transparent),
+      radial-gradient(1px 1px at 42% 42%, #fff, transparent),
+      radial-gradient(1px 1px at 82% 62%, #fff, transparent),
+      radial-gradient(1px 1px at 22% 88%, #fff, transparent),
+      radial-gradient(1px 1px at 62% 55%, #fff, transparent);
+    opacity: 0.3; animation: twinkle 4s ease-in-out infinite;
+  }
+  @keyframes twinkle { 0%,100% { opacity: 0.2; } 50% { opacity: 0.5; } }
+
+  .stars-grid {
+    position: relative; z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    width: 100%; height: 100%;
+    align-content: center;
+    max-width: 820px;
+  }
+  .star-btn {
+    aspect-ratio: 1; position: relative;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s;
+    background: transparent; border: none; padding: 0;
+    filter: drop-shadow(0 0 8px rgba(251,191,36,0.45));
+    min-width: 0; min-height: 0;
+  }
+  .star-btn svg {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    transition: all 0.3s;
+  }
+  .star-btn .syl {
+    position: relative; z-index: 2;
+    font-weight: 900;
+    font-size: clamp(15px, 2.6vw, 26px);
+    color: #2a1a00;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+    pointer-events: none; margin-top: -4px;
+    line-height: 1; letter-spacing: 0.3px;
+  }
+  .star-btn:hover:not(:disabled) {
+    transform: scale(1.12);
+    filter: drop-shadow(0 0 18px rgba(251,191,36,1));
+    z-index: 5;
+  }
+  .star-btn:disabled { cursor: default; }
+  .star-btn.used svg { opacity: 0.15; filter: grayscale(0.85); }
+  .star-btn.used .syl { color: rgba(255,255,255,0.12); text-shadow: none; }
+  .star-btn.used { filter: none; }
+  .star-btn.picked svg { animation: starPick 0.45s ease; }
+  @keyframes starPick {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.35) rotate(15deg); }
+    100% { transform: scale(1); }
+  }
+
+  /* ===== ИГРА 2: ОСТРОВ СОКРОВИЩ ===== */
+  .treasure {
+    width: 100%; height: 100%;
+    background: linear-gradient(160deg, #1e3a5f, #0d1e35);
+    padding: 12px 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .treasure::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 200px 100px at 30% 40%, rgba(56,189,248,0.15), transparent),
+      radial-gradient(ellipse 150px 80px at 70% 60%, rgba(56,189,248,0.12), transparent),
+      radial-gradient(ellipse 120px 60px at 50% 80%, rgba(56,189,248,0.1), transparent);
+    animation: waves 6s ease-in-out infinite;
+  }
+  @keyframes waves { 0%,100% { transform: translateX(0); } 50% { transform: translateX(20px); } }
+
+  .islands-grid {
+    position: relative; z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    width: 100%; height: 100%;
+    align-content: center;
+    max-width: 820px;
+    padding-right: 76px;
+  }
+  .island-btn {
+    display: flex; flex-direction: column; align-items: center;
+    cursor: pointer; transition: all 0.2s;
+    background: transparent; border: none; padding: 2px;
+    min-width: 0;
+  }
+  .island-btn .land {
+    width: clamp(60px, 7vw, 88px);
+    height: clamp(36px, 4.2vw, 52px);
+    background: radial-gradient(ellipse at center, #d4a76a 40%, #8b6b3d 70%, #5a4525 100%);
+    border-radius: 50% 50% 45% 45%;
+    box-shadow: inset 0 -6px 12px rgba(0,0,0,0.4), 0 6px 12px rgba(0,0,0,0.5);
+    position: relative; transition: all 0.3s;
+  }
+  .island-btn .land::before {
+    content: '🌴'; position: absolute; top: -16px; left: 50%;
+    transform: translateX(-50%); font-size: clamp(16px, 2vw, 22px);
+  }
+  .island-btn .syl-tag {
+    margin-top: 4px; background: rgba(0,0,0,0.78); color: #fff;
+    padding: 4px 10px; border-radius: 8px;
+    font-weight: 900;
+    font-size: clamp(15px, 2.4vw, 24px);
+    border: 1px solid rgba(251,191,36,0.5);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    transition: all 0.2s;
+    line-height: 1.1;
+  }
+  .island-btn:hover:not(:disabled) { transform: translateY(-4px); }
+  .island-btn:hover:not(:disabled) .land {
+    box-shadow: inset 0 -6px 12px rgba(0,0,0,0.4), 0 10px 20px rgba(251,191,36,0.5);
+  }
+  .island-btn:hover:not(:disabled) .syl-tag {
+    background: rgba(251,191,36,0.95); color: #3a2500;
+  }
+  .island-btn:disabled { cursor: default; }
+  .island-btn.used { opacity: 0.3; }
+  .island-btn.used .land { filter: grayscale(0.7); }
+  .island-btn.used .syl-tag { background: rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.15); }
+
+  .chest {
+    position: absolute; right: 16px; bottom: 16px;
+    font-size: clamp(36px, 4.5vw, 54px);
+    filter: drop-shadow(0 0 18px rgba(251,191,36,0.8));
+    animation: chestGlow 2s ease-in-out infinite; z-index: 3;
+    transition: all 0.3s;
+  }
+  @keyframes chestGlow { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+  .chest.open { animation: chestOpen 0.7s ease; }
+  @keyframes chestOpen {
+    0% { transform: scale(1) rotate(0); }
+    40% { transform: scale(1.5) rotate(-12deg); }
+    70% { transform: scale(1.3) rotate(8deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+
+  /* ===== ИГРА 3: МОРСКОЙ БОЙ ===== */
+  .battle {
+    width: 100%; height: 100%;
+    padding: 10px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 16px; flex-wrap: wrap;
+    background: rgba(0,0,0,0.25);
+  }
+  .battlefield {
+    display: grid;
+    grid-template-columns: 24px repeat(10, 1fr);
+    grid-template-rows: 24px repeat(10, 1fr);
+    gap: 2px;
+    aspect-ratio: 11 / 11;
+    height: 100%; max-height: 100%;
+    max-width: 520px;
+    background: rgba(0,0,0,0.3); padding: 8px; border-radius: 12px;
+    border: 1px solid rgba(56,189,248,0.2);
+  }
+  .cell-header {
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: clamp(8px, 1.1vw, 12px); color: var(--accent-3);
+  }
+  .cell {
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 4px; font-weight: 900;
+    font-size: clamp(10px, 1.3vw, 15px); color: #fff;
+    transition: all 0.15s; cursor: default; position: relative;
+  }
+  .cell.ship {
+    background: linear-gradient(135deg, rgba(251,191,36,0.25), rgba(251,191,36,0.1));
+    border-color: var(--gold); color: var(--gold);
+    cursor: pointer; box-shadow: inset 0 0 10px rgba(251,191,36,0.3);
+  }
+  .cell.ship:hover { transform: scale(1.08); box-shadow: 0 0 14px rgba(251,191,36,0.6); z-index: 2; }
+  .cell.ship.found {
+    background: linear-gradient(135deg, rgba(74,222,128,0.3), rgba(74,222,128,0.1));
+    border-color: var(--green); color: var(--green);
+    box-shadow: inset 0 0 14px rgba(74,222,128,0.4);
+    animation: foundPulse 0.5s ease;
+  }
+  @keyframes foundPulse { 0% { transform: scale(1); } 50% { transform: scale(1.18); } 100% { transform: scale(1); } }
+
+  .coords-panel {
+    background: rgba(0,0,0,0.3); border-radius: 12px; padding: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    min-width: 170px; max-width: 240px;
+    max-height: 100%; overflow-y: auto;
+    flex-shrink: 0;
+  }
+  .coords-panel h3 {
+    font-size: 11px; color: var(--accent-3); margin-bottom: 6px;
+    text-transform: uppercase; letter-spacing: 1px; font-weight: 800;
+  }
+  .coords-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+  .coord-item {
+    background: rgba(255,255,255,0.05); border-radius: 7px; padding: 5px 10px;
+    font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.6);
+    display: flex; justify-content: space-between; align-items: center;
+    border-left: 3px solid rgba(255,255,255,0.15);
+    transition: all 0.25s;
+  }
+  .coord-item.current {
+    background: linear-gradient(90deg, rgba(167,139,250,0.25), transparent);
+    border-left-color: var(--accent); color: #fff;
+    box-shadow: 0 0 10px rgba(167,139,250,0.3);
+  }
+  .coord-item.done {
+    background: rgba(74,222,128,0.12); border-left-color: var(--green);
+    color: var(--green);
+  }
+  .coord-item .syl-hint { font-size: 11px; opacity: 0.7; }
+
+  .word-input-area {
+    display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px;
+    min-height: 32px;
+  }
+  .word-chip {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    padding: 4px 10px; border-radius: 7px; font-weight: 900; font-size: 14px;
+    color: #fff; box-shadow: 0 3px 8px rgba(167,139,250,0.4);
+    animation: chipIn 0.3s ease;
+  }
+  @keyframes chipIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+
+  /* Фидбэк */
+  .feedback {
+    text-align: center; font-size: 14px; font-weight: 800;
+    min-height: 20px; flex-shrink: 0;
+    opacity: 0; transition: all 0.25s;
+  }
+  .feedback.show { opacity: 1; }
+  .feedback.ok { color: var(--green); text-shadow: 0 0 14px rgba(74,222,128,0.5); }
+  .feedback.no { color: var(--red); text-shadow: 0 0 14px rgba(248,113,113,0.5); }
+
+  /* Кнопки */
+  .buttons {
+    display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
+    margin-top: 4px; flex-shrink: 0;
+  }
+  button {
+    padding: 8px 18px; border: none; border-radius: 10px;
+    font-size: 12px; font-weight: 800; cursor: pointer;
+    transition: all 0.2s; font-family: inherit;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff;
+    box-shadow: 0 4px 14px rgba(167,139,250,0.4);
+  }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(167,139,250,0.6); }
+  .btn-secondary {
+    background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .btn-secondary:hover:not(:disabled) { background: rgba(255,255,255,0.18); }
+  button:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
+
+  .hidden { display: none !important; }
+
+  #resultScreen {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.06); border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.14); padding: 20px;
+    text-align: center;
+  }
+  #resultScreen h2 {
+    font-size: 24px; font-weight: 900; margin-bottom: 10px;
+    background: linear-gradient(135deg, var(--accent-3), var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .stars-big { font-size: 38px; letter-spacing: 6px; margin: 10px 0; }
+  .result-score { font-size: 18px; font-weight: 800; margin: 8px 0; }
+  .result-score span { color: var(--accent); font-size: 30px; }
+  .result-detail { font-size: 13px; color: rgba(255,255,255,0.6); font-weight: 600; margin-bottom: 14px; }
+
+  @media (max-width: 700px) {
+    h1 { font-size: 16px; }
+    .subtitle { display: none; }
+    .tab { padding: 6px 12px; font-size: 11px; }
+    .stars-grid { grid-template-columns: repeat(5, 1fr); gap: 5px; }
+    .star-btn .syl { font-size: clamp(14px, 4vw, 22px); }
+    .islands-grid { grid-template-columns: repeat(4, 1fr); padding-right: 56px; gap: 6px; }
+    .island-btn .syl-tag { font-size: clamp(13px, 3.5vw, 20px); }
+    .stat { min-width: 50px; padding: 2px 8px; }
+    .stat .val { font-size: 13px; }
+    .answer-slot { min-width: 60px; min-height: 44px; font-size: 20px; }
+    .battle { gap: 8px; }
+    .battlefield { max-width: 100%; }
+    .coords-panel { max-width: 100%; width: 100%; }
+  }
+  @media (max-height: 600px) {
+    h1 { font-size: 14px; }
+    .star-btn .syl { font-size: clamp(11px, 2vw, 17px); }
+    .answer-slot { min-width: 55px; min-height: 38px; font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🌈 Игры для коррекции дислексии</h1>
+    <p class="subtitle">4 класс · Составление слов из слогов · 10 слов в каждой игре</p>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-game="stars">⭐ Звёздное небо</div>
+    <div class="tab" data-game="treasure">🗺️ Остров сокровищ</div>
+    <div class="tab" data-game="battle">⛵ Морской бой</div>
+  </div>
+
+  <!-- ========== ИГРА 1: ЗВЁЗДНОЕ НЕБО ========== -->
+  <div id="game-stars" class="game-screen">
+    <div class="stats">
+      <div class="stat"><span class="val"><span id="starsNum">1</span>/10</span>слово</div>
+      <div class="stat"><span class="val" id="starsScore">0</span>баллы</div>
+      <div class="stat"><span class="val" id="starsErrors">0</span>ошибки</div>
+      <div class="stat"><span class="val" id="starsLeft">0</span>звёзд</div>
+    </div>
+    <div class="target">
+      <div class="label">Собери слово</div>
+      <div class="answer-slots" id="starsAnswer"></div>
+    </div>
+    <div class="play-area">
+      <div class="sky">
+        <div class="stars-grid" id="starsGrid"></div>
+      </div>
+    </div>
+    <div class="feedback" id="starsFeedback"></div>
+    <div class="buttons">
+      <button class="btn-secondary" id="starsClear">🔄 Очистить</button>
+      <button class="btn-primary" id="starsCheck" disabled>✅ Проверить</button>
+      <button class="btn-secondary" id="starsSkip">⏭ Пропустить</button>
+    </div>
+  </div>
+
+  <!-- ========== ИГРА 2: ОСТРОВ СОКРОВИЩ ========== -->
+  <div id="game-treasure" class="game-screen hidden">
+    <div class="stats">
+      <div class="stat"><span class="val"><span id="tresNum">1</span>/10</span>слово</div>
+      <div class="stat"><span class="val" id="tresScore">0</span>баллы</div>
+      <div class="stat"><span class="val" id="tresErrors">0</span>ошибки</div>
+      <div class="stat"><span class="val" id="tresLeft">0</span>островов</div>
+    </div>
+    <div class="target">
+      <div class="label">Собери слово, чтобы открыть сундук</div>
+      <div class="answer-slots" id="tresAnswer"></div>
+    </div>
+    <div class="play-area">
+      <div class="treasure">
+        <div class="islands-grid" id="islandsGrid"></div>
+        <div class="chest" id="chest">🏆</div>
+      </div>
+    </div>
+    <div class="feedback" id="tresFeedback"></div>
+    <div class="buttons">
+      <button class="btn-secondary" id="tresClear">🔄 Очистить</button>
+      <button class="btn-primary" id="tresCheck" disabled>🔑 Открыть сундук</button>
+      <button class="btn-secondary" id="tresSkip">⏭ Пропустить</button>
+    </div>
+  </div>
+
+  <!-- ========== ИГРА 3: МОРСКОЙ БОЙ ========== -->
+  <div id="game-battle" class="game-screen hidden">
+    <div class="stats">
+      <div class="stat"><span class="val"><span id="battleNum">1</span>/10</span>слово</div>
+      <div class="stat"><span class="val" id="battleScore">0</span>баллы</div>
+      <div class="stat"><span class="val" id="battleErrors">0</span>ошибки</div>
+    </div>
+    <div class="target">
+      <div class="label">Собери слово из слогов на кораблях</div>
+      <div class="answer-slots" id="battleAnswer"></div>
+    </div>
+    <div class="play-area">
+      <div class="battle">
+        <div class="battlefield" id="battlefield"></div>
+        <div class="coords-panel">
+          <h3>📋 Координаты</h3>
+          <div class="coords-list" id="coordsList"></div>
+          <div class="word-input-area" id="battleWordArea"></div>
+        </div>
+      </div>
+    </div>
+    <div class="feedback" id="battleFeedback"></div>
+    <div class="buttons">
+      <button class="btn-secondary" id="battleClear">🔄 Очистить</button>
+      <button class="btn-primary" id="battleCheck" disabled>✅ Проверить</button>
+      <button class="btn-secondary" id="battleSkip">⏭ Пропустить</button>
+    </div>
+  </div>
+
+  <div id="resultScreen" class="hidden">
+    <h2 id="resultTitle">🎉 Игра завершена!</h2>
+    <div class="stars-big" id="resultStars"></div>
+    <div class="result-score">Баллы: <span id="resultScore">0</span></div>
+    <div class="result-detail" id="resultDetail"></div>
+    <button class="btn-primary" onclick="location.reload()">🔁 Играть снова</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// 10 СЛОВ — одинаковые для всех трёх игр
+// ============================================================
+const GAME_WORDS = [
+  ['ма', 'ши', 'на'],
+  ['ка', 'ру', 'сель'],
+  ['мо', 'ло', 'ко'],
+  ['со', 'ба', 'ка'],
+  ['ко', 'ро', 'ва'],
+  ['пе', 'на', 'ал'],
+  ['те', 'ле', 'фон'],
+  ['ка', 'ран', 'даш'],
+  ['по', 'ми', 'дор'],
+  ['о', 'гу', 'рец']
+];
+
+const STAR_SVG = (fill1, fill2, id) => `
+<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${fill1}"/>
+      <stop offset="100%" stop-color="${fill2}"/>
+    </linearGradient>
+  </defs>
+  <path d="M50 5 L61 38 L96 38 L68 59 L79 92 L50 71 L21 92 L32 59 L4 38 L39 38 Z"
+        fill="url(#${id})" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linejoin="round"/>
+</svg>`;
+
+function shuffle(a) {
+  a = a.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+const $ = id => document.getElementById(id);
+
+// ============================================================
+// ИГРА 1: ЗВЁЗДНОЕ НЕБО
+// ============================================================
+const StarsGame = {
+  wordIdx: 0, score: 0, errors: 0, correctCount: 0,
+  allStars: [], picked: [],
+
+  init() {
+    this.allStars = [];
+    GAME_WORDS.forEach((word, wIdx) => {
+      word.forEach(syl => this.allStars.push({ syl, wordIdx: wIdx, used: false }));
+    });
+    this.allStars = shuffle(this.allStars);
+    this.wordIdx = 0; this.score = 0; this.errors = 0;
+    this.correctCount = 0; this.picked = [];
+    this.renderStars();
+    this.updateHeader();
+    this.renderAnswer();
+    this.updateButtons();
+  },
+
+  renderStars() {
+    const grid = $('starsGrid');
+    grid.innerHTML = '';
+    this.allStars.forEach((star, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'star-btn' + (star.used ? ' used' : '');
+      btn.disabled = star.used;
+      const grad = i % 2 === 0 ? ['#fde047', '#f59e0b'] : ['#fcd34d', '#ea580c'];
+      btn.innerHTML = STAR_SVG(grad[0], grad[1], 'sg' + i) +
+        '<span class="syl">' + star.syl + '</span>';
+      btn.addEventListener('click', () => this.pickStar(i));
+      grid.appendChild(btn);
+    });
+    $('starsLeft').textContent = this.allStars.filter(s => !s.used).length;
+  },
+
+  pickStar(i) {
+    const star = this.allStars[i];
+    if (star.used) return;
+    const word = GAME_WORDS[this.wordIdx];
+    if (this.picked.length >= word.length) return;
+    star.used = true;
+    this.picked.push({ syl: star.syl, starIdx: i });
+    const btn = document.querySelectorAll('#starsGrid .star-btn')[i];
+    if (btn) { btn.classList.add('picked'); setTimeout(() => btn.classList.remove('picked'), 450); }
+    this.renderStars();
+    this.renderAnswer();
+    this.updateButtons();
+  },
+
+  updateHeader() {
+    $('starsNum').textContent = this.wordIdx + 1;
+    $('starsScore').textContent = this.score;
+    $('starsErrors').textContent = this.errors;
+  },
+
+  renderAnswer() {
+    const word = GAME_WORDS[this.wordIdx];
+    const slots = $('starsAnswer');
+    slots.innerHTML = '';
+    for (let i = 0; i < word.length; i++) {
+      const s = document.createElement('div');
+      s.className = 'answer-slot' + (this.picked[i] ? ' filled' : '');
+      s.textContent = this.picked[i] ? this.picked[i].syl : '?';
+      slots.appendChild(s);
+    }
+  },
+
+  updateButtons() {
+    const word = GAME_WORDS[this.wordIdx];
+    $('starsCheck').disabled = this.picked.length !== word.length;
+  },
+
+  check() {
+    const word = GAME_WORDS[this.wordIdx];
+    const answer = this.picked.map(p => p.syl);
+    const isCorrect = answer.length === word.length && answer.every((s, i) => s === word[i]);
+    const slots = document.querySelectorAll('#starsAnswer .answer-slot');
+    slots.forEach((s, i) => {
+      s.classList.remove('filled');
+      if (s.textContent === word[i]) s.classList.add('correct');
+      else s.classList.add('wrong');
+    });
+    const fb = $('starsFeedback');
+    fb.classList.add('show');
+    if (isCorrect) {
+      this.score += 10; this.correctCount++;
+      $('starsScore').textContent = this.score;
+      fb.textContent = '🎉 Верно! «' + word.join('') + '»';
+      fb.className = 'feedback show ok';
+      $('starsCheck').disabled = true; $('starsClear').disabled = true; $('starsSkip').disabled = true;
+      setTimeout(() => this.next(), 1300);
+    } else {
+      this.errors++;
+      $('starsErrors').textContent = this.errors;
+      this.picked.forEach((p, pos) => { if (p.syl !== word[pos]) this.allStars[p.starIdx].used = false; });
+      this.picked = this.picked.filter((p, pos) => p.syl === word[pos]);
+      this.renderStars();
+      this.renderAnswer();
+      fb.textContent = '🤔 Правильно: «' + word.join('') + '». Попробуй ещё!';
+      fb.className = 'feedback show no';
+      $('starsCheck').disabled = true;
+      setTimeout(() => { this.renderAnswer(); this.updateButtons(); fb.classList.remove('show'); }, 1800);
+    }
+  },
+
+  next() {
+    this.wordIdx++;
+    this.picked = [];
+    $('starsClear').disabled = false; $('starsSkip').disabled = false;
+    if (this.wordIdx >= GAME_WORDS.length) this.showResult();
+    else { this.updateHeader(); this.renderAnswer(); this.updateButtons(); $('starsFeedback').classList.remove('show'); }
+  },
+
+  clear() {
+    this.picked.forEach(p => { this.allStars[p.starIdx].used = false; });
+    this.picked = [];
+    this.renderStars(); this.renderAnswer(); this.updateButtons();
+    $('starsFeedback').classList.remove('show');
+  },
+
+  skip() {
+    this.picked.forEach(p => { this.allStars[p.starIdx].used = false; });
+    this.picked = []; this.errors++;
+    $('starsErrors').textContent = this.errors;
+    this.wordIdx++;
+    if (this.wordIdx >= GAME_WORDS.length) this.showResult();
+    else { this.renderStars(); this.updateHeader(); this.renderAnswer(); this.updateButtons(); $('starsFeedback').classList.remove('show'); }
+  },
+
+  showResult() {
+    showResultScreen('⭐ Звёздное небо', this.score, this.correctCount);
+  }
+};
+
+// ============================================================
+// ИГРА 2: ОСТРОВ СОКРОВИЩ
+// ============================================================
+const TreasureGame = {
+  wordIdx: 0, score: 0, errors: 0, correctCount: 0,
+  allIslands: [], picked: [],
+
+  init() {
+    this.allIslands = [];
+    GAME_WORDS.forEach((word, wIdx) => {
+      word.forEach(syl => this.allIslands.push({ syl, wordIdx: wIdx, used: false }));
+    });
+    this.allIslands = shuffle(this.allIslands);
+    this.wordIdx = 0; this.score = 0; this.errors = 0;
+    this.correctCount = 0; this.picked = [];
+    this.renderIslands();
+    this.updateHeader();
+    this.renderAnswer();
+    this.updateButtons();
+  },
+
+  renderIslands() {
+    const grid = $('islandsGrid');
+    grid.innerHTML = '';
+    this.allIslands.forEach((island, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'island-btn' + (island.used ? ' used' : '');
+      btn.disabled = island.used;
+      btn.innerHTML = '<div class="land"></div><div class="syl-tag">' + island.syl + '</div>';
+      btn.addEventListener('click', () => this.pickIsland(i));
+      grid.appendChild(btn);
+    });
+    $('tresLeft').textContent = this.allIslands.filter(i => !i.used).length;
+  },
+
+  pickIsland(i) {
+    const island = this.allIslands[i];
+    if (island.used) return;
+    const word = GAME_WORDS[this.wordIdx];
+    if (this.picked.length >= word.length) return;
+    island.used = true;
+    this.picked.push({ syl: island.syl, idx: i });
+    this.renderIslands(); this.renderAnswer(); this.updateButtons();
+  },
+
+  updateHeader() {
+    $('tresNum').textContent = this.wordIdx + 1;
+    $('tresScore').textContent = this.score;
+    $('tresErrors').textContent = this.errors;
+    $('chest').textContent = '🏆';
+    $('chest').className = 'chest';
+  },
+
+  renderAnswer() {
+    const word = GAME_WORDS[this.wordIdx];
+    const slots = $('tresAnswer');
+    slots.innerHTML = '';
+    for (let i = 0; i < word.length; i++) {
+      const s = document.createElement('div');
+      s.className = 'answer-slot' + (this.picked[i] ? ' filled' : '');
+      s.textContent = this.picked[i] ? this.picked[i].syl : '?';
+      slots.appendChild(s);
+    }
+  },
+
+  updateButtons() {
+    const word = GAME_WORDS[this.wordIdx];
+    $('tresCheck').disabled = this.picked.length !== word.length;
+  },
+
+  check() {
+    const word = GAME_WORDS[this.wordIdx];
+    const answer = this.picked.map(p => p.syl);
+    const isCorrect = answer.length === word.length && answer.every((s, i) => s === word[i]);
+    const slots = document.querySelectorAll('#tresAnswer .answer-slot');
+    slots.forEach((s, i) => {
+      s.classList.remove('filled');
+      if (s.textContent === word[i]) s.classList.add('correct');
+      else s.classList.add('wrong');
+    });
+    const fb = $('tresFeedback');
+    fb.classList.add('show');
+    if (isCorrect) {
+      this.score += 10; this.correctCount++;
+      $('tresScore').textContent = this.score;
+      $('chest').textContent = '💎'; $('chest').classList.add('open');
+      fb.textContent = '🎉 Верно! Сундук открыт! «' + word.join('') + '»';
+      fb.className = 'feedback show ok';
+      $('tresCheck').disabled = true; $('tresClear').disabled = true; $('tresSkip').disabled = true;
+      setTimeout(() => this.next(), 1300);
+    } else {
+      this.errors++;
+      $('tresErrors').textContent = this.errors;
+      this.picked.forEach((p, pos) => { if (p.syl !== word[pos]) this.allIslands[p.idx].used = false; });
+      this.picked = this.picked.filter((p, pos) => p.syl === word[pos]);
+      this.renderIslands(); this.renderAnswer();
+      fb.textContent = '🤔 Правильно: «' + word.join('') + '». Попробуй ещё!';
+      fb.className = 'feedback show no';
+      $('tresCheck').disabled = true;
+      setTimeout(() => { this.renderAnswer(); this.updateButtons(); fb.classList.remove('show'); }, 1800);
+    }
+  },
+
+  next() {
+    this.wordIdx++; this.picked = [];
+    $('tresClear').disabled = false; $('tresSkip').disabled = false;
+    if (this.wordIdx >= GAME_WORDS.length) this.showResult();
+    else { this.updateHeader(); this.renderAnswer(); this.updateButtons(); $('tresFeedback').classList.remove('show'); }
+  },
+
+  clear() {
+    this.picked.forEach(p => { this.allIslands[p.idx].used = false; });
+    this.picked = [];
+    this.renderIslands(); this.renderAnswer(); this.updateButtons();
+    $('tresFeedback').classList.remove('show');
+  },
+
+  skip() {
+    this.picked.forEach(p => { this.allIslands[p.idx].used = false; });
+    this.picked = []; this.errors++;
+    $('tresErrors').textContent = this.errors;
+    this.wordIdx++;
+    if (this.wordIdx >= GAME_WORDS.length) this.showResult();
+    else { this.renderIslands(); this.updateHeader(); this.renderAnswer(); this.updateButtons(); $('tresFeedback').classList.remove('show'); }
+  },
+
+  showResult() {
+    showResultScreen('🗺️ Остров сокровищ', this.score, this.correctCount);
+  }
+};
+
+// ============================================================
+// ИГРА 3: МОРСКОЙ БОЙ
+// ============================================================
+const BattleGame = {
+  wordIdx: 0, score: 0, errors: 0, correctCount: 0,
+  picked: [], currentStep: 0, allShips: [],
+  COLS: ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'З', 'И', 'К'],
+  ROWS: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+
+  init() {
+    const allSyllables = [];
+    GAME_WORDS.forEach((word, wIdx) => {
+      word.forEach((syl, sIdx) => allSyllables.push({ syl, wordIdx: wIdx, sylPos: sIdx }));
+    });
+    const allCells = [];
+    for (let r = 0; r < 10; r++) for (let c = 0; c < 10; c++) allCells.push({ r, c });
+    const shuffledCells = shuffle(allCells);
+    this.allShips = allSyllables.map((s, i) => {
+      const cell = shuffledCells[i % shuffledCells.length];
+      return {
+        syl: s.syl, wordIdx: s.wordIdx, sylPos: s.sylPos,
+        row: cell.r, col: cell.c,
+        coord: this.COLS[cell.c] + this.ROWS[cell.r],
+        found: false
+      };
+    });
+    this.wordIdx = 0; this.score = 0; this.errors = 0;
+    this.correctCount = 0; this.picked = []; this.currentStep = 0;
+    this.renderField(); this.renderCoords(); this.updateHeader();
+    this.renderAnswer(); this.renderChips(); this.updateButtons();
+  },
+
+  getCurrentWordShips() {
+    return this.allShips.filter(s => s.wordIdx === this.wordIdx).sort((a, b) => a.sylPos - b.sylPos);
+  },
+
+  renderField() {
+    const field = $('battlefield');
+    field.innerHTML = '';
+    const corner = document.createElement('div');
+    corner.className = 'cell-header';
+    field.appendChild(corner);
+    this.COLS.forEach(col => {
+      const h = document.createElement('div');
+      h.className = 'cell-header'; h.textContent = col;
+      field.appendChild(h);
+    });
+    for (let r = 0; r < 10; r++) {
+      const rh = document.createElement('div');
+      rh.className = 'cell-header'; rh.textContent = this.ROWS[r];
+      field.appendChild(rh);
+      for (let c = 0; c < 10; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        const ship = this.allShips.find(s => s.row === r && s.col === c);
+        if (ship) {
+          cell.classList.add('ship');
+          if (ship.found) { cell.classList.add('found'); cell.textContent = ship.syl; }
+          else cell.textContent = '?';
+          cell.addEventListener('click', () => this.clickShip(ship));
+        }
+        field.appendChild(cell);
+      }
+    }
+  },
+
+  renderCoords() {
+    const list = $('coordsList');
+    list.innerHTML = '';
+    const ships = this.getCurrentWordShips();
+    ships.forEach((ship, i) => {
+      const item = document.createElement('div');
+      let cls = 'coord-item';
+      if (ship.found) cls += ' done';
+      else if (i === this.currentStep) cls += ' current';
+      item.className = cls;
+      item.innerHTML = '<span><b>' + ship.coord + '</b></span>' +
+        '<span class="syl-hint">' + (ship.found ? ship.syl : (i === this.currentStep ? '← ищи' : '')) + '</span>';
+      list.appendChild(item);
+    });
+  },
+
+  clickShip(ship) {
+    if (ship.found) return;
+    if (ship.wordIdx !== this.wordIdx) return;
+    const word = GAME_WORDS[this.wordIdx];
+    if (this.picked.length >= word.length) return;
+    ship.found = true;
+    this.picked.push(ship);
+    this.currentStep = this.picked.length;
+    this.renderField(); this.renderCoords(); this.renderAnswer(); this.renderChips(); this.updateButtons();
+  },
+
+  renderAnswer() {
+    const word = GAME_WORDS[this.wordIdx];
+    const slots = $('battleAnswer');
+    slots.innerHTML = '';
+    for (let i = 0; i < word.length; i++) {
+      const s = document.createElement('div');
+      s.className = 'answer-slot' + (this.picked[i] ? ' filled' : '');
+      s.textContent = this.picked[i] ? this.picked[i].syl : '?';
+      slots.appendChild(s);
+    }
+  },
+
+  renderChips() {
+    const area = $('battleWordArea');
+    area.innerHTML = '';
+    this.picked.forEach(p => {
+      const chip = document.createElement('div');
+      chip.className = 'word-chip'; chip.textContent = p.syl;
+      area.appendChild(chip);
+    });
+  },
+
+  updateHeader() {
+    $('battleNum').textContent = this.wordIdx + 1;
+    $('battleScore').textContent = this.score;
+    $('battleErrors').textContent = this.errors;
+  },
+
+  updateButtons() {
+    const word = GAME_WORDS[this.wordIdx];
+    $('battleCheck').disabled = this.picked.length !== word.length;
+  },
+
+  check() {
+    const word = GAME_WORDS[this.wordIdx];
+    const answer = this.picked.map(p => p.syl);
+    const isCorrect = answer.length === word.length && answer.every((s, i) => s === word[i]);
+    const slots = document.querySelectorAll('#battleAnswer .answer-slot');
+    slots.forEach((s, i) => {
+      s.classList.remove('filled');
+      if (s.textContent === word[i]) s.classList.add('correct');
+      else s.classList.add('wrong');
+    });
+    const fb = $('battleFeedback');
+    fb.classList.add('show');
+    if (isCorrect) {
+      this.score += 10; this.correctCount++;
+      $('battleScore').textContent = this.score;
+      fb.textContent = '🎉 Верно! «' + word.join('') + '»';
+      fb.className = 'feedback show ok';
+      $('battleCheck').disabled = true; $('battleClear').disabled = true; $('battleSkip').disabled = true;
+      setTimeout(() => this.next(), 1300);
+    } else {
+      this.errors++;
+      $('battleErrors').textContent = this.errors;
+      this.picked.forEach((p, pos) => { if (p.syl !== word[pos]) p.found = false; });
+      this.picked = this.picked.filter((p, pos) => p.syl === word[pos]);
+      this.currentStep = this.picked.length;
+      this.renderField(); this.renderCoords(); this.renderAnswer(); this.renderChips();
+      fb.textContent = '🤔 Правильно: «' + word.join('') + '». Попробуй ещё!';
+      fb.className = 'feedback show no';
+      $('battleCheck').disabled = true;
+      setTimeout(() => { this.updateButtons(); fb.classList.remove('show'); }, 1800);
+    }
+  },
+
+  next() {
+    this.wordIdx++; this.picked = []; this.currentStep = 0;
+    $('battleClear').disabled = false; $('battleSkip').disabled = false;
+    if (this.wordIdx >= GAME_WORDS.length) this.showResult();
+    else {
+      this.updateHeader(); this.renderCoords(); this.renderAnswer(); this.renderChips(); this.updateButtons();
+      $('battleFeedback').classList.remove('show');
+    }
+  },
+
+  clear() {
+    this.picked.forEach(p => { p.found = false; });
+    this.picked = []; this.currentStep = 0;
+    this.renderField(); this.renderCoords(); this.renderAnswer(); this.renderChips(); this.updateButtons();
+    $('battleFeedback').classList.remove('show');
+  },
+
+  skip() {
+    this.picked.forEach(p => { p.found = false; });
+    this.picked = []; this.currentStep = 0; this.errors++;
+    $('battleErrors').textContent = this.errors;
+    this.wordIdx++;
+    if (this.wordIdx >= GAME_WORDS.length) this.showResult();
+    else {
+      this.renderField(); this.updateHeader(); this.renderCoords();
+      this.renderAnswer(); this.renderChips(); this.updateButtons();
+      $('battleFeedback').classList.remove('show');
+    }
+  },
+
+  showResult() {
+    showResultScreen('⛵ Морской бой', this.score, this.correctCount);
+  }
+};
+
+// ============================================================
+// ОБЩИЕ ФУНКЦИИ
+// ============================================================
+function showResultScreen(gameName, score, correctCount) {
+  document.querySelectorAll('.game-screen').forEach(s => s.classList.add('hidden'));
+  $('resultScreen').classList.remove('hidden');
+  const maxScore = GAME_WORDS.length * 10;
+  const pct = score / maxScore;
+  let stars = '💪';
+  if (pct >= 0.9) stars = '⭐⭐⭐';
+  else if (pct >= 0.7) stars = '⭐⭐';
+  else if (pct >= 0.5) stars = '⭐';
+  $('resultTitle').textContent = '🎉 ' + gameName + ' — завершено!';
+  $('resultStars').textContent = stars;
+  $('resultScore').textContent = score;
+  $('resultDetail').textContent = 'Правильно слов: ' + correctCount + ' из ' + GAME_WORDS.length;
+}
+
+// Табы
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.game-screen').forEach(s => s.classList.add('hidden'));
+    $('resultScreen').classList.add('hidden');
+    $('game-' + tab.dataset.game).classList.remove('hidden');
+  });
+});
+
+// Кнопки
+$('starsCheck').addEventListener('click', () => StarsGame.check());
+$('starsClear').addEventListener('click', () => StarsGame.clear());
+$('starsSkip').addEventListener('click', () => StarsGame.skip());
+
+$('tresCheck').addEventListener('click', () => TreasureGame.check());
+$('tresClear').addEventListener('click', () => TreasureGame.clear());
+$('tresSkip').addEventListener('click', () => TreasureGame.skip());
+
+$('battleCheck').addEventListener('click', () => BattleGame.check());
+$('battleClear').addEventListener('click', () => BattleGame.clear());
+$('battleSkip').addEventListener('click', () => BattleGame.skip());
+
+// Старт
+StarsGame.init();
+TreasureGame.init();
+BattleGame.init();
+</script>
+</body>
+</html>
