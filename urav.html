@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Уравнения 4 класс — Компоненты действий</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-1: #0f0c29;
+    --bg-2: #302b63;
+    --bg-3: #24243e;
+    --accent: #a78bfa;
+    --accent-2: #f472b6;
+    --accent-3: #38bdf8;
+    --green: #4ade80;
+    --red: #f87171;
+    --glass: rgba(255,255,255,0.08);
+    --glass-border: rgba(255,255,255,0.15);
+  }
+
+  body {
+    font-family: 'Nunito', 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, var(--bg-1), var(--bg-2), var(--bg-3));
+    background-attachment: fixed;
+    min-height: 100vh;
+    padding: 20px 14px;
+    color: #fff;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Фоновые светящиеся пятна */
+  body::before, body::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.4;
+    z-index: 0;
+    pointer-events: none;
+  }
+  body::before {
+    width: 400px; height: 400px;
+    background: var(--accent);
+    top: -150px; left: -150px;
+    animation: float1 15s ease-in-out infinite;
+  }
+  body::after {
+    width: 500px; height: 500px;
+    background: var(--accent-2);
+    bottom: -200px; right: -150px;
+    animation: float2 18s ease-in-out infinite;
+  }
+  @keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(80px,60px)} }
+  @keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-100px,-80px)} }
+
+  .container { max-width: 1050px; margin: 0 auto; position: relative; z-index: 1; }
+
+  /* Заголовок */
+  .header { text-align: center; margin-bottom: 22px; }
+  h1 {
+    font-size: 34px; font-weight: 900; letter-spacing: -1px;
+    background: linear-gradient(135deg, #fff, var(--accent), var(--accent-3));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+    text-shadow: 0 0 40px rgba(167,139,250,0.3);
+  }
+  .subtitle { color: rgba(255,255,255,0.6); font-size: 14px; font-weight: 600; }
+
+  /* Панель стекла */
+  .panel {
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 22px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+    margin-bottom: 18px;
+  }
+
+  /* Статистика */
+  .stats {
+    display: flex; justify-content: center; flex-wrap: wrap;
+    gap: 12px; margin-bottom: 16px;
+  }
+  .stat {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px; padding: 10px 18px;
+    font-weight: 700; font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    display: flex; flex-direction: column; align-items: center;
+    min-width: 80px;
+  }
+  .stat .val {
+    font-size: 22px; font-weight: 900; line-height: 1.1;
+    background: linear-gradient(135deg, var(--accent), var(--accent-3));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .stat.red .val {
+    background: linear-gradient(135deg, var(--red), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Прогресс */
+  .progress-bar {
+    height: 6px; background: rgba(255,255,255,0.08);
+    border-radius: 4px; overflow: hidden; margin-bottom: 20px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-3), var(--accent), var(--accent-2));
+    width: 0%; transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 0 12px var(--accent);
+  }
+
+  /* Уравнение */
+  .eq-block {
+    display: flex; justify-content: center; align-items: flex-start;
+    flex-wrap: wrap; gap: 6px; margin: 24px 0 16px;
+    padding: 16px 8px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .eq-col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .eq-symbol {
+    font-size: 38px; font-weight: 900; color: #fff;
+    min-height: 48px; display: flex; align-items: center;
+    padding: 0 4px; letter-spacing: -1px;
+    font-family: 'Nunito', sans-serif;
+  }
+  .eq-symbol.op { color: var(--accent); text-shadow: 0 0 20px rgba(167,139,250,0.5); }
+  .eq-symbol.unknown {
+    color: var(--accent-2);
+    text-shadow: 0 0 20px rgba(244,114,182,0.6);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.12); }
+  }
+
+  /* Слоты */
+  .slot {
+    min-width: 118px; min-height: 54px;
+    border: 2px dashed rgba(255,255,255,0.2);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 8px; font-size: 12px; font-weight: 800;
+    color: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.03);
+    transition: all 0.2s;
+    text-align: center; cursor: pointer;
+    letter-spacing: 0.3px;
+  }
+  .slot.filled {
+    border-style: solid;
+    border-color: var(--accent);
+    background: linear-gradient(135deg, rgba(167,139,250,0.2), rgba(56,189,248,0.15));
+    color: #fff;
+    box-shadow: 0 0 20px rgba(167,139,250,0.3);
+  }
+  .slot.correct {
+    border-color: var(--green);
+    background: linear-gradient(135deg, rgba(74,222,128,0.25), rgba(74,222,128,0.1));
+    color: var(--green);
+    box-shadow: 0 0 20px rgba(74,222,128,0.4);
+  }
+  .slot.wrong {
+    border-color: var(--red);
+    background: linear-gradient(135deg, rgba(248,113,113,0.25), rgba(248,113,113,0.1));
+    color: var(--red);
+    box-shadow: 0 0 20px rgba(248,113,113,0.4);
+  }
+  .slot.drag-over {
+    border-color: var(--accent-3);
+    background: rgba(56,189,248,0.15);
+    transform: scale(1.05);
+  }
+
+  /* Пул карточек */
+  .cards-pool-title {
+    text-align: center; font-size: 12px; font-weight: 800;
+    color: rgba(255,255,255,0.4); text-transform: uppercase;
+    letter-spacing: 2px; margin: 18px 0 10px;
+  }
+  .cards-pool {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 8px; margin-bottom: 16px;
+    padding: 14px;
+    background: rgba(0,0,0,0.15);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .card {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: #fff;
+    padding: 10px 16px; border-radius: 10px;
+    font-weight: 800; font-size: 13px;
+    cursor: grab; user-select: none;
+    box-shadow: 0 4px 12px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+    transition: all 0.2s;
+    white-space: nowrap;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .card:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 8px 20px rgba(168,85,247,0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  .card:active { cursor: grabbing; }
+  .card.selected {
+    background: linear-gradient(135deg, #f59e0b, #f472b6);
+    transform: translateY(-4px) scale(1.06);
+    box-shadow: 0 0 25px rgba(245,158,11,0.8), 0 8px 20px rgba(0,0,0,0.3);
+  }
+  .card.used {
+    opacity: 0.25;
+    pointer-events: none;
+    filter: grayscale(0.6);
+    transform: scale(0.95);
+  }
+
+  /* Кнопки */
+  .buttons {
+    display: flex; justify-content: center; gap: 10px;
+    flex-wrap: wrap; margin-top: 8px;
+  }
+  button {
+    padding: 12px 24px; border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 800; cursor: pointer;
+    transition: all 0.2s; font-family: inherit;
+    letter-spacing: 0.3px;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    box-shadow: 0 6px 20px rgba(167,139,250,0.5);
+  }
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(167,139,250,0.7);
+  }
+  .btn-secondary {
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.8);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background: rgba(255,255,255,0.18);
+    transform: translateY(-1px);
+  }
+  button:disabled {
+    opacity: 0.35; cursor: not-allowed;
+    transform: none !important; box-shadow: none !important;
+  }
+
+  /* Фидбэк */
+  .feedback {
+    text-align: center; font-size: 17px; font-weight: 800;
+    min-height: 28px; margin: 14px 0 4px;
+    opacity: 0; transform: translateY(-5px);
+    transition: all 0.3s;
+  }
+  .feedback.show { opacity: 1; transform: translateY(0); }
+  .feedback.ok { color: var(--green); text-shadow: 0 0 20px rgba(74,222,128,0.5); }
+  .feedback.no { color: var(--red); text-shadow: 0 0 20px rgba(248,113,113,0.5); }
+
+  /* Подсказка */
+  .hint {
+    background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(244,114,182,0.08));
+    border-left: 3px solid #f59e0b;
+    padding: 12px 16px; border-radius: 10px;
+    font-size: 13px; color: rgba(255,255,255,0.75);
+    margin-top: 14px; line-height: 1.5;
+    font-weight: 600;
+  }
+
+  .hidden { display: none !important; }
+
+  /* Результаты */
+  .result-screen { text-align: center; padding: 10px; }
+  .result-screen h2 {
+    font-size: 28px; font-weight: 900; margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--accent-3), var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .score-big {
+    font-size: 64px; font-weight: 900; line-height: 1;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 20px rgba(167,139,250,0.5));
+  }
+  .score-sub { color: rgba(255,255,255,0.5); font-weight: 700; margin-top: 4px; }
+  .stars { font-size: 42px; margin: 18px 0; letter-spacing: 6px; }
+  .review-item {
+    text-align: left;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 12px 16px; margin-bottom: 8px;
+    font-size: 13px; font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    display: flex; justify-content: space-between;
+    align-items: center; gap: 10px;
+    flex-wrap: wrap;
+  }
+  .review-item .eq-text {
+    font-family: 'Nunito', monospace; font-weight: 800;
+    color: var(--accent-3);
+    font-size: 14px;
+  }
+  .review-item .badge {
+    padding: 4px 10px; border-radius: 8px; font-size: 11px;
+    font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .badge.ok { background: rgba(74,222,128,0.2); color: var(--green); }
+  .badge.no { background: rgba(248,113,113,0.2); color: var(--red); }
+  .badge.skip { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+  .review-item .pts {
+    color: var(--accent); font-weight: 900; font-size: 14px;
+    min-width: 50px; text-align: right;
+  }
+
+  @media (max-width: 640px) {
+    h1 { font-size: 24px; }
+    .eq-symbol { font-size: 26px; min-height: 34px; }
+    .slot { min-width: 88px; min-height: 46px; font-size: 10px; }
+    .card { padding: 8px 12px; font-size: 11px; }
+    .panel { padding: 16px; border-radius: 18px; }
+    .score-big { font-size: 48px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>✨ Уравнения 4 класс</h1>
+    <p class="subtitle">Расставь названия компонентов под каждым числом</p>
+  </div>
+
+  <!-- Игровой экран -->
+  <div id="gameScreen">
+    <div class="panel">
+      <div class="stats">
+        <div class="stat">
+          <span class="val"><span id="taskNum">1</span>/<span id="taskTotal">15</span></span>
+          <span>задание</span>
+        </div>
+        <div class="stat">
+          <span class="val" id="score">0</span>
+          <span>баллы</span>
+        </div>
+        <div class="stat red">
+          <span class="val" id="errors">0</span>
+          <span>ошибки</span>
+        </div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+      <div class="eq-block" id="equation"></div>
+
+      <div class="cards-pool-title">Карточки компонентов</div>
+      <div class="cards-pool" id="cards"></div>
+
+      <div class="feedback" id="feedback"></div>
+
+      <div class="buttons">
+        <button class="btn-primary" id="checkBtn" disabled>✅ Проверить</button>
+        <button class="btn-secondary" id="resetBtn">🔄 Сбросить</button>
+        <button class="btn-secondary" id="skipBtn">⏭ Пропустить</button>
+      </div>
+
+      <div class="hint" id="hint"></div>
+    </div>
+  </div>
+
+  <!-- Результаты -->
+  <div id="resultScreen" class="panel hidden">
+    <div class="result-screen">
+      <h2>🏆 Игра завершена!</h2>
+      <div class="score-big" id="finalScore">0</div>
+      <div class="score-sub">из <span id="maxScore">0</span> баллов</div>
+      <div class="stars" id="stars"></div>
+      <div id="reviewList" style="margin-top:20px;"></div>
+      <div class="buttons" style="margin-top:24px;">
+        <button class="btn-primary" onclick="location.reload()">🔁 Играть снова</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ALL_CARDS = [
+  'слагаемое', 'слагаемое', 'сумма',
+  'уменьшаемое', 'вычитаемое', 'разность',
+  'множитель', 'множитель', 'произведение',
+  'делимое', 'делитель', 'частное'
+];
+
+// 15 уравнений для 4 класса
+const TASKS = [
+  // === Простые уравнения ===
+  {
+    equation: [
+      { text: 'x', slot: 'слагаемое' }, { text: '+', op: true },
+      { text: '15', slot: 'слагаемое' }, { text: '=', op: true },
+      { text: '40', slot: 'сумма' }
+    ],
+    hint: 'x + 15 = 40. x и 15 — слагаемые, 40 — сумма.',
+    points: 3
+  },
+  {
+    equation: [
+      { text: '28', slot: 'уменьшаемое' }, { text: '−', op: true },
+      { text: 'x', slot: 'вычитаемое' }, { text: '=', op: true },
+      { text: '9', slot: 'разность' }
+    ],
+    hint: '28 − x = 9. 28 — уменьшаемое, x — вычитаемое, 9 — разность.',
+    points: 3
+  },
+  {
+    equation: [
+      { text: 'x', slot: 'множитель' }, { text: '·', op: true },
+      { text: '6', slot: 'множитель' }, { text: '=', op: true },
+      { text: '42', slot: 'произведение' }
+    ],
+    hint: 'x · 6 = 42. x и 6 — множители, 42 — произведение.',
+    points: 3
+  },
+  {
+    equation: [
+      { text: '72', slot: 'делимое' }, { text: ':', op: true },
+      { text: 'x', slot: 'делитель' }, { text: '=', op: true },
+      { text: '8', slot: 'частное' }
+    ],
+    hint: '72 : x = 8. 72 — делимое, x — делитель, 8 — частное.',
+    points: 3
+  },
+  {
+    equation: [
+      { text: 'x', slot: 'уменьшаемое' }, { text: '−', op: true },
+      { text: '24', slot: 'вычитаемое' }, { text: '=', op: true },
+      { text: '36', slot: 'разность' }
+    ],
+    hint: 'x − 24 = 36. x — уменьшаемое, 24 — вычитаемое, 36 — разность.',
+    points: 3
+  },
+  {
+    equation: [
+      { text: 'x', slot: 'делимое' }, { text: ':', op: true },
+      { text: '7', slot: 'делитель' }, { text: '=', op: true },
+      { text: '8', slot: 'частное' }
+    ],
+    hint: 'x : 7 = 8. x — делимое, 7 — делитель, 8 — частное.',
+    points: 3
+  },
+  {
+    equation: [
+      { text: '50', slot: 'уменьшаемое' }, { text: '−', op: true },
+      { text: 'x', slot: 'вычитаемое' }, { text: '=', op: true },
+      { text: '18', slot: 'разность' }
+    ],
+    hint: '50 − x = 18. 50 — уменьшаемое, x — вычитаемое, 18 — разность.',
+    points: 3
+  },
+  {
+    equation: [
+      { text: 'x', slot: 'слагаемое' }, { text: '+', op: true },
+      { text: '36', slot: 'слагаемое' }, { text: '=', op: true },
+      { text: '100', slot: 'сумма' }
+    ],
+    hint: 'x + 36 = 100. x и 36 — слагаемые, 100 — сумма.',
+    points: 3
+  },
+  {
+    equation: [
+      { text: '9', slot: 'множитель' }, { text: '·', op: true },
+      { text: 'x', slot: 'множитель' }, { text: '=', op: true },
+      { text: '63', slot: 'произведение' }
+    ],
+    hint: '9 · x = 63. 9 и x — множители, 63 — произведение.',
+    points: 3
+  },
+  {
+    equation: [
+      { text: 'x', slot: 'уменьшаемое' }, { text: '−', op: true },
+      { text: '17', slot: 'вычитаемое' }, { text: '=', op: true },
+      { text: '43', slot: 'разность' }
+    ],
+    hint: 'x − 17 = 43. x — уменьшаемое, 17 — вычитаемое, 43 — разность.',
+    points: 3
+  },
+  // === Составные уравнения со скобками ===
+  {
+    equation: [
+      { text: '(', op: true },
+      { text: 'x', slot: 'слагаемое' }, { text: '+', op: true },
+      { text: '8', slot: 'слагаемое' },
+      { text: ')', op: true }, { text: '·', op: true },
+      { text: '3', slot: 'множитель' }, { text: '=', op: true },
+      { text: '45', slot: 'произведение' }
+    ],
+    hint: '(x + 8) · 3 = 45. В скобках: x и 8 — слагаемые (сумма). Снаружи: сумма и 3 — множители, 45 — произведение.',
+    points: 4
+  },
+  {
+    equation: [
+      { text: '(', op: true },
+      { text: '60', slot: 'уменьшаемое' }, { text: '−', op: true },
+      { text: 'x', slot: 'вычитаемое' },
+      { text: ')', op: true }, { text: ':', op: true },
+      { text: '5', slot: 'делитель' }, { text: '=', op: true },
+      { text: '7', slot: 'частное' }
+    ],
+    hint: '(60 − x) : 5 = 7. В скобках: 60 — уменьшаемое, x — вычитаемое (разность). Снаружи: разность — делимое, 5 — делитель, 7 — частное.',
+    points: 4
+  },
+  {
+    equation: [
+      { text: '(', op: true },
+      { text: 'x', slot: 'множитель' }, { text: '·', op: true },
+      { text: '4', slot: 'множитель' },
+      { text: ')', op: true }, { text: '−', op: true },
+      { text: '12', slot: 'вычитаемое' }, { text: '=', op: true },
+      { text: '28', slot: 'разность' }
+    ],
+    hint: '(x · 4) − 12 = 28. В скобках: x и 4 — множители (произведение). Снаружи: произведение — уменьшаемое, 12 — вычитаемое, 28 — разность.',
+    points: 4
+  },
+  {
+    equation: [
+      { text: '48', slot: 'делимое' }, { text: ':', op: true },
+      { text: '(', op: true },
+      { text: 'x', slot: 'вычитаемое' }, { text: '−', op: true },
+      { text: '4', slot: 'уменьшаемое' },
+      { text: ')', op: true }, { text: '=', op: true },
+      { text: '6', slot: 'частное' }
+    ],
+    hint: '48 : (x − 4) = 6. В скобках: x — уменьшаемое, 4 — вычитаемое (разность). Снаружи: 48 — делимое, разность — делитель, 6 — частное.',
+    points: 4
+  },
+  {
+    equation: [
+      { text: '(', op: true },
+      { text: 'x', slot: 'слагаемое' }, { text: '+', op: true },
+      { text: '16', slot: 'слагаемое' },
+      { text: ')', op: true }, { text: ':', op: true },
+      { text: '4', slot: 'делитель' }, { text: '=', op: true },
+      { text: '9', slot: 'частное' }
+    ],
+    hint: '(x + 16) : 4 = 9. В скобках: x и 16 — слагаемые (сумма). Снаружи: сумма — делимое, 4 — делитель, 9 — частное.',
+    points: 4
+  }
+];
+
+const MAX_SCORE = TASKS.reduce((s, t) => s + t.points, 0);
+
+let state = {
+  taskIndex: 0,
+  score: 0,
+  errors: 0,
+  slotValues: [],
+  slotElements: [],
+  slotDefs: [],
+  selectedCard: null,
+  checked: false,
+  results: []
+};
+
+const $ = id => document.getElementById(id);
+
+function renderTask() {
+  const task = TASKS[state.taskIndex];
+  state.slotDefs = task.equation.filter(el => el.slot).map(el => el.slot);
+  state.slotValues = state.slotDefs.map(() => null);
+  state.slotElements = [];
+  state.selectedCard = null;
+  state.checked = false;
+
+  $('taskNum').textContent = state.taskIndex + 1;
+  $('taskTotal').textContent = TASKS.length;
+  $('progress').style.width = (state.taskIndex / TASKS.length * 100) + '%';
+  $('feedback').textContent = '';
+  $('feedback').className = 'feedback';
+  $('checkBtn').disabled = true;
+  $('checkBtn').textContent = '✅ Проверить';
+  $('checkBtn').onclick = checkAnswers;
+  $('skipBtn').disabled = false;
+  $('resetBtn').disabled = false;
+  $('hint').textContent = '💡 ' + task.hint;
+
+  // Уравнение
+  const eqEl = $('equation');
+  eqEl.innerHTML = '';
+  let slotCounter = 0;
+
+  task.equation.forEach((el) => {
+    const col = document.createElement('div');
+    col.className = 'eq-col';
+
+    const sym = document.createElement('div');
+    sym.className = 'eq-symbol' + (el.op ? ' op' : '') + (el.text === 'x' ? ' unknown' : '');
+    sym.textContent = el.text;
+    col.appendChild(sym);
+
+    if (el.slot) {
+      const slotIdx = slotCounter++;
+      const slot = document.createElement('div');
+      slot.className = 'slot';
+      slot.dataset.idx = slotIdx;
+      slot.textContent = 'перетащи';
+      slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('drag-over'); });
+      slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+      slot.addEventListener('drop', e => {
+        e.preventDefault();
+        slot.classList.remove('drag-over');
+        placeCard(e.dataTransfer.getData('text/plain'), slotIdx);
+      });
+      slot.addEventListener('click', () => {
+        if (state.checked) return;
+        if (state.selectedCard !== null) {
+          placeCard(state.selectedCard, slotIdx);
+        } else if (state.slotValues[slotIdx] !== null) {
+          state.slotValues[slotIdx] = null;
+          updateUI();
+        }
+      });
+      col.appendChild(slot);
+      state.slotElements.push(slot);
+    } else {
+      const spacer = document.createElement('div');
+      spacer.style.height = '54px';
+      spacer.style.minWidth = '10px';
+      col.appendChild(spacer);
+    }
+
+    eqEl.appendChild(col);
+  });
+
+  renderCards();
+  updateUI();
+}
+
+function renderCards() {
+  const cardsEl = $('cards');
+  cardsEl.innerHTML = '';
+  ALL_CARDS.forEach((name) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.textContent = name;
+    card.dataset.name = name;
+    card.draggable = true;
+    card.addEventListener('dragstart', e => {
+      if (state.checked) { e.preventDefault(); return; }
+      e.dataTransfer.setData('text/plain', name);
+    });
+    card.addEventListener('click', () => {
+      if (state.checked) return;
+      document.querySelectorAll('.card.selected').forEach(c => c.classList.remove('selected'));
+      if (state.selectedCard === name) {
+        state.selectedCard = null;
+      } else {
+        state.selectedCard = name;
+        card.classList.add('selected');
+      }
+    });
+    cardsEl.appendChild(card);
+  });
+}
+
+function placeCard(name, slotIdx) {
+  if (state.checked) return;
+  state.slotValues[slotIdx] = name;
+  state.selectedCard = null;
+  updateUI();
+}
+
+function updateUI() {
+  state.slotElements.forEach((slot, idx) => {
+    const val = state.slotValues[idx];
+    if (val === null) {
+      slot.textContent = 'перетащи';
+      slot.className = 'slot';
+    } else {
+      slot.textContent = val;
+      slot.className = 'slot filled';
+    }
+  });
+
+  const usedCount = {};
+  state.slotValues.forEach(v => { if (v) usedCount[v] = (usedCount[v] || 0) + 1; });
+
+  const seen = {};
+  document.querySelectorAll('.card').forEach(card => {
+    const name = card.dataset.name;
+    seen[name] = (seen[name] || 0) + 1;
+    const used = (usedCount[name] || 0) >= seen[name];
+    card.classList.toggle('used', used);
+    if (used) card.classList.remove('selected');
+  });
+
+  const allFilled = state.slotValues.every(v => v !== null);
+  $('checkBtn').disabled = !allFilled || state.checked;
+}
+
+function checkAnswers() {
+  state.checked = true;
+  let correctCount = 0;
+
+  state.slotElements.forEach((slot, idx) => {
+    const expected = state.slotDefs[idx];
+    const given = state.slotValues[idx];
+    if (given === expected) {
+      slot.classList.add('correct');
+      correctCount++;
+    } else {
+      slot.classList.add('wrong');
+    }
+  });
+
+  const task = TASKS[state.taskIndex];
+  const points = Math.round(task.points * correctCount / state.slotDefs.length);
+  state.score += points;
+
+  const fb = $('feedback');
+  fb.classList.add('show');
+  if (correctCount === state.slotDefs.length) {
+    fb.textContent = '🎉 Всё верно! +' + points + ' баллов';
+    fb.className = 'feedback show ok';
+  } else {
+    fb.textContent = '🤔 Правильно ' + correctCount + ' из ' + state.slotDefs.length + ' (+' + points + ' б.)';
+    fb.className = 'feedback show no';
+    state.errors++;
+  }
+
+  state.results.push({
+    taskId: state.taskIndex + 1,
+    correct: correctCount === state.slotDefs.length,
+    correctCount,
+    total: state.slotDefs.length,
+    points,
+    maxPoints: task.points,
+    equationText: task.equation.map(e => e.text).join(' ')
+  });
+
+  $('score').textContent = state.score;
+  $('errors').textContent = state.errors;
+  $('checkBtn').textContent = '➡️ Далее';
+  $('checkBtn').onclick = nextTask;
+  $('checkBtn').disabled = false;
+  $('skipBtn').disabled = true;
+  $('resetBtn').disabled = true;
+}
+
+function nextTask() {
+  state.taskIndex++;
+  if (state.taskIndex >= TASKS.length) {
+    showResults();
+  } else {
+    renderTask();
+  }
+}
+
+function skipTask() {
+  const task = TASKS[state.taskIndex];
+  const slotCount = task.equation.filter(el => el.slot).length;
+  state.results.push({
+    taskId: state.taskIndex + 1,
+    correct: false,
+    correctCount: 0,
+    total: slotCount,
+    points: 0,
+    maxPoints: task.points,
+    skipped: true,
+    equationText: task.equation.map(e => e.text).join(' ')
+  });
+  nextTask();
+}
+
+function resetCurrent() {
+  if (state.checked) return;
+  renderTask();
+}
+
+function showResults() {
+  $('gameScreen').classList.add('hidden');
+  $('resultScreen').classList.remove('hidden');
+  $('finalScore').textContent = state.score;
+  $('maxScore').textContent = MAX_SCORE;
+
+  const pct = state.score / MAX_SCORE;
+  let stars = '💪';
+  if (pct >= 0.9) stars = '⭐⭐⭐';
+  else if (pct >= 0.7) stars = '⭐⭐';
+  else if (pct >= 0.5) stars = '⭐';
+  $('stars').textContent = stars;
+
+  const list = $('reviewList');
+  list.innerHTML = '<h3 style="color:var(--accent);margin-bottom:14px;font-size:18px;">Разбор заданий</h3>';
+  state.results.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'review-item';
+    let badge;
+    if (r.skipped) badge = '<span class="badge skip">пропущено</span>';
+    else if (r.correct) badge = '<span class="badge ok">верно</span>';
+    else badge = '<span class="badge no">' + r.correctCount + '/' + r.total + '</span>';
+    div.innerHTML = '<span><b>№' + r.taskId + '</b> · <span class="eq-text">' + r.equationText + '</span></span>' +
+      badge +
+      '<span class="pts">' + r.points + '/' + r.maxPoints + ' б.</span>';
+    list.appendChild(div);
+  });
+}
+
+$('checkBtn').addEventListener('click', () => {
+  if (state.checked) nextTask();
+  else checkAnswers();
+});
+$('resetBtn').addEventListener('click', resetCurrent);
+$('skipBtn').addEventListener('click', skipTask);
+
+renderTask();
+</script>
+</body>
+</html>
