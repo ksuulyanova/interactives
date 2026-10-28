@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Орфо-детектив</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; font-family: 'Georgia', 'Times New Roman', serif; overflow: hidden; touch-action: none; }
+  body {
+    background: #0d1b2a url('https://i.pinimg.com/1200x/43/9a/34/439a34e46a1959332f7683aa4a25f0e4.jpg') center/cover no-repeat fixed;
+    display: flex; align-items: center; justify-content: center; position: relative;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.68) 100%);
+    pointer-events: none; z-index: 0;
+  }
+  .screen { position: relative; z-index: 1; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 12px; }
+  .screen.hidden { display: none; }
+
+  .start-box { text-align: center; color: #f4e4c1; text-shadow: 0 2px 12px rgba(0,0,0,0.9); animation: fadeIn 1.2s ease; }
+  .start-box h1 { font-size: clamp(1.8rem, 6vw, 4rem); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px; font-weight: 700; }
+  .start-box .subtitle { font-size: clamp(0.8rem, 2.2vw, 1.2rem); letter-spacing: 2px; opacity: 0.85; margin-bottom: 40px; font-style: italic; }
+  .btn-start {
+    font-family: inherit; font-size: clamp(0.95rem, 2.5vw, 1.3rem); letter-spacing: 2px; text-transform: uppercase;
+    color: #1a1a1a; background: linear-gradient(180deg, #e8c878, #c9a24b); border: 2px solid #8a6d2f; border-radius: 8px;
+    padding: 14px 44px; cursor: pointer; box-shadow: 0 6px 0 #6b5220, 0 10px 25px rgba(0,0,0,0.5);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .btn-start:hover { transform: translateY(-2px); }
+  .btn-start:active { transform: translateY(4px); box-shadow: 0 2px 0 #6b5220; }
+
+  .paper {
+    position: relative; max-width: 700px; width: 100%; max-height: calc(100vh - 24px);
+    display: flex; flex-direction: column;
+    background: linear-gradient(180deg, rgba(250,244,227,0.97), rgba(238,228,203,0.97));
+    color: #2b2418; border-radius: 4px;
+    padding: clamp(18px, 3.4vh, 40px) clamp(20px, 4vw, 52px);
+    box-shadow: 0 0 0 1px rgba(120,100,60,0.3), 0 25px 60px rgba(0,0,0,0.7), inset 0 0 80px rgba(150,120,70,0.15);
+    animation: paperIn 0.7s cubic-bezier(0.2, 0.9, 0.3, 1);
+    font-size: clamp(0.78rem, 1.55vh, 1rem); line-height: 1.5; overflow: hidden;
+  }
+  .paper::after {
+    content: ""; position: absolute; top: 0; right: 0; width: 36px; height: 36px;
+    background: linear-gradient(225deg, #d8c9a3 0%, #efe4c8 45%, #b9a878 100%);
+    clip-path: polygon(0 0, 100% 100%, 0 100%); box-shadow: -2px 2px 6px rgba(0,0,0,0.2);
+  }
+  .paper h2 { font-size: clamp(1.05rem, 2.4vh, 1.5rem); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; color: #4a2f12; }
+  .paper .stamp {
+    align-self: flex-start; font-size: 0.66rem; letter-spacing: 2px; text-transform: uppercase;
+    color: #8a2b2b; border: 2px solid #8a2b2b; border-radius: 4px; padding: 2px 9px;
+    transform: rotate(-4deg); margin-bottom: clamp(8px, 1.6vh, 14px); opacity: 0.85; font-weight: 700;
+  }
+  .paper p { margin-bottom: clamp(6px, 1.3vh, 12px); }
+  .paper .lead { font-weight: 700; color: #3a2a12; }
+  .paper .clue {
+    margin: clamp(6px, 1.5vh, 14px) 0; padding: clamp(7px, 1.4vh, 12px) 14px;
+    border-left: 4px solid #8a6d2f; background: rgba(200,170,100,0.18);
+    font-style: italic; border-radius: 0 6px 6px 0;
+  }
+  .paper .signature { margin-top: clamp(4px, 1.2vh, 10px); text-align: right; font-style: italic; color: #5a4220; font-size: 0.92em; }
+
+  .btn-continue {
+    font-family: inherit; font-size: clamp(0.8rem, 1.7vh, 1rem); letter-spacing: 1.5px; text-transform: uppercase;
+    color: #f4e4c1; background: linear-gradient(180deg, #3a4a5a, #1d2b38);
+    border: 2px solid #0d1b2a; border-radius: 8px; padding: 11px 32px; cursor: pointer;
+    margin-top: clamp(10px, 2vh, 22px); box-shadow: 0 5px 0 #0a1420, 0 10px 20px rgba(0,0,0,0.4);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    display: block; margin-left: auto; margin-right: auto; flex-shrink: 0;
+  }
+  .btn-continue:hover { transform: translateY(-2px); }
+  .btn-continue:active { transform: translateY(3px); box-shadow: 0 2px 0 #0a1420; }
+
+  .choice-wrap {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%; width: 100%; gap: clamp(10px, 2vh, 24px); animation: fadeIn 0.8s ease;
+  }
+  .choice-title { color: #f4e4c1; text-shadow: 0 2px 12px rgba(0,0,0,0.9); font-size: clamp(0.9rem, 2.4vh, 1.3rem); letter-spacing: 2px; text-transform: uppercase; font-style: italic; text-align: center; }
+  .choice-row { display: flex; gap: clamp(10px, 2vw, 30px); align-items: flex-end; justify-content: center; flex-wrap: wrap; }
+  .choice-item { display: flex; flex-direction: column; align-items: center; gap: clamp(6px, 1.2vh, 12px); cursor: pointer; background: none; border: none; font-family: inherit; padding: 0; }
+  .choice-item .folder { position: relative; width: min(200px, 22vw); max-height: calc(100vh - 240px); filter: drop-shadow(0 16px 26px rgba(0,0,0,0.7)); transition: transform 0.25s ease; }
+  .choice-item .folder img { display: block; width: 100%; height: auto; max-height: calc(100vh - 240px); object-fit: contain; border-radius: 6px; }
+  .choice-item .folder::after { content: ""; position: absolute; inset: -6px; border-radius: 12px; animation: pulseGlow 2.4s ease-in-out infinite; pointer-events: none; }
+  .choice-item:hover .folder { transform: translateY(-6px) rotate(-1deg); }
+  .choice-item:active .folder { transform: translateY(-2px) scale(0.98); }
+  .choice-label { font-size: clamp(0.65rem, 1.6vh, 0.9rem); letter-spacing: 1px; text-transform: uppercase; color: #1a1a1a; background: linear-gradient(180deg, #e8c878, #c9a24b); border: 2px solid #8a6d2f; border-radius: 8px; padding: clamp(6px, 1.2vh, 10px) clamp(10px, 2vw, 20px); box-shadow: 0 5px 0 #6b5220, 0 10px 20px rgba(0,0,0,0.4); text-align: center; }
+  .choice-item:active .choice-label { transform: translateY(3px); box-shadow: 0 2px 0 #6b5220; }
+  .choice-status { font-size: clamp(0.55rem, 1.2vh, 0.72rem); letter-spacing: 1px; text-transform: uppercase; color: #e8c878; font-weight: 700; min-height: 1.2em; text-shadow: 0 1px 6px rgba(0,0,0,0.9); }
+  .choice-footer { color: #f4e4c1; text-shadow: 0 2px 8px rgba(0,0,0,0.9); font-size: clamp(0.62rem, 1.35vh, 0.8rem); letter-spacing: 1px; text-align: center; max-width: 560px; line-height: 1.5; opacity: 0.9; }
+  .choice-footer b { color: #e8c878; }
+
+  @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 0 2px rgba(232,200,120,0.0); } 50% { box-shadow: 0 0 24px 4px rgba(232,200,120,0.35); } }
+
+  .board {
+    position: relative; width: 100%; max-width: 1100px;
+    height: calc(100vh - 24px); max-height: 820px;
+    display: flex; flex-direction: column;
+    background: linear-gradient(180deg, rgba(250,244,227,0.98), rgba(238,228,203,0.98));
+    border-radius: 10px;
+    padding: clamp(8px, 1.6vh, 20px) clamp(14px, 2.4vw, 28px);
+    box-shadow: 0 0 0 1px rgba(120,100,60,0.35), 0 30px 70px rgba(0,0,0,0.75), inset 0 0 100px rgba(150,120,70,0.18);
+    animation: paperIn 0.5s cubic-bezier(0.2, 0.9, 0.3, 1);
+    overflow: hidden; user-select: none;
+  }
+  .board::after {
+    content: ""; position: absolute; top: 0; right: 0; width: 40px; height: 40px;
+    background: linear-gradient(225deg, #d8c9a3 0%, #efe4c8 45%, #b9a878 100%);
+    clip-path: polygon(0 0, 100% 100%, 0 100%); box-shadow: -3px 3px 8px rgba(0,0,0,0.25); pointer-events: none;
+  }
+  .board-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 10px; margin-bottom: clamp(2px, 0.6vh, 8px); flex-wrap: wrap; flex-shrink: 0;
+    padding-bottom: 4px; border-bottom: 1px solid rgba(138,109,47,0.25);
+  }
+  .board-head h2 { font-size: clamp(0.85rem, 1.8vh, 1.2rem); letter-spacing: 2px; text-transform: uppercase; color: #4a2f12; font-weight: 700; }
+  .board-head .round-info {
+    font-size: clamp(0.6rem, 1.1vh, 0.75rem); letter-spacing: 1.5px; text-transform: uppercase;
+    color: #8a6d2f; font-weight: 700; white-space: nowrap;
+    padding: 2px 9px; border: 1px solid rgba(138,109,47,0.5); border-radius: 12px;
+    background: rgba(232,200,120,0.15);
+  }
+  .instruction { font-size: clamp(0.65rem, 1.3vh, 0.85rem); font-style: italic; color: #5a4220; margin-bottom: clamp(2px, 0.6vh, 8px); flex-shrink: 0; min-height: 1.2em; }
+
+  .drag-card {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    text-align: center; font-size: clamp(0.72rem, 1.6vh, 0.95rem); line-height: 1.3;
+    color: #2b2418; background: linear-gradient(180deg, #fffdf6, #f0e6cb);
+    border: 2px solid #c9b583; border-radius: 10px;
+    padding: clamp(6px, 1.1vh, 11px) clamp(9px, 1.6vw, 15px);
+    cursor: grab; box-shadow: 0 4px 10px rgba(80,60,20,0.25), inset 0 1px 0 #fff;
+    max-width: 100%; flex: 0 0 auto; touch-action: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease; will-change: transform;
+  }
+  .drag-card:hover { transform: translateY(-3px) rotate(-0.5deg); box-shadow: 0 8px 18px rgba(80,60,20,0.35), inset 0 1px 0 #fff; }
+  .drag-card.dragging { cursor: grabbing; z-index: 999; box-shadow: 0 18px 35px rgba(0,0,0,0.45); transform: scale(1.06) rotate(1deg); transition: none; }
+  .drag-card.snap-back { transition: transform 0.35s cubic-bezier(0.3, 1.4, 0.5, 1); }
+  .drag-card.placed {
+    background: linear-gradient(180deg, #e4f2d4, #cfe6b4); border-color: #7aa552;
+    color: #234010; font-weight: 700; cursor: default; box-shadow: 0 3px 8px rgba(60,100,30,0.3);
+    animation: cardSettle 0.3s ease;
+  }
+  @keyframes cardSettle { 0% { transform: scale(1.12); } 60% { transform: scale(0.96); } 100% { transform: scale(1); } }
+
+  .sort-area { flex: 1; display: flex; flex-direction: column; gap: clamp(6px, 1.2vh, 14px); min-height: 0; }
+  .cards-pool { flex: 1 1 auto; display: flex; flex-wrap: wrap; align-content: flex-start; justify-content: center; gap: clamp(6px, 1.2vw, 12px); padding: 6px; min-height: 90px; overflow-y: auto; background: transparent; }
+  .cards-pool::-webkit-scrollbar { width: 8px; }
+  .cards-pool::-webkit-scrollbar-thumb { background: rgba(120,100,60,0.35); border-radius: 4px; }
+
+  .bins { display: flex; gap: clamp(8px, 1.6vw, 16px); flex-shrink: 0; height: clamp(110px, 22vh, 180px); }
+  .bin { flex: 1; display: flex; flex-direction: column; border: 3px dashed #b9a878; border-radius: 12px; background: rgba(255,255,255,0.25); transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease; overflow: hidden; min-width: 0; }
+  .bin .bin-title { flex-shrink: 0; text-align: center; font-size: clamp(0.7rem, 1.4vh, 0.88rem); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; padding: 5px 4px; color: #5a4220; background: rgba(200,170,100,0.2); border-bottom: 2px dashed #c9b583; }
+  .bin .bin-content { flex: 1; display: flex; flex-wrap: wrap; align-content: flex-start; justify-content: center; gap: 5px; padding: 6px; overflow-y: auto; }
+  .bin .bin-content .drag-card { max-width: 100%; padding: 5px 9px; font-size: clamp(0.65rem, 1.3vh, 0.78rem); box-shadow: none; cursor: default; }
+  .bin.hover { background: rgba(232,200,120,0.3); border-color: #8a6d2f; transform: scale(1.01); }
+  .bin.correct-flash { animation: binFlash 0.5s ease; }
+  @keyframes binFlash { 0%, 100% { background: rgba(255,255,255,0.25); } 50% { background: rgba(140,196,110,0.45); } }
+  .bin.wrong-shake { animation: wrongShake 0.4s ease; border-color: #8a2b2b; }
+
+  .glue-area { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: clamp(10px, 2vh, 22px); min-height: 0; overflow-y: auto; }
+  .glue-target { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; min-height: clamp(90px, 18vh, 140px); padding: 14px; border: 3px dashed #c9b583; border-radius: 12px; background: rgba(255,255,255,0.3); transition: background 0.15s ease, border-color 0.15s ease; }
+  .glue-target.hover { background: rgba(232,200,120,0.3); border-color: #8a6d2f; }
+  .glue-slot { display: flex; align-items: center; justify-content: center; min-height: 60px; min-width: 110px; padding: 8px 14px; border-radius: 8px; font-size: clamp(0.85rem, 1.8vh, 1.05rem); color: #8a7a55; font-style: italic; transition: all 0.2s ease; touch-action: none; flex: 1 1 auto; }
+  .glue-slot.filled { background: linear-gradient(180deg, #fffdf6, #f0e6cb); border: 2px solid #c9b583; color: #2b2418; font-style: normal; font-weight: 700; box-shadow: 0 2px 6px rgba(80,60,20,0.2); animation: cardSettle 0.3s ease; }
+  .glue-slot .slot-hint { font-size: 0.7em; letter-spacing: 1px; text-transform: uppercase; opacity: 0.7; }
+  .glue-pool { display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(6px, 1.2vw, 12px); min-height: clamp(56px, 11vh, 90px); padding: 6px; }
+  .glue-done { text-align: center; font-size: clamp(0.9rem, 2vh, 1.2rem); font-weight: 700; color: #2f6b1e; padding: 8px; animation: cardSettle 0.4s ease; flex-basis: 100%; }
+
+  .phon-head {
+    display: flex; align-items: center; justify-content: center; gap: clamp(6px, 1.2vw, 14px); flex-wrap: wrap;
+    padding: clamp(4px, 0.8vh, 8px) 12px;
+    background: linear-gradient(180deg, rgba(250,244,227,0.9), rgba(238,228,203,0.7));
+    border: 1px solid rgba(138,109,47,0.4); border-radius: 10px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 2px 6px rgba(80,50,20,0.1);
+    margin-bottom: clamp(4px, 0.8vh, 8px); flex-shrink: 0; position: relative;
+  }
+  .phon-head::before, .phon-head::after { content: "✦"; color: #8a6d2f; font-size: 0.8rem; opacity: 0.6; }
+  .phon-info { display: flex; gap: clamp(6px, 1.2vw, 14px); flex-wrap: wrap; align-items: center; }
+  .info-item { display: flex; align-items: center; gap: 6px; background: linear-gradient(180deg, #fffdf6, #f0e6cb); border: 1.5px solid #c9b583; border-radius: 6px; padding: clamp(3px, 0.6vh, 6px) clamp(8px, 1.2vw, 12px); box-shadow: 0 2px 4px rgba(80,50,20,0.12), inset 0 1px 0 rgba(255,255,255,0.8); font-size: clamp(0.68rem, 1.3vh, 0.86rem); }
+  .info-item .info-label { font-variant: small-caps; letter-spacing: 1.5px; color: #6b4e1f; font-style: normal; font-weight: 700; font-size: 0.9em; }
+  .info-item select { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='9' height='6' viewBox='0 0 9 6'%3e%3cpath fill='%238a6d2f' d='M4.5 6L0 0h9z'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 5px center; font-family: 'Georgia', serif; font-size: clamp(0.78rem, 1.5vh, 0.95rem); font-weight: 700; color: #4a2f12; background-color: transparent; border: none; padding: 1px 18px 1px 2px; cursor: pointer; outline: none; min-width: 30px; text-align: center; }
+  .info-item select.correct { background-color: #d4edc0; border-radius: 4px; box-shadow: inset 0 0 0 1.5px #6b9a3f; color: #1e3a0d; }
+  .info-item select.wrong { background-color: #f5c9c9; border-radius: 4px; box-shadow: inset 0 0 0 1.5px #a83a3a; animation: wrongShake 0.4s ease; }
+  .phon-body { flex: 1; display: flex; gap: clamp(8px, 1.4vw, 16px); min-height: 0; overflow: hidden; }
+  .phon-row { flex: 1; display: flex; flex-direction: column; gap: clamp(2px, 0.5vh, 6px); overflow: hidden; padding: 2px; min-height: 0; }
+  .letter-block {
+    position: relative; display: flex; flex-direction: row; align-items: stretch; gap: 0;
+    flex: 1 1 0; min-height: 0;
+    background: linear-gradient(135deg, #fdf8ec 0%, #f0e6cb 100%);
+    border: 1px solid rgba(180,150,100,0.55); border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(80,50,20,0.12), inset 0 1px 0 rgba(255,255,255,0.7), inset 0 -1px 2px rgba(80,50,20,0.06);
+    overflow: hidden;
+  }
+  .letter-block::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, #d4af37, #8a6d2f); box-shadow: inset -1px 0 2px rgba(0,0,0,0.15); }
+  .letter-block .letter {
+    display: flex; align-items: center; justify-content: center;
+    min-width: clamp(34px, 5vw, 52px);
+    padding: clamp(2px, 0.5vh, 6px) clamp(6px, 1vw, 12px);
+    font-family: 'Georgia', serif; font-size: clamp(1.1rem, 2.4vh, 1.8rem); font-weight: 700; color: #3a2410; text-transform: uppercase;
+    background: linear-gradient(180deg, rgba(232,200,120,0.4), rgba(200,170,100,0.18));
+    border-right: 1px dashed rgba(138,109,47,0.45);
+    text-shadow: 0 1px 0 rgba(255,255,255,0.85), 0 2px 3px rgba(80,50,20,0.2);
+    flex-shrink: 0; position: relative;
+  }
+  .letter-block .letter::after { content: ""; position: absolute; right: 0; top: 20%; bottom: 20%; width: 1px; background: linear-gradient(180deg, transparent, rgba(138,109,47,0.3), transparent); }
+  .letter-block .sounds-row { display: flex; flex-direction: row; gap: clamp(4px, 0.8vw, 10px); flex-wrap: wrap; align-items: center; padding: clamp(2px, 0.5vh, 6px) clamp(6px, 1vw, 12px); flex: 1; min-width: 0; }
+  .sound-unit { display: flex; flex-direction: row; align-items: center; gap: clamp(3px, 0.6vh, 8px); padding: clamp(1px, 0.3vh, 4px) clamp(3px, 0.5vw, 6px); border-radius: 6px; background: rgba(255,255,255,0.4); border: 1px solid rgba(180,150,100,0.3); box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); }
+  .sound-unit select.sound-select {
+    appearance: none; -webkit-appearance: none; font-family: 'Georgia', serif; font-size: clamp(0.72rem, 1.5vh, 0.98rem); font-weight: 700; color: #2b2418;
+    background: #fffdf6 url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3e%3cpath fill='%238a6d2f' d='M4 5L0 0h8z'/%3e%3c/svg%3e") no-repeat right 6px center;
+    border: 1.5px solid #c9b583; border-radius: 6px;
+    padding: clamp(2px, 0.4vh, 5px) clamp(14px, 1.8vw, 20px) clamp(2px, 0.4vh, 5px) clamp(6px, 0.8vw, 10px);
+    cursor: pointer; text-align: center; min-width: clamp(50px, 7vw, 68px); outline: none;
+    box-shadow: 0 1px 2px rgba(80,50,20,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
+    transition: border-color 0.15s ease, background-color 0.2s ease;
+  }
+  .sound-unit select.sound-select.correct { background-color: #d4edc0; border-color: #6b9a3f; color: #1e3a0d; box-shadow: 0 0 0 2px rgba(122,165,82,0.35), inset 0 1px 0 rgba(255,255,255,0.7); }
+  .sound-unit select.sound-select.wrong { background-color: #f5c9c9; border-color: #a83a3a; animation: wrongShake 0.4s ease; }
+  .chars-zone {
+    display: flex; flex-wrap: wrap; gap: 2px; justify-content: center;
+    min-height: clamp(20px, 3.6vh, 30px); min-width: clamp(44px, 6vw, 62px); max-width: clamp(110px, 16vw, 160px);
+    padding: clamp(1px, 0.3vh, 4px) clamp(3px, 0.5vw, 6px);
+    border: 1.5px dashed rgba(180,150,100,0.65); border-radius: 6px;
+    background: linear-gradient(180deg, rgba(250,244,227,0.9), rgba(240,230,203,0.85));
+    box-shadow: inset 0 2px 4px rgba(80,50,20,0.1), inset 0 -1px 1px rgba(255,255,255,0.5);
+    align-content: center; transition: all 0.2s ease;
+  }
+  .chars-zone.hover { background: linear-gradient(180deg, rgba(255,250,230,0.95), rgba(240,220,170,0.9)); border-color: #b08d3f; box-shadow: inset 0 2px 4px rgba(80,50,20,0.12), 0 0 0 2px rgba(232,200,120,0.4); }
+  .chars-zone.complete { border-style: solid; border-color: #6b9a3f; background: linear-gradient(180deg, #eaf5dd, #d4edc0); box-shadow: 0 0 0 2px rgba(122,165,82,0.28), inset 0 1px 0 rgba(255,255,255,0.6); }
+  .char-slot {
+    display: flex; align-items: center; justify-content: center; font-family: 'Georgia', serif;
+    font-size: clamp(0.5rem, 1vh, 0.75rem); padding: 1px clamp(3px, 0.4vw, 6px);
+    min-width: clamp(16px, 2.2vw, 24px); min-height: clamp(13px, 2.2vh, 18px);
+    border-radius: 4px; background: rgba(255,255,255,0.55); color: #b8a880; font-style: italic;
+    border: 1px dashed rgba(180,150,100,0.35); transition: all 0.2s ease;
+  }
+  .char-slot.filled {
+    background: linear-gradient(180deg, #cfe6b4, #a8d18a); border: 1px solid #6b9a3f; color: #1e3a0d;
+    font-weight: 700; font-style: normal; box-shadow: 0 1px 2px rgba(107,154,63,0.35), inset 0 1px 0 rgba(255,255,255,0.55);
+    animation: cardSettle 0.25s ease;
+  }
+  .char-sidebar {
+    flex: 0 0 auto; width: clamp(120px, 15vw, 160px);
+    display: flex; flex-direction: column; gap: 4px;
+    padding: clamp(6px, 1vh, 10px) clamp(6px, 0.8vw, 10px);
+    background: linear-gradient(180deg, #f0e6cb, #ddcaa0 60%, #d0bb8f 100%);
+    border: 2px solid #8a6d2f; border-radius: 10px;
+    box-shadow: 0 6px 16px rgba(80,50,20,0.25), inset 0 1px 0 rgba(255,255,255,0.65), inset 0 -2px 8px rgba(80,50,20,0.15);
+    overflow: hidden; min-height: 0; position: relative;
+  }
+  .char-sidebar::before { content: ""; position: absolute; top: 5px; left: 5px; right: 5px; bottom: 5px; border: 1px solid rgba(138,109,47,0.25); border-radius: 6px; pointer-events: none; }
+  .pool-label {
+    font-family: 'Georgia', serif; font-variant: small-caps; font-size: clamp(0.65rem, 1.25vh, 0.82rem);
+    letter-spacing: 2px; text-transform: uppercase; color: #3a2410; text-align: center;
+    padding-bottom: 4px; margin-bottom: 2px; border-bottom: 1px solid rgba(138,109,47,0.5);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.5); font-weight: 700; flex-shrink: 0; position: relative; z-index: 1;
+  }
+  .char-pool { flex: 1; display: flex; flex-direction: column; gap: clamp(2px, 0.4vh, 5px); min-height: 0; overflow: hidden; position: relative; z-index: 1; }
+  .char-card {
+    flex: 1 1 0; min-height: 0; position: relative; display: flex; align-items: center;
+    padding: clamp(3px, 0.6vh, 7px) clamp(6px, 0.8vw, 10px) clamp(3px, 0.6vh, 7px) clamp(16px, 1.8vw, 20px);
+    font-family: 'Georgia', serif; font-size: clamp(0.65rem, 1.3vh, 0.85rem); font-weight: 700; color: #3a2410;
+    background: linear-gradient(180deg, #fffdf6, #f0e6cb); border: 1.5px solid #b08d3f; border-radius: 4px;
+    cursor: grab; box-shadow: 0 2px 5px rgba(80,50,20,0.16), inset 0 1px 0 rgba(255,255,255,0.85);
+    touch-action: none; transition: all 0.15s ease; white-space: nowrap; overflow: hidden;
+  }
+  .char-card::before { content: ""; position: absolute; left: clamp(4px, 0.6vw, 7px); top: 50%; transform: translateY(-50%); width: clamp(5px, 0.7vw, 8px); height: clamp(5px, 0.7vw, 8px); border-radius: 50%; background: radial-gradient(circle at 35% 35%, #d4af37, #6b4e1f); box-shadow: inset 0 1px 1px rgba(0,0,0,0.35); }
+  .char-card:hover { transform: translateY(-1px); background: linear-gradient(180deg, #fffdf6, #e8dcb8); box-shadow: 0 4px 10px rgba(80,50,20,0.25), inset 0 1px 0 rgba(255,255,255,0.85); }
+  .char-card.dragging { cursor: grabbing; z-index: 9999; box-shadow: 0 14px 28px rgba(0,0,0,0.45); transform: rotate(-2deg) scale(1.05); }
+  .char-card.snap-back { transition: transform 0.35s cubic-bezier(0.3, 1.4, 0.5, 1); }
+
+  .board-foot {
+    flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding-top: clamp(3px, 0.6vh, 8px); min-height: 32px;
+    border-top: 1px solid rgba(138,109,47,0.25); margin-top: clamp(3px, 0.6vh, 6px);
+  }
+  .score-pill {
+    font-size: clamp(0.6rem, 1.1vh, 0.75rem); letter-spacing: 1.5px; text-transform: uppercase;
+    color: #4a2f12; background: linear-gradient(180deg, rgba(232,200,120,0.35), rgba(200,170,100,0.2));
+    border: 1px solid rgba(138,109,47,0.4); border-radius: 20px;
+    padding: 4px 12px; font-weight: 700; white-space: nowrap; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+  }
+  .btn-next-round {
+    font-family: inherit; font-size: clamp(0.68rem, 1.3vh, 0.85rem);
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: #f4e4c1; background: linear-gradient(180deg, #3a4a5a, #1d2b38);
+    border: 2px solid #0d1b2a; border-radius: 8px; padding: 6px 20px;
+    cursor: pointer; box-shadow: 0 4px 0 #0a1420; transition: transform 0.12s ease;
+    opacity: 0; pointer-events: none;
+  }
+  .btn-next-round.show { opacity: 1; pointer-events: auto; animation: cardSettle 0.3s ease; }
+  .btn-next-round:active { transform: translateY(2px); box-shadow: 0 1px 0 #0a1420; }
+
+  .ortho-menu {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%; width: 100%; gap: clamp(10px, 2vh, 24px); animation: fadeIn 0.8s ease;
+  }
+  .ortho-menu-title { color: #f4e4c1; text-shadow: 0 2px 12px rgba(0,0,0,0.9); font-size: clamp(1rem, 2.6vh, 1.4rem); letter-spacing: 2px; text-transform: uppercase; font-style: italic; text-align: center; }
+  .ortho-menu-row { display: flex; gap: clamp(10px, 2vw, 24px); flex-wrap: wrap; justify-content: center; }
+  .ortho-menu-item {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: clamp(14px, 2.4vh, 24px) clamp(18px, 3vw, 32px);
+    background: linear-gradient(180deg, #fdf8ec, #e8dcc0);
+    border: 2px solid #8a6d2f; border-radius: 12px;
+    box-shadow: 0 6px 0 #6b5220, 0 14px 28px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.7);
+    cursor: pointer; font-family: inherit; color: #3a2410;
+    min-width: min(200px, 30vw); transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .ortho-menu-item:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #6b5220, 0 18px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.7); }
+  .ortho-menu-item:active { transform: translateY(3px); box-shadow: 0 3px 0 #6b5220, 0 8px 16px rgba(0,0,0,0.5); }
+  .ortho-menu-item .om-icon { font-size: clamp(1.6rem, 4vh, 2.4rem); }
+  .ortho-menu-item .om-title { font-size: clamp(0.82rem, 1.8vh, 1rem); letter-spacing: 1px; text-transform: uppercase; font-weight: 700; text-align: center; }
+  .ortho-menu-item .om-status { font-size: clamp(0.6rem, 1.2vh, 0.75rem); letter-spacing: 1px; text-transform: uppercase; color: #2f6b1e; font-weight: 700; min-height: 1.1em; }
+  .ortho-menu-item.done { opacity: 0.75; }
+
+  .ortho-game {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: clamp(10px, 2vh, 22px); min-height: 0; padding: 6px;
+  }
+  .ortho-word {
+    font-family: 'Georgia', serif;
+    font-size: clamp(2rem, 6vh, 3.6rem);
+    font-weight: 700; letter-spacing: 4px; color: #3a2410;
+    text-shadow: 0 2px 0 rgba(255,255,255,0.7), 0 4px 8px rgba(80,50,20,0.25);
+    text-align: center; display: flex; align-items: baseline; justify-content: center;
+    flex-wrap: nowrap;
+  }
+  .ortho-word .w-part { white-space: pre; }
+  .ortho-word .w-slot {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 1.2em; min-height: 1.2em;
+    margin: 0 4px;
+    border-bottom: 4px solid #8a6d2f;
+    color: #c9a24b;
+    transition: all 0.25s ease;
+  }
+  .ortho-word .w-slot.filled {
+    color: #2f6b1e; border-bottom-color: #2f6b1e;
+    text-shadow: 0 0 20px rgba(122,165,82,0.6), 0 2px 0 rgba(255,255,255,0.7);
+    animation: cardSettle 0.35s ease;
+  }
+
+  .ortho-fields {
+    display: flex; flex-direction: column; gap: clamp(8px, 1.4vh, 16px);
+    width: 100%; max-width: 640px;
+  }
+  .ortho-field {
+    display: flex; flex-direction: column; gap: clamp(6px, 1vh, 10px);
+    background: rgba(255,255,255,0.4);
+    border: 1.5px solid rgba(180,150,100,0.55);
+    border-radius: 10px; padding: clamp(8px, 1.2vh, 14px) clamp(10px, 1.4vw, 16px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+  }
+  .ortho-field-label {
+    font-family: 'Georgia', serif; font-variant: small-caps;
+    font-size: clamp(0.65rem, 1.35vh, 0.85rem); letter-spacing: 1.5px;
+    text-transform: uppercase; color: #6b4e1f; font-weight: 700;
+    text-align: center;
+  }
+
+  .ortho-letter-options, .ortho-check-options {
+    display: flex; flex-wrap: wrap; gap: clamp(6px, 1vw, 10px); justify-content: center;
+  }
+  .option-btn {
+    font-family: 'Georgia', serif;
+    font-weight: 700;
+    color: #3a2410;
+    background: linear-gradient(180deg, #fffdf6, #f0e6cb);
+    border: 1.5px solid #b08d3f;
+    border-radius: 8px;
+    padding: clamp(6px, 1vh, 10px) clamp(12px, 2vw, 20px);
+    cursor: pointer;
+    box-shadow: 0 3px 6px rgba(80,50,20,0.15), inset 0 1px 0 rgba(255,255,255,0.7);
+    transition: all 0.15s ease;
+    font-size: clamp(0.85rem, 1.7vh, 1.05rem);
+    touch-action: manipulation;
+    min-width: 44px;
+    text-align: center;
+  }
+  .option-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 12px rgba(80,50,20,0.25), inset 0 1px 0 rgba(255,255,255,0.7); background: linear-gradient(180deg, #fffdf6, #e8dcb8); }
+  .option-btn:active { transform: translateY(1px); box-shadow: 0 1px 3px rgba(80,50,20,0.15); }
+  .option-btn.selected { background: linear-gradient(180deg, #f0dfa8, #d4b878); border-color: #8a6d2f; box-shadow: inset 0 2px 5px rgba(80,50,20,0.25), 0 1px 3px rgba(0,0,0,0.15); transform: translateY(1px); color: #3a2410; }
+  .option-btn.selected.correct { background: linear-gradient(180deg, #cfe6b4, #a8d18a); border-color: #6b9a3f; color: #1e3a0d; box-shadow: 0 0 0 2px rgba(122,165,82,0.35), inset 0 1px 0 rgba(255,255,255,0.6); }
+  .option-btn.selected.wrong { background: linear-gradient(180deg, #f5c9c9, #e8a8a8); border-color: #a83a3a; color: #4a0d0d; animation: wrongShake 0.4s ease; }
+  .option-btn:disabled { cursor: default; opacity: 0.75; }
+  .option-btn.selected:disabled { opacity: 1; }
+  .option-btn.dash-btn { font-style: italic; color: #6b4e1f; }
+  .option-btn.dash-btn.selected { color: #3a2410; }
+
+  .ortho-check-row { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; margin-top: 4px; }
+  .btn-check {
+    font-family: inherit; font-size: clamp(0.85rem, 1.9vh, 1.1rem); letter-spacing: 2px; text-transform: uppercase;
+    color: #1a1a1a; background: linear-gradient(180deg, #e8c878, #c9a24b);
+    border: 2px solid #8a6d2f; border-radius: 8px;
+    padding: clamp(8px, 1.4vh, 12px) clamp(24px, 4vw, 40px);
+    cursor: pointer; box-shadow: 0 5px 0 #6b5220, 0 10px 20px rgba(0,0,0,0.4);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .btn-check:hover { transform: translateY(-2px); }
+  .btn-check:active { transform: translateY(3px); box-shadow: 0 2px 0 #6b5220; }
+  .btn-check:disabled { opacity: 0.5; cursor: default; pointer-events: none; }
+
+  .ortho-feedback {
+    text-align: center; font-style: italic;
+    font-size: clamp(0.72rem, 1.5vh, 0.9rem);
+    color: #5a4220; min-height: 1.5em;
+    padding: 4px 10px; transition: color 0.2s ease;
+  }
+  .ortho-feedback.ok { color: #2f6b1e; font-weight: 700; }
+  .ortho-feedback.err { color: #8a2b2b; font-weight: 700; }
+
+  /* ====== ДЕЛО 4: СОСТАВ СЛОВА ====== */
+  .morph-game {
+    flex: 1; display: flex; flex-direction: column; min-height: 0;
+    gap: clamp(10px, 2vh, 22px); padding: 4px;
+  }
+  .morph-word-area {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: clamp(12px, 2.4vh, 24px);
+    min-height: 0;
+    padding: clamp(12px, 2.4vh, 28px) 8px;
+    background: radial-gradient(ellipse at center, rgba(255,253,240,0.7) 0%, rgba(240,230,203,0.4) 80%);
+    border-radius: 12px;
+    border: 1px solid rgba(180,150,100,0.35);
+    box-shadow: inset 0 2px 8px rgba(80,50,20,0.06);
+  }
+  .morph-word {
+    display: flex; flex-wrap: wrap; gap: clamp(6px, 1.2vw, 18px);
+    justify-content: center; align-items: flex-start;
+    max-width: 100%;
+  }
+  .morph-part {
+    display: flex; flex-direction: column; align-items: center;
+    gap: clamp(6px, 1.2vh, 12px);
+    flex: 0 0 auto;
+  }
+  .morph-part-text {
+    font-family: 'Georgia', serif;
+    font-size: clamp(1.8rem, 6vh, 3.4rem);
+    font-weight: 700; color: #3a2410;
+    padding: clamp(8px, 1.6vh, 16px) clamp(12px, 2vw, 24px);
+    background: linear-gradient(180deg, #fffdf6, #f0e6cb);
+    border: 2px solid #b08d3f; border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(80,50,20,0.15), inset 0 1px 0 rgba(255,255,255,0.7);
+    min-width: clamp(60px, 8vw, 90px);
+    text-align: center;
+    transition: all 0.2s ease;
+  }
+  .morph-part.done .morph-part-text {
+    background: linear-gradient(180deg, #cfe6b4, #a8d18a);
+    border-color: #6b9a3f; color: #1e3a0d;
+    box-shadow: 0 0 0 3px rgba(122,165,82,0.35), inset 0 1px 0 rgba(255,255,255,0.7);
+    animation: cardSettle 0.3s ease;
+  }
+  .morph-drop {
+    display: flex; align-items: center; justify-content: center;
+    min-width: clamp(120px, 16vw, 160px);
+    min-height: clamp(44px, 8vh, 64px);
+    padding: clamp(6px, 1vh, 10px) clamp(10px, 1.6vw, 16px);
+    border: 2.5px dashed rgba(180,150,100,0.65);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.4);
+    color: #b8a880;
+    font-style: italic;
+    font-size: clamp(0.82rem, 1.8vh, 1.05rem);
+    font-weight: 700;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 2px 4px rgba(80,50,20,0.08);
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  .morph-drop:hover {
+    background: rgba(232,200,120,0.35);
+    border-color: #8a6d2f;
+    transform: scale(1.03);
+  }
+  .morph-drop.active {
+    background: rgba(232,200,120,0.55);
+    border-color: #8a6d2f;
+    border-style: solid;
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px rgba(232,200,120,0.4), inset 0 2px 4px rgba(80,50,20,0.1);
+  }
+  .morph-drop.filled {
+    background: linear-gradient(180deg, #cfe6b4, #a8d18a);
+    border: 2.5px solid #6b9a3f;
+    color: #1e3a0d;
+    font-weight: 700;
+    font-style: normal;
+    cursor: default;
+    box-shadow: 0 0 0 3px rgba(122,165,82,0.3), inset 0 1px 0 rgba(255,255,255,0.6);
+    animation: cardSettle 0.3s ease;
+  }
+  .morph-drop.filled:hover { transform: none; }
+  .morph-drop.wrong {
+    border-color: #a83a3a;
+    background: rgba(245,201,201,0.7);
+    animation: wrongShake 0.4s ease;
+  }
+
+  .morph-pool-wrap {
+    flex-shrink: 0;
+    display: flex; flex-direction: column; align-items: center;
+    gap: clamp(6px, 1.2vh, 12px);
+    padding: clamp(10px, 1.6vh, 18px);
+    background: linear-gradient(180deg, rgba(240,230,203,0.6), rgba(220,200,160,0.5));
+    border-radius: 12px;
+    border: 1px solid rgba(138,109,47,0.3);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+  }
+  .morph-pool-label {
+    font-family: 'Georgia', serif; font-variant: small-caps;
+    font-size: clamp(0.75rem, 1.5vh, 0.95rem);
+    letter-spacing: 2px; text-transform: uppercase;
+    color: #6b4e1f; font-weight: 700;
+    text-align: center;
+  }
+  .morph-pool {
+    display: flex; flex-wrap: wrap; gap: clamp(8px, 1.4vw, 16px);
+    justify-content: center;
+  }
+  .morph-card {
+    font-family: 'Georgia', serif;
+    font-size: clamp(0.95rem, 2.2vh, 1.3rem);
+    font-weight: 700;
+    color: #3a2410;
+    background: linear-gradient(180deg, #fffdf6, #f0e6cb);
+    border: 2px solid #b08d3f;
+    border-radius: 10px;
+    padding: clamp(10px, 1.8vh, 16px) clamp(16px, 2.6vw, 26px);
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(80,50,20,0.18), inset 0 1px 0 rgba(255,255,255,0.85);
+    touch-action: manipulation;
+    user-select: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    white-space: nowrap;
+  }
+  .morph-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 18px rgba(80,50,20,0.28), inset 0 1px 0 rgba(255,255,255,0.85);
+    background: linear-gradient(180deg, #fffdf6, #e8dcb8);
+  }
+  .morph-card:active { transform: translateY(1px); }
+  .morph-card.selected {
+    background: linear-gradient(180deg, #f0dfa8, #d4b878);
+    border-color: #8a6d2f;
+    box-shadow: inset 0 2px 5px rgba(80,50,20,0.25), 0 0 0 3px rgba(232,200,120,0.4);
+    transform: translateY(1px);
+  }
+
+  /* ====== ФИНАЛ ====== */
+  .final-wrap {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center;
+    width: 100%; max-width: 860px; max-height: calc(100vh - 24px);
+    padding: clamp(16px, 3vh, 36px) clamp(18px, 3vw, 40px);
+    gap: clamp(10px, 1.8vh, 20px);
+    overflow: hidden;
+    text-align: center;
+    animation: fadeIn 1s ease;
+    z-index: 2;
+  }
+  .final-wrap::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(232,200,120,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 100%, rgba(232,200,120,0.10) 0%, transparent 55%);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .final-ribbon {
+    font-family: 'Georgia', serif;
+    font-variant: small-caps;
+    font-size: clamp(0.65rem, 1.4vh, 0.85rem);
+    letter-spacing: 4px;
+    color: #e8c878;
+    padding: 4px 16px;
+    border: 1px solid rgba(232,200,120,0.5);
+    border-radius: 20px;
+    background: rgba(232,200,120,0.1);
+    text-shadow: 0 0 12px rgba(232,200,120,0.6);
+    animation: fadeIn 1.2s ease;
+  }
+
+  .final-title {
+    font-family: 'Georgia', serif;
+    font-size: clamp(1.6rem, 5vw, 3rem);
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #f4e4c1;
+    text-shadow:
+      0 0 20px rgba(232,200,120,0.7),
+      0 0 40px rgba(232,200,120,0.4),
+      0 4px 12px rgba(0,0,0,0.9);
+    margin-top: -4px;
+    animation: finalTitleIn 1s cubic-bezier(0.2, 1.4, 0.4, 1);
+  }
+  @keyframes finalTitleIn {
+    from { opacity: 0; transform: translateY(-20px) scale(0.9); letter-spacing: 12px; }
+    to   { opacity: 1; transform: translateY(0) scale(1); letter-spacing: 5px; }
+  }
+
+  .final-letters {
+    display: flex; gap: clamp(6px, 1.4vw, 16px);
+    margin: clamp(4px, 1vh, 12px) 0;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .final-letter {
+    position: relative;
+    width: clamp(56px, 10vw, 84px); height: clamp(56px, 10vw, 84px);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Georgia', serif; font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 700; color: #4a2f12;
+    background: radial-gradient(circle at 30% 30%, #f5ecd4, #d8c08a 70%, #b9975b);
+    border: 3px solid #8a6d2f; border-radius: 50%;
+    box-shadow:
+      0 0 30px rgba(232,200,120,0.6),
+      0 10px 24px rgba(0,0,0,0.6),
+      inset 0 2px 4px rgba(255,255,255,0.7);
+    animation: popIn 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) backwards;
+  }
+  .final-letter:nth-child(1) { animation-delay: 0.2s; }
+  .final-letter:nth-child(2) { animation-delay: 0.45s; }
+  .final-letter:nth-child(3) { animation-delay: 0.7s; }
+  .final-letter:nth-child(4) { animation-delay: 0.95s; }
+  .final-letter::after {
+    content: "";
+    position: absolute; inset: 4px;
+    border-radius: 50%;
+    border: 1px dashed rgba(138,109,47,0.4);
+    pointer-events: none;
+  }
+
+  .final-password-label {
+    font-family: 'Georgia', serif;
+    font-size: clamp(0.7rem, 1.5vh, 0.9rem);
+    font-style: italic;
+    color: #e8c878;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+    opacity: 0;
+    animation: fadeIn 0.8s ease 1.2s forwards;
+  }
+  .final-password-label b {
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #f4e4c1;
+    text-shadow: 0 0 12px rgba(232,200,120,0.7);
+  }
+
+  .confession {
+    position: relative;
+    max-width: 640px; width: 100%;
+    padding: clamp(12px, 2.2vh, 22px) clamp(16px, 3vw, 30px);
+    background: linear-gradient(180deg, rgba(250,244,227,0.97), rgba(238,228,203,0.97));
+    color: #2b2418;
+    border-radius: 6px;
+    box-shadow:
+      0 0 0 1px rgba(120,100,60,0.35),
+      0 18px 40px rgba(0,0,0,0.6),
+      inset 0 0 60px rgba(150,120,70,0.12);
+    text-align: left;
+    font-size: clamp(0.72rem, 1.5vh, 0.9rem);
+    line-height: 1.55;
+    opacity: 0;
+    animation: fadeIn 0.8s ease 1.4s forwards;
+  }
+  .confession::before {
+    content: "✒";
+    position: absolute;
+    top: -12px; left: 16px;
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(180deg, #8a6d2f, #5a4220);
+    color: #f5ecd4;
+    border-radius: 50%;
+    font-size: 0.95rem;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+  }
+  .confession-title {
+    font-family: 'Georgia', serif;
+    font-variant: small-caps;
+    font-size: clamp(0.7rem, 1.4vh, 0.85rem);
+    letter-spacing: 2px;
+    color: #8a2b2b;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .confession p { margin-bottom: 8px; }
+  .confession p:last-of-type { margin-bottom: 0; }
+  .confession .signature {
+    margin-top: 10px;
+    text-align: right;
+    font-style: italic;
+    color: #5a4220;
+    font-size: 0.92em;
+  }
+  .confession .signature b { font-style: normal; color: #3a2410; }
+
+  .final-stamp {
+    position: relative;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: clamp(6px, 1.2vh, 12px) clamp(16px, 3vw, 32px);
+    border: 4px double #8a2b2b;
+    border-radius: 8px;
+    color: #8a2b2b;
+    font-family: 'Georgia', serif;
+    font-size: clamp(0.9rem, 2.2vh, 1.3rem);
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    transform: rotate(-4deg);
+    background: rgba(255,255,255,0.05);
+    text-shadow: 0 0 8px rgba(138,43,43,0.4);
+    box-shadow: 0 0 20px rgba(138,43,43,0.3);
+    opacity: 0;
+    animation: stampIn 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) 2s forwards;
+  }
+  @keyframes stampIn {
+    from { opacity: 0; transform: rotate(-4deg) scale(3); }
+    to   { opacity: 1; transform: rotate(-4deg) scale(1); }
+  }
+
+  .final-restart {
+    margin-top: clamp(4px, 1vh, 10px);
+    font-family: inherit; font-size: clamp(0.85rem, 1.8vh, 1.05rem);
+    letter-spacing: 2px; text-transform: uppercase;
+    color: #f4e4c1;
+    background: linear-gradient(180deg, #3a4a5a, #1d2b38);
+    border: 2px solid #0d1b2a; border-radius: 8px;
+    padding: clamp(8px, 1.4vh, 12px) clamp(24px, 4vw, 40px);
+    cursor: pointer;
+    box-shadow: 0 5px 0 #0a1420, 0 10px 20px rgba(0,0,0,0.4);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    opacity: 0;
+    animation: fadeIn 0.8s ease 2.4s forwards;
+  }
+  .final-restart:hover { transform: translateY(-2px); }
+  .final-restart:active { transform: translateY(3px); box-shadow: 0 2px 0 #0a1420; }
+
+  .confetti-piece {
+    position: fixed;
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 9999;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    0%   { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0.3; }
+  }
+
+  .spark { position: fixed; width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle, #ffe9a8, #e8c878); pointer-events: none; z-index: 10000; animation: sparkFly 0.6s ease-out forwards; }
+  @keyframes sparkFly { from { opacity: 1; transform: translate(0,0) scale(1); } to { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.3); } }
+
+  @keyframes wrongShake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+
+  .clue-screen { text-align: center; color: #f4e4c1; text-shadow: 0 2px 12px rgba(0,0,0,0.9); animation: fadeIn 0.8s ease; max-width: 560px; }
+  .clue-screen h2 { font-size: clamp(1.4rem, 4vw, 2.4rem); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 20px; color: #e8c878; }
+  .clue-screen .clue-letter { display: inline-flex; align-items: center; justify-content: center; width: clamp(90px, 20vw, 130px); height: clamp(90px, 20vw, 130px); font-size: clamp(3rem, 10vw, 5rem); font-weight: 700; color: #4a2f12; background: radial-gradient(circle at 30% 30%, #f5ecd4, #d8c08a); border: 3px solid #8a6d2f; border-radius: 50%; margin: 0 auto 24px; box-shadow: 0 0 40px rgba(232,200,120,0.6), 0 12px 30px rgba(0,0,0,0.6); animation: popIn 0.6s cubic-bezier(0.2, 1.4, 0.4, 1); }
+  .clue-screen p { font-size: clamp(0.9rem, 2vh, 1.1rem); line-height: 1.6; margin-bottom: 28px; font-style: italic; }
+  .clue-screen .btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  @keyframes popIn { from { opacity: 0; transform: scale(0.3) rotate(-15deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes paperIn { from { opacity: 0; transform: translateY(30px) scale(0.97) rotate(-0.5deg); } to { opacity: 1; transform: translateY(0) scale(1) rotate(0); } }
+
+  @media (max-height: 700px) {
+    .phon-head { padding: 4px 10px; }
+    .info-item { padding: 3px 9px; }
+    .char-card { font-size: clamp(0.58rem, 1.2vh, 0.78rem); padding-left: clamp(14px, 1.6vw, 18px); }
+    .char-card::before { width: 5px; height: 5px; left: clamp(3px, 0.5vw, 5px); }
+    .confession { font-size: 0.72rem; padding: 10px 16px; }
+  }
+  @media (max-height: 560px) {
+    .letter-block .letter { font-size: clamp(0.9rem, 2.2vh, 1.4rem); min-width: clamp(26px, 4vw, 40px); padding: 2px 4px; }
+    .sound-unit select.sound-select { font-size: clamp(0.6rem, 1.3vh, 0.8rem); min-width: clamp(42px, 6vw, 56px); padding: 2px 14px 2px 5px; }
+    .chars-zone { min-height: 16px; min-width: clamp(36px, 5vw, 50px); padding: 1px 3px; }
+    .char-slot { font-size: clamp(0.45rem, 0.9vh, 0.62rem); min-height: 12px; min-width: 14px; padding: 0 3px; }
+    .char-card { font-size: clamp(0.55rem, 1.1vh, 0.72rem); padding: 2px 5px 2px 12px; }
+    .char-card::before { width: 4px; height: 4px; left: 3px; }
+    .pool-label { font-size: 0.6rem; padding-bottom: 3px; }
+    .morph-part-text { font-size: clamp(1.2rem, 4vh, 2.2rem); padding: 4px 10px; }
+    .morph-drop { min-height: 30px; min-width: 90px; font-size: 0.7rem; }
+    .morph-card { font-size: 0.8rem; padding: 6px 12px; }
+    .confession { font-size: 0.66rem; padding: 8px 14px; }
+    .final-letter { width: 44px; height: 44px; font-size: 1.4rem; }
+  }
+  @media (max-width: 700px) {
+    .phon-body { flex-direction: column; }
+    .char-sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; padding: 6px; gap: 4px; }
+    .pool-label { width: 100%; margin-bottom: 0; padding-bottom: 3px; }
+    .char-pool { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 4px; }
+    .char-card { flex: 0 0 auto; padding: 4px 8px 4px 16px; font-size: 0.7rem; }
+    .choice-item .folder { width: min(150px, 22vw); }
+  }
+</style>
+</head>
+<body>
+
+<section class="screen" id="screen-start">
+  <div class="start-box">
+    <h1>Орфо-детектив</h1>
+    <div class="subtitle">Бюро лингвистических расследований</div>
+    <button class="btn-start" id="btn-start">Начать</button>
+  </div>
+</section>
+
+<section class="screen hidden" id="screen-story">
+  <div class="paper">
+    <h2>Дело №1</h2>
+    <div class="stamp">Совершенно секретно</div>
+    <p class="lead">В городе Словограде произошло чрезвычайное происшествие.</p>
+    <p>Ночью в городской типографии неизвестный проник в цех и перепутал все слова и предложения: части слов разбросаны, в словах пропали гласные, а сложные предложения разорваны на куски.</p>
+    <div class="clue">На месте найдена записка: «Вернуть порядок сможет лишь тот, кто разбирается в составе слова, слышит звуки и умеет проверять безударную гласную».</div>
+    <p>Преступник оставил <span class="lead">четыре улики</span>, спрятанные в четырёх запутанных делах. Собрав их все, можно вычислить злоумышленника и вернуть порядок в Словоград.</p>
+    <div class="signature">Начальник бюро,<br>следователь по особо важным словам</div>
+    <button class="btn-continue" id="btn-continue">Приступить к расследованию</button>
+  </div>
+</section>
+
+<section class="screen hidden" id="screen-choice">
+  <div class="choice-wrap">
+    <div class="choice-title">С какого дела начнём?</div>
+    <div class="choice-row">
+      <button class="choice-item" id="choice-case1">
+        <div class="folder"><img src="https://i.pinimg.com/736x/67/49/db/6749db9881baedfd38bd36f857fe0158.jpg" alt="Папка 1"></div>
+        <div class="choice-label">Предложения</div>
+        <div class="choice-status" id="status-case1"></div>
+      </button>
+      <button class="choice-item" id="choice-case2">
+        <div class="folder"><img src="https://i.pinimg.com/736x/67/49/db/6749db9881baedfd38bd36f857fe0158.jpg" alt="Папка 2"></div>
+        <div class="choice-label">Звуки</div>
+        <div class="choice-status" id="status-case2"></div>
+      </button>
+      <button class="choice-item" id="choice-case3">
+        <div class="folder"><img src="https://i.pinimg.com/736x/67/49/db/6749db9881baedfd38bd36f857fe0158.jpg" alt="Папка 3"></div>
+        <div class="choice-label">Орфограммы</div>
+        <div class="choice-status" id="status-case3"></div>
+      </button>
+      <button class="choice-item" id="choice-case4">
+        <div class="folder"><img src="https://i.pinimg.com/736x/67/49/db/6749db9881baedfd38bd36f857fe0158.jpg" alt="Папка 4"></div>
+        <div class="choice-label">Состав слова</div>
+        <div class="choice-status" id="status-case4"></div>
+      </button>
+    </div>
+    <div class="choice-footer">В каждом деле спрятана <b>улика</b> — буква. Раскрой все дела, чтобы собрать улики и вычислить преступника.</div>
+    <button class="btn-continue" id="btn-final" style="display:none; margin-top:8px; background: linear-gradient(180deg, #8a6d2f, #5a4220);">Собрать пароль</button>
+  </div>
+</section>
+
+<section class="screen hidden" id="screen-case">
+  <div class="board">
+    <div class="board-head">
+      <h2>Дело №1. Оборванные предложения</h2>
+      <div class="round-info" id="round-info">Раунд 1 из 2</div>
+    </div>
+    <div class="instruction" id="instruction"></div>
+    <div class="sort-area" id="sort-area">
+      <div class="cards-pool" id="cards-pool"></div>
+      <div class="bins">
+        <div class="bin" data-bin="simple"><div class="bin-title">Простое</div><div class="bin-content" id="bin-simple"></div></div>
+        <div class="bin" data-bin="complex"><div class="bin-title">Сложное</div><div class="bin-content" id="bin-complex"></div></div>
+      </div>
+    </div>
+    <div class="glue-area hidden" id="glue-area">
+      <div class="glue-target" id="glue-target"></div>
+      <div class="glue-pool" id="glue-pool"></div>
+    </div>
+    <div class="board-foot">
+      <div class="score-pill" id="score-pill">Разложено: 0 / 6</div>
+      <button class="btn-next-round" id="btn-next-round">Дальше →</button>
+    </div>
+  </div>
+</section>
+
+<section class="screen hidden" id="screen-clue">
+  <div class="clue-screen">
+    <h2>Улика найдена!</h2>
+    <div class="clue-letter">Д</div>
+    <p>Ты восстановил порядок в первом деле. В награду — первая улика. Буква <b>«Д»</b>.</p>
+    <div class="btn-row"><button class="btn-continue" id="btn-clue-back">К выбору дел</button></div>
+  </div>
+</section>
+
+<section class="screen hidden" id="screen-case2">
+  <div class="board">
+    <div class="board-head">
+      <h2>Дело №2. Фонетический разбор</h2>
+      <div class="round-info" id="round-info2">Разбор слова</div>
+    </div>
+    <div class="instruction" id="instruction2">Выбери транскрипцию каждого звука, посчитай буквы, звуки и слоги, расставь характеристики.</div>
+    <div class="phon-head">
+      <div class="phon-info">
+        <div class="info-item"><span class="info-label">Букв</span>
+          <select id="info-letters" data-correct="7"><option value="">?</option><option>6</option><option>7</option><option>8</option></select>
+        </div>
+        <div class="info-item"><span class="info-label">Звуков</span>
+          <select id="info-sounds" data-correct="8"><option value="">?</option><option>7</option><option>8</option><option>9</option></select>
+        </div>
+        <div class="info-item"><span class="info-label">Слогов</span>
+          <select id="info-syllables" data-correct="4"><option value="">?</option><option>3</option><option>4</option><option>5</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="phon-body">
+      <div class="phon-row" id="phon-row"></div>
+      <aside class="char-sidebar">
+        <div class="pool-label">Карточки</div>
+        <div class="char-pool" id="char-pool"></div>
+      </aside>
+    </div>
+    <div class="board-foot">
+      <div class="score-pill" id="score-pill2">Готово: 0 / 35</div>
+      <button class="btn-next-round" id="btn-next-round2">Завершить дело</button>
+    </div>
+  </div>
+</section>
+
+<section class="screen hidden" id="screen-clue2">
+  <div class="clue-screen">
+    <h2>Вторая улика!</h2>
+    <div class="clue-letter">Е</div>
+    <p>Фонетический разбор выполнен безупречно. Ты получаешь вторую улику — букву <b>«Е»</b>.<br>Осталось раскрыть ещё дела.</p>
+    <div class="btn-row"><button class="btn-continue" id="btn-clue2-back">К выбору дел</button></div>
+  </div>
+</section>
+
+<section class="screen hidden" id="screen-ortho-menu">
+  <div class="ortho-menu">
+    <div class="ortho-menu-title">Дело №3. Похищенные буквы</div>
+    <div class="ortho-menu-row">
+      <button class="ortho-menu-item" id="ortho-vowel">
+        <div class="om-icon">🔤</div>
+        <div class="om-title">Безударная гласная</div>
+        <div class="om-status" id="om-status-vowel"></div>
+      </button>
+      <button class="ortho-menu-item" id="ortho-paired">
+        <div class="om-icon">📎</div>
+        <div class="om-title">Парные согласные</div>
+        <div class="om-status" id="om-status-paired"></div>
+      </button>
+      <button class="ortho-menu-item" id="ortho-silent">
+        <div class="om-icon">🤫</div>
+        <div class="om-title">Непроизносимые согласные</div>
+        <div class="om-status" id="om-status-silent"></div>
+      </button>
+    </div>
+    <div class="choice-footer" style="margin-top:8px;">Раскрой все три игры, чтобы получить третью улику.</div>
+    <button class="btn-continue" id="btn-ortho-clue" style="display:none; margin-top:16px;">Получить улику</button>
+    <button class="btn-continue" id="btn-ortho-back" style="margin-top:8px; background: linear-gradient(180deg, #6b5220, #3a2a10);">К выбору дел</button>
+  </div>
+</section>
+
+<section class="screen hidden" id="screen-ortho">
+  <div class="board">
+    <div class="board-head">
+      <h2 id="ortho-title">Дело №3. Орфограмма</h2>
+      <div class="round-info" id="ortho-progress">Слово 1</div>
+    </div>
+    <div class="instruction" id="ortho-instruction"></div>
+    <div class="ortho-game">
+      <div class="ortho-word" id="ortho-word"></div>
+      <div class="ortho-fields">
+        <div class="ortho-field">
+          <div class="ortho-field-label">Выбери пропущенную букву</div>
+          <div class="ortho-letter-options" id="ortho-letter-options"></div>
+        </div>
+        <div class="ortho-field">
+          <div class="ortho-field-label">Выбери проверочное слово</div>
+          <div class="ortho-check-options" id="ortho-check-options"></div>
+        </div>
+      </div>
+      <div class="ortho-check-row">
+        <button class="btn-check" id="btn-ortho-check">Проверить</button>
+      </div>
+      <div class="ortho-feedback" id="ortho-feedback"></div>
+    </div>
+    <div class="board-foot">
+      <div class="score-pill" id="ortho-score">Готово: 0 / 8</div>
+      <button class="btn-next-round" id="btn-ortho-next">Дальше →</button>
+    </div>
+  </div>
+</section>
+
+<section class="screen hidden" id="screen-clue3">
+  <div class="clue-screen">
+    <h2>Третья улика!</h2>
+    <div class="clue-letter">Л</div>
+    <p>Все орфограммы восстановлены. Ты получаешь третью улику — букву <b>«Л»</b>.<br>Осталось последнее дело.</p>
+    <div class="btn-row"><button class="btn-continue" id="btn-clue3-back">К выбору дел</button></div>
+  </div>
+</section>
+
+<section class="screen hidden" id="screen-case4">
+  <div class="board">
+    <div class="board-head">
+      <h2>Дело №4. Разобранное слово</h2>
+      <div class="round-info" id="morph-progress">Слово 1 из 8</div>
+    </div>
+    <div class="instruction" id="morph-instruction">Нажми на карточку с названием части, затем на пустое окошко под нужной частью слова.</div>
+    <div class="morph-game">
+      <div class="morph-word-area">
+        <div class="morph-word" id="morph-word"></div>
+      </div>
+      <div class="morph-pool-wrap">
+        <div class="morph-pool-label">Части слова — выбери и щёлкни по окошку</div>
+        <div class="morph-pool" id="morph-pool"></div>
+      </div>
+    </div>
+    <div class="board-foot">
+      <div class="score-pill" id="morph-score">Готово: 0 / 8</div>
+      <button class="btn-next-round" id="btn-morph-next">Дальше →</button>
+    </div>
+  </div>
+</section>
+
+<section class="screen hidden" id="screen-clue4">
+  <div class="clue-screen">
+    <h2>Четвёртая улика!</h2>
+    <div class="clue-letter">О</div>
+    <p>Все части слов разобраны. Ты получаешь последнюю улику — букву <b>«О»</b>.<br>Все четыре улики собраны!</p>
+    <div class="btn-row"><button class="btn-continue" id="btn-clue4-final">Собрать пароль</button></div>
+  </div>
+</section>
+
+<section class="screen hidden" id="screen-final">
+  <div class="final-wrap" id="final-wrap">
+    <div class="final-ribbon">✧ Бюро лингвистических расследований ✧</div>
+    <h1 class="final-title">Дело раскрыто</h1>
+
+    <div class="final-letters">
+      <div class="final-letter">Д</div>
+      <div class="final-letter">Е</div>
+      <div class="final-letter">Л</div>
+      <div class="final-letter">О</div>
+    </div>
+
+    <div class="final-password-label">Слово-пароль: <b>ДЕЛО</b></div>
+
+    <div class="confession">
+      <div class="confession-title">Признание задержанного</div>
+      <p>«Да, это был я — <b>Буквоед</b>. Старый заколдованный словарь из школьной библиотеки. Меня много лет никто не открывал, вот я и обиделся — перепутал все слова, похитил звуки, разобрал слова на части… Я хотел, чтобы вы наконец обратили на меня внимание.</p>
+      <p>Но вы, юный детектив, оказались слишком хороши: разобрались в предложениях, сняли звуковые отпечатки, вернули все буквы на места и собрали слова по частям. Я сдаюсь. Обещаю больше никогда не путать безударные гласные и не трогать непроизносимые согласные».</p>
+      <div class="signature">Задержан и подписался собственноручно:<br><b>Буквоед</b></div>
+    </div>
+
+    <div class="final-stamp">Дело закрыто</div>
+
+    <button class="final-restart" id="btn-restart">Играть снова</button>
+  </div>
+</section>
+
+<script>
+  const sortCards = [
+    { id: 's1', text: 'Наступила осень, и листья пожелтели.', type: 'complex' },
+    { id: 's2', text: 'Дети играли во дворе.', type: 'simple' },
+    { id: 's3', text: 'Подул ветер, но дождь не начался.', type: 'complex' },
+    { id: 's4', text: 'В лесу растут грибы и ягоды.', type: 'simple' },
+    { id: 's5', text: 'Взошло солнце, и туман рассеялся.', type: 'complex' },
+    { id: 's6', text: 'Мама испекла пирог.', type: 'simple' }
+  ];
+  const glueTasks = [
+    { left: 'Ударил гром', right: 'сверкнула молния.', answer: 'и', options: ['и', 'а', 'но'] },
+    { left: 'День был солнечный', right: 'вечер выдался прохладным.', answer: 'а', options: ['и', 'а', 'но'] },
+    { left: 'Мы очень устали', right: 'продолжили путь.', answer: 'но', options: ['и', 'а', 'но'] }
+  ];
+  const phoneticTask = {
+    items: [
+      { letter: 'к', sounds: [{ options: ['[к]', "[к']", '[г]'], correct: '[к]', chars: ['согл', 'тв', 'глух', 'парн'] }] },
+      { letter: 'о', sounds: [{ options: ['[о]', '[а]', '[ы]'], correct: '[а]', chars: ['гласн', 'безудар'] }] },
+      { letter: 'л', sounds: [{ options: ['[л]', "[л']", '[м]'], correct: "[л']", chars: ['согл', 'мяг', 'зв', 'непарн'] }] },
+      { letter: 'ю', sounds: [{ options: ['[у]', "[й'у]", '[ю]'], correct: '[у]', chars: ['гласн', 'ударн'] }] },
+      { letter: 'ч', sounds: [{ options: ['[ч]', "[ч']", "[щ']"], correct: "[ч']", chars: ['согл', 'мяг', 'глух', 'непарн'] }] },
+      { letter: 'а', sounds: [{ options: ['[а]', '[о]', '[ы]'], correct: '[а]', chars: ['гласн', 'безудар'] }] },
+      { letter: 'я', sounds: [
+        { options: ["[й']", '[й]', '[и]'], correct: "[й']", chars: ['согл', 'мяг', 'зв', 'непарн'] },
+        { options: ['[а]', '[о]', '[я]'], correct: '[а]', chars: ['гласн', 'безудар'] }
+      ]}
+    ]
+  };
+  const CHAR_LABELS = ['гласн', 'согл', 'ударн', 'безудар', 'тв', 'мяг', 'зв', 'глух', 'парн', 'непарн'];
+  const TOTAL_ITEMS = 3 + 8 + 24;
+
+  const orthoData = {
+    vowel: {
+      title: 'Дело №3. Безударная гласная',
+      instruction: 'Выбери пропущенную гласную и проверочное слово.',
+      letters: ['а', 'о', 'е', 'и', 'я'],
+      words: [
+        { display: 'к_рмушка', letter: 'о', options: ['кормушка', 'кормить', 'корм'], check: 'корм' },
+        { display: 'тр_пинка', letter: 'о', options: ['тропинка', 'тропа', 'тропы'], check: 'тропы' },
+        { display: 'д_ревья', letter: 'е', options: ['деревья', 'деревянный', 'дерево'], check: 'дерево' },
+        { display: 'сн_гирь', letter: 'е', options: ['снегирь', 'снежок', 'снег'], check: 'снег' },
+        { display: 'гр_бной', letter: 'и', options: ['грибной', 'грибница', 'гриб'], check: 'гриб' },
+        { display: 'цв_тной', letter: 'е', options: ['цветной', 'цветёт', 'цвет'], check: 'цвет' },
+        { display: 'л_сток', letter: 'и', options: ['листок', 'листва', 'лист'], check: 'лист' },
+        { display: 'м_рской', letter: 'о', options: ['морской', 'моряк', 'море'], check: 'море' }
+      ]
+    },
+    paired: {
+      title: 'Дело №3. Парные согласные',
+      instruction: 'Выбери пропущенную парную согласную и проверочное слово.',
+      words: [
+        { display: 'улы_ка', pair: ['б', 'п'], letter: 'б', options: ['улыбка', 'улыбчивый', 'улыбочка'], check: 'улыбочка' },
+        { display: 'кни_ка', pair: ['ж', 'ш'], letter: 'ж', options: ['книжки', 'книжка', 'книжечка'], check: 'книжечка' },
+        { display: 'ло_ка', pair: ['ж', 'ш'], letter: 'ж', options: ['ложки', 'ложка', 'ложечка'], check: 'ложечка' },
+        { display: 'варе_ка', pair: ['ж', 'ш'], letter: 'ж', options: ['варежки', 'варежка', 'варежечка'], check: 'варежечка' },
+        { display: 'доро_ка', pair: ['ж', 'ш'], letter: 'ж', options: ['дорожки', 'дорожка', 'дороженька'], check: 'дороженька' },
+        { display: 'тетра_ка', pair: ['д', 'т'], letter: 'д', options: ['тетрадки', 'тетрадка', 'тетрадочка'], check: 'тетрадочка' },
+        { display: 'зага_ка', pair: ['д', 'т'], letter: 'д', options: ['загадки', 'загадка', 'загадочка'], check: 'загадочка' },
+        { display: 'берё_ка', pair: ['з', 'с'], letter: 'з', options: ['берёзки', 'берёзка', 'берёза'], check: 'берёза' }
+      ]
+    },
+    silent: {
+      title: 'Дело №3. Непроизносимые согласные',
+      instruction: 'Выбери, есть ли непроизносимая согласная, и проверочное слово.',
+      letters: ['л', 'д', 'т', 'в'],
+      allowDash: true,
+      words: [
+        { display: 'со_нце', letter: 'л', options: ['солнце', 'солнечный', 'солнышко'], check: 'солнышко' },
+        { display: 'сер_це', letter: 'д', options: ['сердце', 'сердечный', 'сердечко'], check: 'сердечко' },
+        { display: 'поз_ний', letter: 'д', options: ['поздний', 'поздно', 'опоздать'], check: 'опоздать' },
+        { display: 'радос_ный', letter: 'т', options: ['радостный', 'радостно', 'радость'], check: 'радость' },
+        { display: 'мес_ный', letter: 'т', options: ['местный', 'местечко', 'место'], check: 'место' },
+        { display: 'извес_ный', letter: 'т', options: ['известный', 'известность', 'известие'], check: 'известие' },
+        { display: 'чудес_ный', letter: '', options: ['чудесный', 'чудесно', 'чудеса'], check: 'чудеса' },
+        { display: 'опас_ный', letter: '', options: ['опасный', 'опасно', 'опасен'], check: 'опасен' }
+      ]
+    }
+  };
+
+  const morphData = {
+    labels: ['приставка', 'корень', 'суффикс', 'окончание'],
+    words: [
+      { parts: [
+        { text: 'по', type: 'приставка' },
+        { text: 'ход', type: 'корень' },
+        { text: 'к', type: 'суффикс' },
+        { text: 'а', type: 'окончание' }
+      ]},
+      { parts: [
+        { text: 'лес', type: 'корень' },
+        { text: 'н', type: 'суффикс' },
+        { text: 'ой', type: 'окончание' }
+      ]},
+      { parts: [
+        { text: 'пере', type: 'приставка' },
+        { text: 'ход', type: 'корень' },
+        { text: 'н', type: 'суффикс' },
+        { text: 'ый', type: 'окончание' }
+      ]},
+      { parts: [
+        { text: 'школь', type: 'корень' },
+        { text: 'н', type: 'суффикс' },
+        { text: 'иц', type: 'суффикс' },
+        { text: 'а', type: 'окончание' }
+      ]},
+      { parts: [
+        { text: 'зим', type: 'корень' },
+        { text: 'ушк', type: 'суффикс' },
+        { text: 'а', type: 'окончание' }
+      ]},
+      { parts: [
+        { text: 'при', type: 'приставка' },
+        { text: 'школь', type: 'корень' },
+        { text: 'н', type: 'суффикс' },
+        { text: 'ый', type: 'окончание' }
+      ]},
+      { parts: [
+        { text: 'дом', type: 'корень' },
+        { text: 'ик', type: 'суффикс' },
+        { text: 'и', type: 'окончание' }
+      ]},
+      { parts: [
+        { text: 'под', type: 'приставка' },
+        { text: 'снеж', type: 'корень' },
+        { text: 'ник', type: 'суффикс' },
+        { text: 'и', type: 'окончание' }
+      ]}
+    ]
+  };
+
+  const state = {
+    round1: 1, placed1: 0, glueIndex: 0,
+    glueLeftPlaced: false, glueRightPlaced: false, glueConjPlaced: false,
+    placedLeftText: '', placedRightText: '', placedConj: '',
+    doneCase1: false, doneCase2: false, doneCase4: false,
+    orthoDone: { vowel: false, paired: false, silent: false }
+  };
+
+  const $ = id => document.getElementById(id);
+  const allScreens = [
+    'screen-start','screen-story','screen-choice',
+    'screen-case','screen-clue',
+    'screen-case2','screen-clue2',
+    'screen-ortho-menu','screen-ortho','screen-clue3',
+    'screen-case4','screen-clue4','screen-final'
+  ].map(id => document.getElementById(id));
+
+  function show(screen) {
+    allScreens.forEach(s => s.classList.add('hidden'));
+    screen.classList.remove('hidden');
+  }
+
+  function allDone() {
+    return state.doneCase1 && state.doneCase2 && state.doneCase4 &&
+           state.orthoDone.vowel && state.orthoDone.paired && state.orthoDone.silent;
+  }
+
+  function updateChoiceStatus() {
+    $('status-case1').textContent = state.doneCase1 ? '✓ Дело раскрыто' : '';
+    $('status-case2').textContent = state.doneCase2 ? '✓ Дело раскрыто' : '';
+    $('status-case4').textContent = state.doneCase4 ? '✓ Дело раскрыто' : '';
+    const allOrtho = state.orthoDone.vowel && state.orthoDone.paired && state.orthoDone.silent;
+    $('status-case3').textContent = allOrtho ? '✓ Дело раскрыто' : '';
+    $('choice-case1').style.opacity = state.doneCase1 ? '0.75' : '1';
+    $('choice-case2').style.opacity = state.doneCase2 ? '0.75' : '1';
+    $('choice-case3').style.opacity = allOrtho ? '0.75' : '1';
+    $('choice-case4').style.opacity = state.doneCase4 ? '0.75' : '1';
+    $('btn-final').style.display = allDone() ? 'block' : 'none';
+  }
+  function updateOrthoMenu() {
+    $('om-status-vowel').textContent = state.orthoDone.vowel ? '✓ Пройдено' : '';
+    $('om-status-paired').textContent = state.orthoDone.paired ? '✓ Пройдено' : '';
+    $('om-status-silent').textContent = state.orthoDone.silent ? '✓ Пройдено' : '';
+    $('ortho-vowel').classList.toggle('done', state.orthoDone.vowel);
+    $('ortho-paired').classList.toggle('done', state.orthoDone.paired);
+    $('ortho-silent').classList.toggle('done', state.orthoDone.silent);
+    const all = state.orthoDone.vowel && state.orthoDone.paired && state.orthoDone.silent;
+    $('btn-ortho-clue').style.display = all ? 'block' : 'none';
+  }
+
+  function makeDraggable(el, opts) {
+    el.addEventListener('pointerdown', (e) => {
+      if (el.classList.contains('placed') || el.classList.contains('locked')) return;
+      e.preventDefault();
+      const rect = el.getBoundingClientRect();
+      const offsetX = e.clientX - rect.left;
+      const offsetY = e.clientY - rect.top;
+      const ghost = el.cloneNode(true);
+      ghost.style.position = 'fixed';
+      ghost.style.left = rect.left + 'px';
+      ghost.style.top = rect.top + 'px';
+      ghost.style.width = rect.width + 'px';
+      ghost.style.height = rect.height + 'px';
+      ghost.style.margin = '0';
+      ghost.style.pointerEvents = 'none';
+      ghost.style.zIndex = '9999';
+      ghost.classList.add('dragging');
+      document.body.appendChild(ghost);
+      el.style.visibility = 'hidden';
+      function move(ev) {
+        ev.preventDefault();
+        ghost.style.left = (ev.clientX - offsetX) + 'px';
+        ghost.style.top = (ev.clientY - offsetY) + 'px';
+        if (opts.highlightTargets) {
+          opts.highlightTargets.forEach(t => t.classList.remove('hover'));
+          let node = document.elementFromPoint(ev.clientX, ev.clientY);
+          while (node) {
+            if (opts.highlightTargets.includes(node)) { node.classList.add('hover'); break; }
+            node = node.parentElement;
+          }
+        }
+      }
+      function up(ev) {
+        document.removeEventListener('pointermove', move);
+        document.removeEventListener('pointerup', up);
+        document.removeEventListener('pointercancel', up);
+        const under = document.elementFromPoint(ev.clientX, ev.clientY);
+        ghost.remove();
+        el.style.visibility = '';
+        if (opts.highlightTargets) opts.highlightTargets.forEach(t => t.classList.remove('hover'));
+        let target = null;
+        let node = under;
+        while (node) {
+          if (opts.acceptTargets.includes(node)) { target = node; break; }
+          node = node.parentElement;
+        }
+        if (target) opts.onDrop(el, target);
+        else {
+          el.classList.add('snap-back');
+          setTimeout(() => el.classList.remove('snap-back'), 350);
+        }
+      }
+      document.addEventListener('pointermove', move, { passive: false });
+      document.addEventListener('pointerup', up);
+      document.addEventListener('pointercancel', up);
+    });
+  }
+
+  function sparkAt(x, y) {
+    for (let i = 0; i < 8; i++) {
+      const s = document.createElement('div');
+      s.className = 'spark';
+      s.style.left = x + 'px';
+      s.style.top = y + 'px';
+      const a = (Math.PI * 2 * i) / 8;
+      const d = 40 + Math.random() * 30;
+      s.style.setProperty('--dx', Math.cos(a) * d + 'px');
+      s.style.setProperty('--dy', Math.sin(a) * d + 'px');
+      document.body.appendChild(s);
+      setTimeout(() => s.remove(), 650);
+    }
+  }
+
+  /* ====== ДЕЛО 1 ====== */
+  const poolEl = $('cards-pool');
+  const binSimple = $('bin-simple');
+  const binComplex = $('bin-complex');
+  const binSimpleBox = binSimple.parentElement;
+  const binComplexBox = binComplex.parentElement;
+  const scorePill = $('score-pill');
+  const instructionEl = $('instruction');
+  const roundInfoEl = $('round-info');
+  const btnNextRound = $('btn-next-round');
+  const sortArea = $('sort-area');
+  const glueArea = $('glue-area');
+  const glueTarget = $('glue-target');
+  const gluePool = $('glue-pool');
+
+  function buildSortRound() {
+    state.round1 = 1; state.placed1 = 0;
+    roundInfoEl.textContent = 'Раунд 1 из 2';
+    instructionEl.textContent = 'Перетащи каждое предложение в нужную корзину: простое или сложное.';
+    scorePill.textContent = 'Разложено: 0 / ' + sortCards.length;
+    btnNextRound.classList.remove('show');
+    sortArea.classList.remove('hidden');
+    glueArea.classList.add('hidden');
+    poolEl.innerHTML = ''; binSimple.innerHTML = ''; binComplex.innerHTML = '';
+    [...sortCards].sort(() => Math.random() - 0.5).forEach(card => {
+      const el = document.createElement('div');
+      el.className = 'drag-card';
+      el.textContent = card.text;
+      el.dataset.type = card.type;
+      poolEl.appendChild(el);
+      makeDraggable(el, {
+        acceptTargets: [binSimpleBox, binComplexBox],
+        highlightTargets: [binSimpleBox, binComplexBox],
+        onDrop: (dragged, targetBin) => {
+          if (dragged.dataset.type === targetBin.dataset.bin) {
+            const rect = dragged.getBoundingClientRect();
+            sparkAt(rect.left + rect.width / 2, rect.top + rect.height / 2);
+            dragged.classList.add('placed');
+            targetBin.querySelector('.bin-content').appendChild(dragged);
+            state.placed1++;
+            scorePill.textContent = `Разложено: ${state.placed1} / ${sortCards.length}`;
+            targetBin.classList.add('correct-flash');
+            setTimeout(() => targetBin.classList.remove('correct-flash'), 500);
+            if (state.placed1 === sortCards.length) {
+              instructionEl.textContent = 'Отлично! Все предложения разложены. Переходим к склейке.';
+              btnNextRound.classList.add('show');
+              btnNextRound.textContent = 'Дальше →';
+            }
+          } else {
+            dragged.classList.add('snap-back');
+            setTimeout(() => dragged.classList.remove('snap-back'), 350);
+            targetBin.classList.add('wrong-shake');
+            setTimeout(() => targetBin.classList.remove('wrong-shake'), 400);
+            instructionEl.textContent = 'Не туда. Посчитай грамматические основы в этом предложении.';
+          }
+        }
+      });
+    });
+  }
+
+  function buildGlueRound() {
+    state.round1 = 2; state.glueIndex = 0;
+    roundInfoEl.textContent = 'Раунд 2 из 2';
+    instructionEl.textContent = 'Собери сложное предложение: перетащи обрывки в рамку и вставь подходящий союз.';
+    sortArea.classList.add('hidden');
+    glueArea.classList.remove('hidden');
+    btnNextRound.classList.remove('show');
+    scorePill.textContent = 'Собрано: 0 / ' + glueTasks.length;
+    renderGlueTask();
+  }
+
+  function renderGlueTask() {
+    const t = glueTasks[state.glueIndex];
+    state.glueLeftPlaced = false; state.glueRightPlaced = false; state.glueConjPlaced = false;
+    state.placedLeftText = ''; state.placedRightText = ''; state.placedConj = '';
+    glueTarget.innerHTML = ''; gluePool.innerHTML = '';
+
+    const slotLeft = document.createElement('div');
+    slotLeft.className = 'glue-slot'; slotLeft.dataset.role = 'part'; slotLeft.dataset.side = 'left';
+    slotLeft.innerHTML = '<span class="slot-hint">часть 1</span>';
+    const slotConj = document.createElement('div');
+    slotConj.className = 'glue-slot'; slotConj.dataset.role = 'conj';
+    slotConj.innerHTML = '<span class="slot-hint">союз</span>';
+    const slotRight = document.createElement('div');
+    slotRight.className = 'glue-slot'; slotRight.dataset.role = 'part'; slotRight.dataset.side = 'right';
+    slotRight.innerHTML = '<span class="slot-hint">часть 2</span>';
+    glueTarget.appendChild(slotLeft); glueTarget.appendChild(slotConj); glueTarget.appendChild(slotRight);
+
+    function placeCard(dragged, cardRole) {
+      if (cardRole === 'conj') {
+        if (dragged.textContent !== t.answer) {
+          dragged.classList.add('snap-back'); setTimeout(() => dragged.classList.remove('snap-back'), 350);
+          instructionEl.textContent = 'Этот союз не подходит по смыслу. Попробуй другой.';
+          return;
+        }
+        if (state.glueConjPlaced) { dragged.classList.add('snap-back'); setTimeout(() => dragged.classList.remove('snap-back'), 350); return; }
+        slotConj.classList.add('filled');
+        slotConj.textContent = dragged.textContent;
+        state.glueConjPlaced = true;
+        state.placedConj = dragged.textContent;
+      } else {
+        let targetSlot = null, side = null;
+        if (!state.glueLeftPlaced) { targetSlot = slotLeft; side = 'left'; }
+        else if (!state.glueRightPlaced) { targetSlot = slotRight; side = 'right'; }
+        else { dragged.classList.add('snap-back'); setTimeout(() => dragged.classList.remove('snap-back'), 350); return; }
+        targetSlot.classList.add('filled');
+        targetSlot.textContent = dragged.textContent;
+        if (side === 'left') { state.glueLeftPlaced = true; state.placedLeftText = dragged.textContent; }
+        else { state.glueRightPlaced = true; state.placedRightText = dragged.textContent; }
+      }
+      const rect = dragged.getBoundingClientRect();
+      sparkAt(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      dragged.remove();
+      if (state.glueLeftPlaced && state.glueRightPlaced && state.glueConjPlaced) {
+        const done = document.createElement('div');
+        done.className = 'glue-done';
+        done.textContent = `✓ ${state.placedLeftText}, ${state.placedConj} ${state.placedRightText}`;
+        glueTarget.appendChild(done);
+        state.glueIndex++;
+        scorePill.textContent = `Собрано: ${state.glueIndex} / ${glueTasks.length}`;
+        instructionEl.textContent = 'Верно! Предложение склеено.';
+        btnNextRound.classList.add('show');
+        btnNextRound.textContent = (state.glueIndex < glueTasks.length) ? 'Следующее →' : 'Завершить дело';
+      }
+    }
+
+    [
+      { role: 'part', text: t.left },
+      { role: 'part', text: t.right },
+      ...t.options.map(o => ({ role: 'conj', text: o }))
+    ].sort(() => Math.random() - 0.5).forEach(c => {
+      const el = document.createElement('div');
+      el.className = 'drag-card';
+      el.textContent = c.text;
+      el.dataset.role = c.role;
+      gluePool.appendChild(el);
+      makeDraggable(el, {
+        acceptTargets: [glueTarget, slotLeft, slotConj, slotRight],
+        highlightTargets: [glueTarget],
+        onDrop: (dragged) => placeCard(dragged, dragged.dataset.role)
+      });
+    });
+  }
+
+  btnNextRound.addEventListener('click', () => {
+    if (state.round1 === 1) buildGlueRound();
+    else {
+      if (state.glueIndex < glueTasks.length) { btnNextRound.classList.remove('show'); renderGlueTask(); }
+      else { state.doneCase1 = true; updateChoiceStatus(); show($('screen-clue')); }
+    }
+  });
+
+  /* ====== ДЕЛО 2 ====== */
+  const phonRow = $('phon-row');
+  const charPool = $('char-pool');
+  const scorePill2 = $('score-pill2');
+  const btnNextRound2 = $('btn-next-round2');
+  let phonDone = 0;
+
+  function buildPhoneticTask() {
+    phonDone = 0;
+    scorePill2.textContent = `Готово: 0 / ${TOTAL_ITEMS}`;
+    btnNextRound2.classList.remove('show');
+    ['info-letters', 'info-sounds', 'info-syllables'].forEach(id => {
+      const sel = $(id);
+      sel.value = ''; sel.classList.remove('correct', 'wrong');
+      sel.onchange = () => {
+        if (sel.classList.contains('correct')) return;
+        if (sel.value === sel.dataset.correct) { sel.classList.add('correct'); phonDone++; updatePhonProgress(); }
+        else if (sel.value !== '') {
+          sel.classList.add('wrong');
+          setTimeout(() => { sel.classList.remove('wrong'); sel.value = ''; }, 800);
+        }
+      };
+    });
+    phonRow.innerHTML = '';
+    phoneticTask.items.forEach(item => {
+      const block = document.createElement('div');
+      block.className = 'letter-block';
+      const letterEl = document.createElement('div');
+      letterEl.className = 'letter';
+      letterEl.textContent = item.letter;
+      block.appendChild(letterEl);
+      const soundsRow = document.createElement('div');
+      soundsRow.className = 'sounds-row';
+      item.sounds.forEach(sound => {
+        const unit = document.createElement('div');
+        unit.className = 'sound-unit';
+        const sel = document.createElement('select');
+        sel.className = 'sound-select';
+        sel.dataset.correct = sound.correct;
+        sel.innerHTML = '<option value="">?</option>' + sound.options.map(o => `<option value="${o}">${o}</option>`).join('');
+        sel.onchange = () => {
+          if (sel.classList.contains('correct')) return;
+          if (sel.value === sel.dataset.correct) { sel.classList.add('correct'); phonDone++; updatePhonProgress(); }
+          else if (sel.value !== '') {
+            sel.classList.add('wrong');
+            setTimeout(() => { sel.classList.remove('wrong'); sel.value = ''; }, 800);
+          }
+        };
+        unit.appendChild(sel);
+        const zone = document.createElement('div');
+        zone.className = 'chars-zone';
+        zone.dataset.required = JSON.stringify(sound.chars);
+        sound.chars.forEach(() => {
+          const slot = document.createElement('div');
+          slot.className = 'char-slot';
+          slot.textContent = '?';
+          zone.appendChild(slot);
+        });
+        unit.appendChild(zone);
+        soundsRow.appendChild(unit);
+      });
+      block.appendChild(soundsRow);
+      phonRow.appendChild(block);
+    });
+    charPool.innerHTML = '';
+    CHAR_LABELS.forEach(label => {
+      const card = document.createElement('div');
+      card.className = 'char-card';
+      card.textContent = label;
+      card.dataset.char = label;
+      charPool.appendChild(card);
+      makeDraggable(card, {
+        acceptTargets: [...document.querySelectorAll('.chars-zone')],
+        highlightTargets: [...document.querySelectorAll('.chars-zone')],
+        onDrop: (dragged, zone) => {
+          const required = JSON.parse(zone.dataset.required);
+          const char = dragged.dataset.char;
+          const placed = [...zone.querySelectorAll('.char-slot.filled')].map(s => s.dataset.char);
+          if (!required.includes(char) || placed.includes(char)) {
+            dragged.classList.add('snap-back'); setTimeout(() => dragged.classList.remove('snap-back'), 350);
+            return;
+          }
+          const emptySlot = [...zone.querySelectorAll('.char-slot:not(.filled)')][0];
+          if (!emptySlot) return;
+          emptySlot.classList.add('filled');
+          emptySlot.textContent = char;
+          emptySlot.dataset.char = char;
+          const rect = dragged.getBoundingClientRect();
+          sparkAt(rect.left + rect.width / 2, rect.top + rect.height / 2);
+          if (zone.querySelectorAll('.char-slot.filled').length === required.length) zone.classList.add('complete');
+          phonDone++;
+          updatePhonProgress();
+        }
+      });
+    });
+  }
+
+  function updatePhonProgress() {
+    scorePill2.textContent = `Готово: ${phonDone} / ${TOTAL_ITEMS}`;
+    if (phonDone >= TOTAL_ITEMS) btnNextRound2.classList.add('show');
+  }
+  btnNextRound2.addEventListener('click', () => {
+    state.doneCase2 = true; updateChoiceStatus(); show($('screen-clue2'));
+  });
+
+  /* ====== ДЕЛО 3 ====== */
+  const orthoWordEl = $('ortho-word');
+  const orthoLetterOptions = $('ortho-letter-options');
+  const orthoCheckOptions = $('ortho-check-options');
+  const orthoFeedback = $('ortho-feedback');
+  const btnOrthoCheck = $('btn-ortho-check');
+  const btnOrthoNext = $('btn-ortho-next');
+  const orthoProgressEl = $('ortho-progress');
+  const orthoTitleEl = $('ortho-title');
+  const orthoInstructionEl = $('ortho-instruction');
+  const orthoScoreEl = $('ortho-score');
+
+  let orthoMode = null;
+  let orthoIndex = 0;
+  let orthoAnswered = false;
+  let orthoSelectedLetter = null;
+  let orthoSelectedCheck = null;
+
+  function buildOrthoGame(mode) {
+    orthoMode = mode;
+    orthoIndex = 0;
+    orthoAnswered = false;
+    const data = orthoData[mode];
+    orthoTitleEl.textContent = data.title;
+    orthoInstructionEl.textContent = data.instruction;
+    orthoScoreEl.textContent = `Готово: 0 / ${data.words.length}`;
+    renderOrthoWord();
+  }
+
+  function renderOrthoWord() {
+    const data = orthoData[orthoMode];
+    const word = data.words[orthoIndex];
+    orthoAnswered = false;
+    orthoSelectedLetter = null;
+    orthoSelectedCheck = null;
+    orthoProgressEl.textContent = `Слово ${orthoIndex + 1} из ${data.words.length}`;
+
+    const idx = word.display.indexOf('_');
+    const left = word.display.slice(0, idx);
+    const right = word.display.slice(idx + 1);
+    orthoWordEl.innerHTML = '';
+    const ls = document.createElement('span');
+    ls.className = 'w-part'; ls.textContent = left;
+    orthoWordEl.appendChild(ls);
+    const slot = document.createElement('span');
+    slot.className = 'w-slot'; slot.id = 'ortho-word-slot'; slot.textContent = '?';
+    orthoWordEl.appendChild(slot);
+    const rs = document.createElement('span');
+    rs.className = 'w-part'; rs.textContent = right;
+    orthoWordEl.appendChild(rs);
+
+    orthoFeedback.textContent = '';
+    orthoFeedback.className = 'ortho-feedback';
+    btnOrthoCheck.disabled = false;
+    btnOrthoNext.classList.remove('show');
+
+    orthoLetterOptions.innerHTML = '';
+    const letters = word.pair || data.letters || [];
+    [...letters].sort(() => Math.random() - 0.5).forEach(ch => {
+      const b = document.createElement('button');
+      b.className = 'option-btn';
+      b.textContent = ch;
+      b.type = 'button';
+      b.dataset.value = ch;
+      b.addEventListener('click', () => {
+        if (orthoAnswered) return;
+        orthoSelectedLetter = ch;
+        orthoLetterOptions.querySelectorAll('.option-btn').forEach(x => x.classList.remove('selected'));
+        b.classList.add('selected');
+        updateWordSlot(ch);
+      });
+      orthoLetterOptions.appendChild(b);
+    });
+    if (data.allowDash && !word.pair) {
+      const b = document.createElement('button');
+      b.className = 'option-btn dash-btn';
+      b.textContent = '— (нет буквы)';
+      b.type = 'button';
+      b.dataset.value = '';
+      b.addEventListener('click', () => {
+        if (orthoAnswered) return;
+        orthoSelectedLetter = '';
+        orthoLetterOptions.querySelectorAll('.option-btn').forEach(x => x.classList.remove('selected'));
+        b.classList.add('selected');
+        updateWordSlot('');
+      });
+      orthoLetterOptions.appendChild(b);
+    }
+
+    orthoCheckOptions.innerHTML = '';
+    [...word.options].sort(() => Math.random() - 0.5).forEach(opt => {
+      const b = document.createElement('button');
+      b.className = 'option-btn';
+      b.textContent = opt;
+      b.type = 'button';
+      b.dataset.value = opt;
+      b.addEventListener('click', () => {
+        if (orthoAnswered) return;
+        orthoSelectedCheck = opt;
+        orthoCheckOptions.querySelectorAll('.option-btn').forEach(x => x.classList.remove('selected'));
+        b.classList.add('selected');
+      });
+      orthoCheckOptions.appendChild(b);
+    });
+  }
+
+  function updateWordSlot(ch) {
+    const slot = document.getElementById('ortho-word-slot');
+    if (!slot) return;
+    if (ch !== '' && ch !== null && ch !== undefined) {
+      slot.textContent = ch;
+      slot.classList.add('filled');
+    } else {
+      slot.textContent = '—';
+      slot.classList.add('filled');
+    }
+  }
+
+  btnOrthoCheck.addEventListener('click', () => {
+    if (orthoAnswered) return;
+    if (orthoSelectedLetter === null || orthoSelectedCheck === null) {
+      orthoFeedback.textContent = 'Выбери букву и проверочное слово.';
+      orthoFeedback.className = 'ortho-feedback err';
+      return;
+    }
+    const data = orthoData[orthoMode];
+    const word = data.words[orthoIndex];
+    const letterOk = orthoSelectedLetter === word.letter;
+    const checkOk = orthoSelectedCheck === word.check;
+
+    if (letterOk && checkOk) {
+      orthoAnswered = true;
+      orthoLetterOptions.querySelectorAll('.option-btn').forEach(b => {
+        b.disabled = true;
+        if (b.dataset.value === word.letter) b.classList.add('correct');
+      });
+      orthoCheckOptions.querySelectorAll('.option-btn').forEach(b => {
+        b.disabled = true;
+        if (b.dataset.value === word.check) b.classList.add('correct');
+      });
+      orthoFeedback.textContent = `Верно! Проверочное слово: ${word.check}.`;
+      orthoFeedback.className = 'ortho-feedback ok';
+      const rect = orthoWordEl.getBoundingClientRect();
+      sparkAt(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      btnOrthoNext.textContent = (orthoIndex < data.words.length - 1) ? 'Дальше →' : 'Завершить игру';
+      btnOrthoNext.classList.add('show');
+    } else {
+      if (!letterOk) {
+        orthoLetterOptions.querySelectorAll('.option-btn.selected').forEach(b => {
+          b.classList.add('wrong');
+          setTimeout(() => b.classList.remove('wrong'), 900);
+        });
+      }
+      if (!checkOk) {
+        orthoCheckOptions.querySelectorAll('.option-btn.selected').forEach(b => {
+          b.classList.add('wrong');
+          setTimeout(() => b.classList.remove('wrong'), 900);
+        });
+      }
+      let msg = '';
+      if (!letterOk && !checkOk) msg = 'Проверь букву и проверочное слово.';
+      else if (!letterOk) msg = 'Буква не та. Вспомни правило.';
+      else msg = 'Это слово не проверяет нашу орфограмму. Выбери другое.';
+      orthoFeedback.textContent = msg;
+      orthoFeedback.className = 'ortho-feedback err';
+    }
+  });
+
+  btnOrthoNext.addEventListener('click', () => {
+    const data = orthoData[orthoMode];
+    if (orthoIndex < data.words.length - 1) {
+      orthoIndex++;
+      orthoScoreEl.textContent = `Готово: ${orthoIndex} / ${data.words.length}`;
+      renderOrthoWord();
+    } else {
+      state.orthoDone[orthoMode] = true;
+      updateOrthoMenu();
+      updateChoiceStatus();
+      show($('screen-ortho-menu'));
+    }
+  });
+
+  $('ortho-vowel').addEventListener('click', () => { buildOrthoGame('vowel'); show($('screen-ortho')); });
+  $('ortho-paired').addEventListener('click', () => { buildOrthoGame('paired'); show($('screen-ortho')); });
+  $('ortho-silent').addEventListener('click', () => { buildOrthoGame('silent'); show($('screen-ortho')); });
+  $('btn-ortho-clue').addEventListener('click', () => show($('screen-clue3')));
+  $('btn-ortho-back').addEventListener('click', () => { updateChoiceStatus(); show($('screen-choice')); });
+
+  /* ====== ДЕЛО 4 ====== */
+  const morphWordEl = $('morph-word');
+  const morphPoolEl = $('morph-pool');
+  const morphProgressEl = $('morph-progress');
+  const morphScoreEl = $('morph-score');
+  const btnMorphNext = $('btn-morph-next');
+  let morphIndex = 0;
+  let morphFilled = 0;
+  let morphTotal = 0;
+  let morphSelectedCard = null;
+
+  function buildMorphGame() {
+    morphIndex = 0;
+    morphSelectedCard = null;
+    renderMorphWord();
+    btnMorphNext.classList.remove('show');
+    btnMorphNext.textContent = 'Дальше →';
+  }
+
+  function renderMorphWord() {
+    const word = morphData.words[morphIndex];
+    morphProgressEl.textContent = `Слово ${morphIndex + 1} из ${morphData.words.length}`;
+    morphScoreEl.textContent = `Готово: ${morphIndex} / ${morphData.words.length}`;
+    morphFilled = 0;
+    morphTotal = word.parts.length;
+    morphSelectedCard = null;
+    btnMorphNext.classList.remove('show');
+
+    morphWordEl.innerHTML = '';
+    word.parts.forEach((part) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'morph-part';
+
+      const textEl = document.createElement('div');
+      textEl.className = 'morph-part-text';
+      textEl.textContent = part.text;
+      wrap.appendChild(textEl);
+
+      const drop = document.createElement('div');
+      drop.className = 'morph-drop';
+      drop.dataset.correctType = part.type;
+      drop.textContent = '?';
+      drop.addEventListener('click', () => onDropClick(drop));
+      wrap.appendChild(drop);
+
+      morphWordEl.appendChild(wrap);
+    });
+
+    morphPoolEl.innerHTML = '';
+    morphData.labels.forEach(label => {
+      const card = document.createElement('div');
+      card.className = 'morph-card';
+      card.dataset.type = label;
+      card.textContent = label;
+      card.addEventListener('click', () => onCardClick(card));
+      morphPoolEl.appendChild(card);
+    });
+  }
+
+  function onCardClick(card) {
+    if (morphSelectedCard === card) {
+      card.classList.remove('selected');
+      morphSelectedCard = null;
+      return;
+    }
+    if (morphSelectedCard) morphSelectedCard.classList.remove('selected');
+    card.classList.add('selected');
+    morphSelectedCard = card;
+  }
+
+  function onDropClick(drop) {
+    if (drop.classList.contains('filled')) return;
+    if (!morphSelectedCard) {
+      morphPoolEl.querySelectorAll('.morph-card').forEach(c => {
+        c.style.boxShadow = '0 0 0 3px rgba(232,200,120,0.7)';
+        setTimeout(() => { c.style.boxShadow = ''; }, 500);
+      });
+      return;
+    }
+    const chosen = morphSelectedCard.dataset.type;
+    const correct = drop.dataset.correctType;
+
+    if (chosen === correct) {
+      drop.classList.add('filled');
+      drop.textContent = chosen;
+      const wrap = drop.parentElement;
+      wrap.classList.add('done');
+      const r = drop.getBoundingClientRect();
+      sparkAt(r.left + r.width / 2, r.top + r.height / 2);
+      morphFilled++;
+
+      morphSelectedCard.classList.remove('selected');
+      morphSelectedCard = null;
+      checkMorphDone();
+    } else {
+      drop.classList.add('wrong');
+      setTimeout(() => drop.classList.remove('wrong'), 600);
+    }
+  }
+
+  function checkMorphDone() {
+    if (morphFilled === morphTotal) {
+      btnMorphNext.classList.add('show');
+      btnMorphNext.textContent = (morphIndex < morphData.words.length - 1) ? 'Следующее слово →' : 'Завершить дело';
+    }
+  }
+
+  btnMorphNext.addEventListener('click', () => {
+    if (morphIndex < morphData.words.length - 1) {
+      morphIndex++;
+      renderMorphWord();
+    } else {
+      state.doneCase4 = true;
+      updateChoiceStatus();
+      show($('screen-clue4'));
+    }
+  });
+
+  $('choice-case4').addEventListener('click', () => {
+    buildMorphGame();
+    show($('screen-case4'));
+  });
+
+  /* ====== ФИНАЛ ====== */
+  function launchConfetti() {
+    const colors = ['#e8c878', '#c9a24b', '#8a6d2f', '#f5ecd4', '#8a2b2b', '#d4af37'];
+    for (let i = 0; i < 60; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random() * 100 + 'vw';
+      piece.style.top = '-20px';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.width = (6 + Math.random() * 8) + 'px';
+      piece.style.height = piece.style.width;
+      piece.style.animationDuration = (2.5 + Math.random() * 2) + 's';
+      piece.style.animationDelay = (Math.random() * 1.5) + 's';
+      piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      document.body.appendChild(piece);
+      setTimeout(() => piece.remove(), 6500);
+    }
+  }
+
+  function openFinal() {
+    const wrap = $('final-wrap');
+    if (wrap) {
+      wrap.querySelectorAll('.final-letter, .final-title, .final-stamp, .confession, .final-password-label, .final-restart').forEach(el => {
+        el.style.animation = 'none';
+        void el.offsetHeight;
+        el.style.animation = '';
+      });
+    }
+    show($('screen-final'));
+    setTimeout(launchConfetti, 300);
+  }
+
+  $('btn-final').addEventListener('click', openFinal);
+  $('btn-clue4-final').addEventListener('click', openFinal);
+  $('btn-restart').addEventListener('click', () => location.reload());
+
+  /* ====== НАВИГАЦИЯ ====== */
+  $('btn-start').addEventListener('click', () => show($('screen-story')));
+  $('btn-continue').addEventListener('click', () => { updateChoiceStatus(); show($('screen-choice')); });
+  $('choice-case1').addEventListener('click', () => { buildSortRound(); show($('screen-case')); });
+  $('choice-case2').addEventListener('click', () => { buildPhoneticTask(); show($('screen-case2')); });
+  $('choice-case3').addEventListener('click', () => { updateOrthoMenu(); show($('screen-ortho-menu')); });
+  $('btn-clue-back').addEventListener('click', () => { updateChoiceStatus(); show($('screen-choice')); });
+  $('btn-clue2-back').addEventListener('click', () => { updateChoiceStatus(); show($('screen-choice')); });
+  $('btn-clue3-back').addEventListener('click', () => { updateChoiceStatus(); show($('screen-choice')); });
+</script>
+</body>
+</html>
