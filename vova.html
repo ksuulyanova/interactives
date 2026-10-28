@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>АЭС — умножение и деление с нулями</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #eaf6ff;
+    background:
+      linear-gradient(rgba(4, 18, 34, 0.72), rgba(4, 18, 34, 0.9)),
+      url('https://i.pinimg.com/736x/49/82/05/498205f51745c2a630c4a6edffafae31.jpg') center/cover no-repeat fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    overflow-y: auto;
+  }
+
+  .mute-btn {
+    position: fixed; top: 12px; right: 12px;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: rgba(6, 24, 44, 0.85);
+    border: 1px solid rgba(90, 200, 255, 0.4);
+    color: #7fe0ff;
+    font-size: 1.1rem;
+    cursor: pointer;
+    z-index: 300;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(6px);
+    transition: all 0.2s;
+  }
+  .mute-btn:hover { background: rgba(20, 70, 120, 0.9); box-shadow: 0 0 16px rgba(80,220,255,0.6); }
+
+  .screen {
+    display: none;
+    width: 100%;
+    max-width: 560px;
+    background: rgba(6, 24, 44, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(90, 200, 255, 0.35);
+    border-radius: 22px;
+    padding: 26px 22px;
+    box-shadow: 0 0 50px rgba(40, 160, 255, 0.3), inset 0 0 40px rgba(20, 90, 160, 0.3);
+    animation: fadeIn 0.4s ease;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .screen.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Опасное состояние — вся карточка игры пульсирует красным */
+  #gameScreen.danger {
+    border-color: rgba(255, 60, 60, 0.7) !important;
+    animation: screenPulseRed 1.4s infinite;
+  }
+  @keyframes screenPulseRed {
+    0%, 100% { box-shadow: 0 0 50px rgba(255, 60, 60, 0.5), inset 0 0 40px rgba(255, 60, 60, 0.15); }
+    50%      { box-shadow: 0 0 80px rgba(255, 60, 60, 0.9), inset 0 0 60px rgba(255, 60, 60, 0.28); }
+  }
+
+  h1 {
+    font-size: 1.4rem; text-align: center;
+    color: #7fe0ff;
+    text-shadow: 0 0 16px rgba(80, 200, 255, 0.8);
+    margin-bottom: 8px; line-height: 1.25;
+  }
+  .subtitle {
+    text-align: center; font-size: 0.85rem;
+    color: #9fc2d8; margin-bottom: 22px;
+    line-height: 1.5;
+  }
+
+  .logo-badge {
+    display: flex; margin: 0 auto 14px;
+    width: 84px; height: 84px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #4dd0e1, #0277bd 70%);
+    box-shadow: 0 0 30px rgba(80, 220, 255, 0.7), inset 0 0 20px rgba(255,255,255,0.4);
+    align-items: center; justify-content: center;
+    font-size: 2.4rem; font-weight: 900;
+    animation: pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 30px rgba(80, 220, 255, 0.7), inset 0 0 20px rgba(255,255,255,0.4); }
+    50%      { box-shadow: 0 0 50px rgba(80, 220, 255, 1), inset 0 0 30px rgba(255,255,255,0.6); }
+  }
+  .fact-preview {
+    background: rgba(20, 70, 120, 0.4);
+    border: 1px dashed rgba(90, 200, 255, 0.35);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.82rem;
+    color: #b8d8ea;
+    line-height: 1.55;
+    margin-bottom: 20px; text-align: center;
+  }
+  .fact-preview b { color: #7fe0ff; }
+
+  .btn-primary {
+    display: block; width: 100%;
+    cursor: pointer; border: none;
+    border-radius: 14px;
+    font-size: 1.1rem; font-weight: 700;
+    padding: 16px;
+    background: linear-gradient(180deg, #29b6f6, #0277bd);
+    color: #fff;
+    box-shadow: 0 0 24px rgba(40, 180, 255, 0.6);
+    transition: transform 0.1s, box-shadow 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .btn-primary:hover { box-shadow: 0 0 32px rgba(40, 180, 255, 0.9); }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .route {
+    display: flex; justify-content: space-between;
+    font-size: 0.6rem; color: #8bb4cc;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 6px;
+  }
+  .route span { transition: all 0.3s; }
+  .route span.done { color: #5dffa0; }
+  .route span.active { color: #7fe0ff; font-weight: 700; text-shadow: 0 0 8px rgba(80,200,255,.8); }
+
+  .progress-outer {
+    height: 12px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px; overflow: hidden;
+    margin-bottom: 14px;
+    border: 1px solid rgba(90,200,255,0.25);
+  }
+  .progress-inner {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #1e88e5, #4dd0e1, #7fe0ff);
+    box-shadow: 0 0 12px rgba(80, 220, 255, 0.8);
+    transition: width 0.4s ease;
+  }
+  .station-title {
+    text-align: center; font-size: 0.95rem;
+    color: #7fe0ff; margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .station-title small { color: #8bb4cc; font-weight: 400; display: block; margin-top: 2px; font-size: 0.7rem; }
+
+  .stats {
+    display: flex; justify-content: space-around;
+    align-items: center;
+    font-size: 0.82rem; margin-bottom: 12px;
+    background: rgba(20, 70, 120, 0.5);
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(90, 200, 255, 0.2);
+  }
+  .stats b { color: #7fe0ff; }
+
+  .stat-btn {
+    background: rgba(77, 208, 225, 0.1);
+    border: 1px solid rgba(90, 200, 255, 0.4);
+    border-radius: 8px;
+    padding: 4px 10px;
+    color: inherit; font-size: inherit; font-family: inherit;
+    cursor: pointer; font-weight: 600;
+    transition: all 0.2s;
+  }
+  .stat-btn:hover { background: rgba(80, 200, 255, 0.2); box-shadow: 0 0 12px rgba(80,220,255,0.5); }
+  .stat-btn.pulse { animation: pulseGlow 0.6s ease 3; }
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 0 rgba(80,220,255,0); }
+    50%      { box-shadow: 0 0 22px rgba(80,220,255,1); }
+  }
+
+  /* ================= ШКАЛА ТЕМПЕРАТУРЫ РЕАКТОРА ================= */
+  .reactor-gauge {
+    background: rgba(20, 70, 120, 0.5);
+    border: 1px solid rgba(90, 200, 255, 0.25);
+    border-radius: 12px;
+    padding: 10px 14px 8px;
+    margin-bottom: 12px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .reactor-gauge.zone-high {
+    border-color: rgba(255, 152, 0, 0.7);
+    box-shadow: 0 0 14px rgba(255, 152, 0, 0.4);
+  }
+  .reactor-gauge.zone-critical {
+    border-color: rgba(255, 60, 60, 0.8);
+    animation: gaugeCritPulse 1s infinite;
+  }
+  @keyframes gaugeCritPulse {
+    0%, 100% { box-shadow: 0 0 18px rgba(255, 60, 60, 0.5); }
+    50%      { box-shadow: 0 0 32px rgba(255, 60, 60, 1); }
+  }
+  .reactor-gauge.flash {
+    animation: gaugeFlash 0.4s ease;
+  }
+  @keyframes gaugeFlash {
+    0%   { background: rgba(255, 80, 80, 0.55); }
+    100% { background: rgba(20, 70, 120, 0.5); }
+  }
+  .reactor-gauge.flash-emergency {
+    animation: gaugeEmergency 1.2s ease;
+  }
+  @keyframes gaugeEmergency {
+    0%, 100% { background: rgba(20, 70, 120, 0.5); }
+    15%, 45% { background: rgba(255, 60, 60, 0.85); }
+    30%, 60% { background: rgba(255, 255, 255, 0.6); }
+  }
+
+  .gauge-label {
+    display: flex; justify-content: space-between;
+    align-items: center;
+    font-size: 0.78rem;
+    color: #b8d8ea;
+    margin-bottom: 7px;
+    font-weight: 600;
+  }
+  .gauge-label #tempValue {
+    color: #7fe0ff;
+    font-family: 'Courier New', monospace;
+    font-weight: 800;
+    font-size: 0.95rem;
+    text-shadow: 0 0 8px rgba(80, 200, 255, 0.6);
+    transition: color 0.3s;
+  }
+  .reactor-gauge.zone-high #tempValue { color: #ffb74d; text-shadow: 0 0 8px rgba(255, 152, 0, 0.7); }
+  .reactor-gauge.zone-critical #tempValue {
+    color: #ff5252;
+    text-shadow: 0 0 10px rgba(255, 60, 60, 0.9);
+    animation: tempBlink 0.6s infinite alternate;
+  }
+  @keyframes tempBlink {
+    from { opacity: 1; }
+    to   { opacity: 0.55; }
+  }
+
+  .gauge-bar {
+    position: relative;
+    height: 16px;
+    border-radius: 9px;
+    background: linear-gradient(90deg,
+      #29b6f6 0%, #4dd0e1 18%, #7fe0ff 30%,
+      #ffeb3b 52%, #ff9800 70%,
+      #f44336 86%, #b71c1c 100%);
+    border: 1px solid rgba(90, 200, 255, 0.3);
+    margin-bottom: 6px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.35);
+  }
+  .gauge-mask {
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    background: rgba(6, 24, 44, 0.92);
+    border-left: 1px solid rgba(255,255,255,0.15);
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+  }
+  .gauge-needle {
+    position: absolute;
+    top: -2px; bottom: -2px;
+    width: 4px;
+    background: #ffffff;
+    border-radius: 2px;
+    box-shadow: 0 0 8px #ffffff, 0 0 14px #7fe0ff;
+    transform: translateX(-50%);
+    transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s, box-shadow 0.3s;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .reactor-gauge.zone-high .gauge-needle {
+    background: #ff9800;
+    box-shadow: 0 0 10px #ff9800, 0 0 18px #ffeb3b;
+  }
+  .reactor-gauge.zone-critical .gauge-needle {
+    background: #ff5252;
+    box-shadow: 0 0 12px #f44336, 0 0 22px #ff5252;
+  }
+
+  .gauge-status {
+    text-align: right;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #8bb4cc;
+    letter-spacing: 0.4px;
+    transition: color 0.3s;
+  }
+  .reactor-gauge.zone-high .gauge-status { color: #ffb74d; }
+  .reactor-gauge.zone-critical .gauge-status { color: #ff5252; text-shadow: 0 0 8px rgba(255,60,60,0.8); }
+
+  /* ================= КАРТОЧКА ПРИМЕРА ================= */
+  .card {
+    background: rgba(10, 40, 70, 0.65);
+    border: 1px solid rgba(90, 200, 255, 0.25);
+    border-radius: 14px;
+    padding: 18px 16px;
+    margin-bottom: 14px;
+  }
+  .topic {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #4dd0e1;
+    margin-bottom: 8px; text-align: center;
+  }
+  .problem {
+    text-align: center; font-size: 2rem;
+    font-weight: 700; color: #eaf6ff;
+    text-shadow: 0 0 14px rgba(80, 200, 255, 0.5);
+    min-height: 56px; line-height: 1.3;
+    word-break: break-word;
+  }
+  .problem .op { color: #4dd0e1; margin: 0 6px; }
+
+  .answer-row { display: flex; gap: 10px; margin-bottom: 12px; }
+  input[type="text"] {
+    flex: 1;
+    font-size: 1.4rem;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 2px solid rgba(90,200,255,0.35);
+    background: rgba(255,255,255,0.95);
+    color: #05203a;
+    text-align: center;
+    font-weight: 700;
+    outline: none;
+  }
+  input[type="text"]:focus { border-color: #7fe0ff; box-shadow: 0 0 0 3px rgba(80,200,255,0.3); }
+  input[type="text"]:disabled { opacity: 0.6; }
+
+  button { cursor: pointer; border: none; border-radius: 12px; font-weight: 700; transition: transform 0.1s, opacity 0.2s; }
+  button:active { transform: scale(0.97); }
+  .btn-check {
+    background: linear-gradient(180deg, #29b6f6, #0277bd);
+    color: #fff;
+    padding: 12px 18px;
+    font-size: 1rem;
+    box-shadow: 0 0 16px rgba(40, 180, 255, 0.5);
+    flex-shrink: 0;
+  }
+  .btn-check:disabled { opacity: 0.4; box-shadow: none; }
+
+  .feedback {
+    text-align: center; font-size: 1rem;
+    font-weight: 600; min-height: 28px;
+    margin-bottom: 8px;
+  }
+  .feedback.ok { color: #5dffa0; text-shadow: 0 0 10px rgba(80,255,140,.5); }
+  .feedback.err { color: #ff7b7b; text-shadow: 0 0 10px rgba(255,80,80,.5); }
+
+  .hint {
+    font-size: 0.72rem;
+    color: #8bb4cc;
+    line-height: 1.5;
+    border-top: 1px solid rgba(90,200,255,0.15);
+    padding-top: 10px; margin-top: 4px;
+    text-align: center;
+  }
+  .hint b { color: #7fe0ff; }
+  .hint .fire { color: #ff9800; font-weight: 700; }
+  .hint .ice { color: #4dd0e1; font-weight: 700; }
+
+  /* ================= МОДАЛКИ ================= */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0, 10, 20, 0.85);
+    backdrop-filter: blur(4px);
+    justify-content: center; align-items: center;
+    padding: 16px; overflow-y: auto;
+  }
+  .modal-overlay.show { display: flex; animation: fadeIn 0.3s ease; }
+
+  #collectionModal { z-index: 150; }
+  .collection-panel {
+    width: 100%; max-width: 520px;
+    background: linear-gradient(160deg, #0a2540 0%, #05203a 100%);
+    border: 2px solid rgba(90, 220, 255, 0.4);
+    border-radius: 20px;
+    padding: 24px 20px;
+    box-shadow: 0 0 50px rgba(80, 220, 255, 0.5);
+  }
+  .collection-panel h2 {
+    text-align: center; color: #7fe0ff;
+    font-size: 1.3rem; margin-bottom: 4px;
+    text-shadow: 0 0 10px rgba(80,200,255,0.6);
+  }
+  .collection-panel .coll-sub {
+    text-align: center; font-size: 0.78rem;
+    color: #8bb4cc; margin-bottom: 18px;
+  }
+  .collection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px; margin-bottom: 18px;
+  }
+  .collection-item {
+    aspect-ratio: 3/4;
+    border-radius: 12px;
+    background: linear-gradient(160deg, #0a2540, #05203a);
+    border: 1px solid rgba(90, 220, 255, 0.3);
+    padding: 10px 6px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    font-size: 0.72rem;
+    min-height: 120px;
+    transition: all 0.2s;
+  }
+  .collection-item.unlocked {
+    border-color: rgba(90, 220, 255, 0.7);
+    box-shadow: 0 0 14px rgba(80,220,255,0.4);
+    color: #d0e8f5; cursor: pointer;
+  }
+  .collection-item.unlocked:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0 24px rgba(80,220,255,0.8);
+    border-color: #7fe0ff;
+  }
+  .collection-item.locked {
+    opacity: 0.45; color: #5a7a90;
+    border-style: dashed;
+  }
+  .collection-item .ci-emoji { font-size: 2rem; margin-bottom: 6px; }
+  .collection-item.locked .ci-emoji { filter: grayscale(1); }
+  .ci-title { line-height: 1.3; font-weight: 600; }
+
+  .btn-close {
+    width: 100%;
+    background: linear-gradient(180deg, #4dd0e1, #00838f);
+    color: #032033;
+    padding: 14px; font-size: 1rem;
+    box-shadow: 0 0 20px rgba(60, 200, 220, 0.5);
+  }
+
+  #cardModal { z-index: 200; }
+  .fact-card {
+    width: 100%; max-width: 440px;
+    background: linear-gradient(160deg, #0a2540 0%, #05203a 100%);
+    border: 2px solid rgba(90, 220, 255, 0.5);
+    border-radius: 22px;
+    padding: 24px 22px;
+    text-align: center;
+    box-shadow: 0 0 60px rgba(80, 220, 255, 0.6), inset 0 0 40px rgba(20, 100, 180, 0.4);
+    position: relative;
+    animation: cardAppear 0.5s cubic-bezier(0.2, 1.3, 0.4, 1);
+  }
+  @keyframes cardAppear {
+    from { opacity: 0; transform: scale(0.7) rotateY(-20deg); }
+    to   { opacity: 1; transform: scale(1) rotateY(0); }
+  }
+  .fact-card::before {
+    content: '★';
+    position: absolute; top: -18px; left: 50%;
+    transform: translateX(-50%);
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #7fe0ff, #0277bd);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; color: #032033;
+    box-shadow: 0 0 20px rgba(80,220,255,0.9);
+  }
+  .fact-card .unlock-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #4dd0e1;
+    margin-bottom: 10px; margin-top: 6px;
+  }
+  .fact-card .card-emoji {
+    width: 130px; height: 130px;
+    margin: 6px auto 12px;
+  }
+  .fact-card .card-emoji svg {
+    width: 100%; height: 100%;
+    filter: drop-shadow(0 0 14px rgba(80,220,255,0.7));
+  }
+  .fact-card .card-title {
+    font-size: 1.15rem; font-weight: 700;
+    color: #7fe0ff; margin-bottom: 12px;
+    text-shadow: 0 0 10px rgba(80,200,255,0.6);
+  }
+  .fact-card .card-text {
+    font-size: 0.92rem; line-height: 1.6;
+    color: #d0e8f5; margin-bottom: 18px;
+  }
+  .fact-card .card-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    background: rgba(77, 208, 225, 0.15);
+    border: 1px solid rgba(77, 208, 225, 0.4);
+    color: #4dd0e1;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .btn-continue {
+    width: 100%;
+    background: linear-gradient(180deg, #4dd0e1, #00838f);
+    color: #032033;
+    padding: 14px; font-size: 1rem;
+    box-shadow: 0 0 20px rgba(60, 200, 220, 0.5);
+  }
+  .fact-card .card-number {
+    position: absolute; top: 12px; right: 16px;
+    font-size: 0.7rem; color: #4dd0e1;
+    opacity: 0.7;
+  }
+
+  .final-badge {
+    font-size: 4rem; text-align: center;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 0 20px rgba(80,220,255,0.8));
+    animation: pulse 2s infinite;
+  }
+  .collected-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 8px;
+    margin: 16px 0 20px;
+  }
+  .mini-card {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    background: linear-gradient(160deg, #0a2540, #05203a);
+    border: 1px solid rgba(90, 220, 255, 0.5);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem;
+    box-shadow: 0 0 12px rgba(80,220,255,0.4);
+  }
+  .final-stats {
+    background: rgba(20, 70, 120, 0.5);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 18px;
+    text-align: center;
+    font-size: 0.9rem;
+    line-height: 1.8;
+    border: 1px solid rgba(90,200,255,0.2);
+  }
+  .final-stats b { color: #7fe0ff; font-size: 1.1rem; }
+</style>
+</head>
+<body>
+
+<button class="mute-btn" id="muteBtn" title="Звук вкл/выкл">🔊</button>
+
+<!-- ============ СТАРТ ============ -->
+<div class="screen active" id="startScreen">
+  <div class="logo-badge">×÷</div>
+  <h1>АЭС: умножение и деление с нулями</h1>
+  <div class="subtitle">
+    Решай примеры вида 670·100, 2000:100, 45000:10 —<br>
+    следи за температурой реактора и открывай факты!
+  </div>
+  <div class="fact-preview">
+    🎴 <b>5 карточек-фактов</b> — по одной в конце каждого отсека.<br>
+    ⚠️ <b>Ошибки нагревают реактор.</b> Следи за шкалой — иначе сработает АЗ-5!
+  </div>
+  <button class="btn-primary" id="startBtn">▶ Начать экскурсию</button>
+</div>
+
+<!-- ============ ИГРА ============ -->
+<div class="screen" id="gameScreen">
+  <div class="route">
+    <span data-step="0">КПП</span>
+    <span data-step="1">Турбина</span>
+    <span data-step="2">Щит</span>
+    <span data-step="3">Бассейн</span>
+    <span data-step="4">Реактор</span>
+  </div>
+  <div class="progress-outer"><div class="progress-inner" id="progress"></div></div>
+
+  <div class="station-title" id="stationTitle">
+    Отсек 1: КПП <small>Ответь верно 3 раза, чтобы пройти дальше</small>
+  </div>
+
+  <div class="stats">
+    <span>✅ <b id="score">0</b></span>
+    <span>❌ <b id="errors">0</b></span>
+    <button class="stat-btn" id="collectionBtn">🎴 <b id="cardsCount">0/5</b></button>
+  </div>
+
+  <!-- ══════════ ШКАЛА ТЕМПЕРАТУРЫ РЕАКТОРА ══════════ -->
+  <div class="reactor-gauge zone-safe" id="reactorGauge">
+    <div class="gauge-label">
+      <span>🌡️ Температура реактора</span>
+      <span id="tempValue">350 °C</span>
+    </div>
+    <div class="gauge-bar">
+      <div class="gauge-mask" id="gaugeMask"></div>
+      <div class="gauge-needle" id="gaugeNeedle" style="left: 5%;"></div>
+    </div>
+    <div class="gauge-status" id="gaugeStatus">🟢 Стабильно</div>
+  </div>
+
+  <div class="card">
+    <div class="topic" id="topic">Умножение на 10, 100, 1000</div>
+    <div class="problem" id="problem">—</div>
+  </div>
+
+  <div class="answer-row">
+    <input type="text" id="answer" inputmode="numeric" placeholder="Ответ" autocomplete="off">
+    <button class="btn-check" id="checkBtn">Проверить</button>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+
+  <div class="hint">
+    <b>Правило:</b> при умножении на 10/100/1000 — допиши нули справа, при делении — убери.
+    <br><span class="fire">🔥 Ошибка — реактор греется.</span> · <span class="ice">❄️ Верный ответ — охлаждает.</span>
+  </div>
+</div>
+
+<!-- ============ ФИНАЛ ============ -->
+<div class="screen" id="finalScreen">
+  <div class="final-badge">🏆</div>
+  <h1>Экскурсия завершена!</h1>
+  <div class="subtitle">Ты добрался до реактора и собрал всю коллекцию фактов</div>
+
+  <div class="final-stats">
+    Верных ответов: <b id="finalScore">0</b><br>
+    Ошибок: <b id="finalErrors">0</b><br>
+    Карточек собрано: <b>5 / 5</b>
+  </div>
+
+  <div class="collected-cards" id="collectedCards"></div>
+
+  <button class="btn-primary" id="openCollectionFinal" style="margin-bottom:10px;">🎴 Открыть коллекцию</button>
+  <button class="btn-primary" id="restartBtn" style="background: linear-gradient(180deg,#4dd0e1,#00838f); color:#032033;">↻ Пройти заново</button>
+</div>
+
+<!-- ============ КОЛЛЕКЦИЯ ============ -->
+<div class="modal-overlay" id="collectionModal">
+  <div class="collection-panel">
+    <h2>🎴 Моя коллекция</h2>
+    <div class="coll-sub">Собери все 5 фактов о больших числах на АЭС</div>
+    <div class="collection-grid" id="collectionGrid"></div>
+    <button class="btn-close" id="closeCollectionBtn">Закрыть</button>
+  </div>
+</div>
+
+<!-- ============ КАРТОЧКА ============ -->
+<div class="modal-overlay" id="cardModal">
+  <div class="fact-card">
+    <div class="card-number" id="cardNumber">1 / 5</div>
+    <div class="unlock-label" id="unlockLabel">Открыта новая карточка</div>
+    <div class="card-emoji" id="cardEmoji">☢️</div>
+    <div class="card-title" id="cardTitle">—</div>
+    <div class="card-text" id="cardText">—</div>
+    <span class="card-tag" id="cardTag">Факт об АЭС</span>
+    <button class="btn-continue" id="continueBtn">Продолжить экскурсию →</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  // ================= DOM =================
+  const startScreen = document.getElementById('startScreen');
+  const gameScreen  = document.getElementById('gameScreen');
+  const finalScreen = document.getElementById('finalScreen');
+  const startBtn    = document.getElementById('startBtn');
+  const restartBtn  = document.getElementById('restartBtn');
+
+  const problemEl   = document.getElementById('problem');
+  const topicEl     = document.getElementById('topic');
+  const answerEl    = document.getElementById('answer');
+  const checkBtn    = document.getElementById('checkBtn');
+  const feedback    = document.getElementById('feedback');
+  const scoreEl     = document.getElementById('score');
+  const errorsEl    = document.getElementById('errors');
+  const cardsCountEl= document.getElementById('cardsCount');
+  const progressEl  = document.getElementById('progress');
+  const stationTitle= document.getElementById('stationTitle');
+  const routeSpans  = document.querySelectorAll('.route span');
+  const collectionBtn = document.getElementById('collectionBtn');
+  const openCollectionFinal = document.getElementById('openCollectionFinal');
+
+  const cardModal   = document.getElementById('cardModal');
+  const cardEmoji   = document.getElementById('cardEmoji');
+  const cardTitle   = document.getElementById('cardTitle');
+  const cardText    = document.getElementById('cardText');
+  const cardTag     = document.getElementById('cardTag');
+  const cardNumber  = document.getElementById('cardNumber');
+  const unlockLabel = document.getElementById('unlockLabel');
+  const continueBtn = document.getElementById('continueBtn');
+
+  const collectionModal = document.getElementById('collectionModal');
+  const collectionGrid  = document.getElementById('collectionGrid');
+  const closeCollectionBtn = document.getElementById('closeCollectionBtn');
+
+  const finalScore  = document.getElementById('finalScore');
+  const finalErrors = document.getElementById('finalErrors');
+  const collectedCards = document.getElementById('collectedCards');
+
+  const muteBtn = document.getElementById('muteBtn');
+
+  // Шкала температуры
+  const reactorGauge = document.getElementById('reactorGauge');
+  const gaugeMask    = document.getElementById('gaugeMask');
+  const gaugeNeedle  = document.getElementById('gaugeNeedle');
+  const tempValue    = document.getElementById('tempValue');
+  const gaugeStatus  = document.getElementById('gaugeStatus');
+
+  // ================= ЗВУК =================
+  let audioCtx = null;
+  let soundEnabled = true;
+
+  function ensureAudio() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+    }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  }
+  function playTone(freq, duration, type, volume, delay) {
+    if (!audioCtx || !soundEnabled) return;
+    type = type || 'sine'; volume = volume == null ? 0.07 : volume; delay = delay || 0;
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      const now = audioCtx.currentTime + delay;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(volume, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      osc.start(now);
+      osc.stop(now + duration + 0.05);
+    } catch (e) {}
+  }
+  const soundCorrect = () => { playTone(660, 0.14, 'sine', 0.08, 0); playTone(990, 0.22, 'sine', 0.08, 0.09); };
+  const soundWrong   = () => { playTone(220, 0.24, 'sawtooth', 0.06, 0); playTone(160, 0.32, 'sawtooth', 0.06, 0.12); };
+  const soundUnlock  = () => {
+    playTone(523, 0.16, 'triangle', 0.10, 0.00);
+    playTone(659, 0.16, 'triangle', 0.10, 0.12);
+    playTone(784, 0.16, 'triangle', 0.10, 0.24);
+    playTone(1047, 0.45, 'sine', 0.12, 0.36);
+    playTone(1319, 0.40, 'sine', 0.07, 0.40);
+  };
+  const soundClick   = () => { playTone(880, 0.05, 'square', 0.04, 0); };
+  const soundFinish  = () => {
+    playTone(523, 0.18, 'triangle', 0.10, 0.00);
+    playTone(659, 0.18, 'triangle', 0.10, 0.14);
+    playTone(784, 0.18, 'triangle', 0.10, 0.28);
+    playTone(1047, 0.30, 'triangle', 0.12, 0.42);
+    playTone(1319, 0.55, 'sine', 0.10, 0.52);
+  };
+  // Предупреждение при входе в «повышенную» зону
+  const soundWarning = () => {
+    playTone(440, 0.18, 'square', 0.06, 0);
+    playTone(330, 0.24, 'square', 0.06, 0.16);
+  };
+  // Сирена при входе в критическую зону
+  const soundAlarm = () => {
+    for (let i = 0; i < 3; i++) {
+      playTone(880, 0.10, 'square', 0.08, i * 0.22);
+      playTone(660, 0.10, 'square', 0.08, i * 0.22 + 0.11);
+    }
+  };
+  // Аварийная защита
+  const soundEmergency = () => {
+    playTone(1200, 0.15, 'square', 0.09, 0);
+    playTone(900, 0.15, 'square', 0.09, 0.15);
+    playTone(1200, 0.15, 'square', 0.09, 0.30);
+    playTone(600, 0.35, 'sawtooth', 0.08, 0.45);
+    playTone(300, 0.55, 'sawtooth', 0.09, 0.60);
+  };
+
+  muteBtn.addEventListener('click', () => {
+    ensureAudio();
+    soundEnabled = !soundEnabled;
+    muteBtn.textContent = soundEnabled ? '🔊' : '🔇';
+    if (soundEnabled) soundClick();
+  });
+
+  // ================= SVG-ИЛЛЮСТРАЦИИ =================
+  const SVG = {
+    lightning: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="bolt" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#eaf6ff"/><stop offset="50%" stop-color="#7fe0ff"/><stop offset="100%" stop-color="#0277bd"/>
+      </linearGradient></defs>
+      <polygon points="72,10 32,68 58,68 46,112 92,52 64,52" fill="url(#bolt)" stroke="#7fe0ff" stroke-width="2.5" stroke-linejoin="round"/>
+    </svg>`,
+    water: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="drop" cx="35%" cy="30%">
+        <stop offset="0%" stop-color="#eaf6ff"/><stop offset="55%" stop-color="#7fe0ff"/><stop offset="100%" stop-color="#0277bd"/>
+      </radialGradient></defs>
+      <path d="M60 12 C 32 52, 24 72, 24 84 A 36 36 0 0 0 96 84 C 96 72, 88 52, 60 12 Z" fill="url(#drop)" stroke="#4dd0e1" stroke-width="2"/>
+      <ellipse cx="48" cy="82" rx="6" ry="11" fill="#fff" opacity="0.6"/>
+      <circle cx="30" cy="35" r="3" fill="#7fe0ff" opacity="0.6"/>
+      <circle cx="92" cy="30" r="3" fill="#7fe0ff" opacity="0.6"/>
+    </svg>`,
+    million: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="60" cy="60" r="52" fill="none" stroke="#4dd0e1" stroke-width="1.5" opacity="0.35"/>
+      <circle cx="60" cy="60" r="38" fill="rgba(77,208,225,0.08)" stroke="#4dd0e1" stroke-width="1" opacity="0.55"/>
+      <text x="60" y="72" text-anchor="middle" font-size="44" font-weight="900" fill="#7fe0ff" font-family="Arial, sans-serif">10⁶</text>
+      <text x="60" y="98" text-anchor="middle" font-size="13" font-weight="600" fill="#eaf6ff" font-family="Arial, sans-serif">миллион</text>
+    </svg>`,
+    thermometer: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="mercury" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#ff6b6b"/><stop offset="100%" stop-color="#c62828"/>
+      </linearGradient></defs>
+      <rect x="50" y="14" width="20" height="72" rx="10" fill="none" stroke="#7fe0ff" stroke-width="3"/>
+      <rect x="55" y="52" width="10" height="46" rx="5" fill="url(#mercury)"/>
+      <circle cx="60" cy="92" r="14" fill="url(#mercury)" stroke="#7fe0ff" stroke-width="2"/>
+      <line x1="76" y1="30" x2="86" y2="30" stroke="#4dd0e1" stroke-width="2"/>
+      <line x1="76" y1="46" x2="86" y2="46" stroke="#4dd0e1" stroke-width="2"/>
+      <line x1="76" y1="62" x2="86" y2="62" stroke="#4dd0e1" stroke-width="2"/>
+    </svg>`,
+    reactor: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="60" cy="60" r="46" fill="rgba(2,119,189,0.28)" stroke="#4dd0e1" stroke-width="2"/>
+      <circle cx="60" cy="60" r="34" fill="rgba(127,224,255,0.08)" stroke="#7fe0ff" stroke-width="1.5"/>
+      <g fill="#7fe0ff">
+        <circle cx="42" cy="42" r="5"/><circle cx="60" cy="42" r="5"/><circle cx="78" cy="42" r="5"/>
+        <circle cx="42" cy="60" r="5"/><circle cx="78" cy="60" r="5"/>
+        <circle cx="42" cy="78" r="5"/><circle cx="60" cy="78" r="5"/><circle cx="78" cy="78" r="5"/>
+      </g>
+      <circle cx="60" cy="60" r="8" fill="#eaf6ff"/>
+      <circle cx="60" cy="60" r="14" fill="none" stroke="#7fe0ff" stroke-width="1.5" opacity="0.6"/>
+    </svg>`,
+  };
+
+  // ================= СТАНЦИИ И ФАКТЫ =================
+  const STATIONS = [
+    { name: 'КПП',     sub: 'Контрольный пункт' },
+    { name: 'Турбина', sub: 'Турбинный зал' },
+    { name: 'Щит',     sub: 'Пульт управления' },
+    { name: 'Бассейн', sub: 'Бассейн выдержки' },
+    { name: 'Реактор', sub: 'Реакторный зал' },
+  ];
+
+  const FACTS = [
+    { emoji: '⚡', svg: SVG.lightning,
+      title: 'Гигаватт — это миллион киловатт',
+      text: 'Мощный реактор выдаёт 1 ГВт = 1 000 000 000 Вт = 1 000 000 кВт. Если уметь быстро умножать на степени десятки, масштаб энергии видно сразу — без калькулятора!',
+      tag: 'Мощность и нули' },
+    { emoji: '💧', svg: SVG.water,
+      title: 'Сто тысяч литров в секунду',
+      text: 'Через систему охлаждения АЭС прокачивается до 100 000 литров воды в секунду. Так как 1 м³ = 1000 л, это 100 кубометров — умножение на 1000 помогает мгновенно пересчитывать.',
+      tag: 'Объёмы и единицы' },
+    { emoji: '🔢', svg: SVG.million,
+      title: 'Миллион — это сколько?',
+      text: '1 000 000 секунд ≈ 11,5 суток. 1 000 000 минут ≈ 2 года. 1 000 000 часов ≈ 114 лет. Умение «читать» нули помогает мгновенно чувствовать большие числа.',
+      tag: 'Степени десятки' },
+    { emoji: '🌡️', svg: SVG.thermometer,
+      title: 'Триста градусов — триста тысяч миллиградусов',
+      text: 'Вода в первом контуре реактора нагрета до 300 °C. В парогенераторе она превращается в пар, который вращает турбину. 300 °C = 300 000 миллиградусов — вот где пригодится умножение на 1000!',
+      tag: 'Температура' },
+    { emoji: '☢️', svg: SVG.reactor,
+      title: 'Сто тонн урана',
+      text: 'В активной зоне реактора около 100 тонн ядерного топлива. Это 100 000 кг = 100 000 000 г. Одна загрузка работает 12–18 месяцев и даёт свет миллиону человек.',
+      tag: 'Масштаб АЭС' },
+  ];
+
+  const CORRECT_PER_STATION = 3;
+  const TOTAL_STATIONS = STATIONS.length;
+
+  // ================= ГЕНЕРАТОР =================
+  const randInt = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  function generateProblem() {
+    const type = pick(['mul', 'mulZero', 'div', 'divRound', 'divRound2']);
+    if (type === 'mul') {
+      const a = pick([randInt(2, 9), randInt(11, 99)]);
+      const p = pick([10, 100, 1000]);
+      return { cat: `Умножение на ${p}`, text: `${a} <span class="op">×</span> ${p}`, answer: a * p };
+    }
+    if (type === 'mulZero') {
+      const base = randInt(2, 9);
+      const zeros = randInt(1, 2);
+      const a = base * Math.pow(10, zeros);
+      const p = pick([10, 100, 1000]);
+      return { cat: 'Умножение круглых чисел', text: `${a} <span class="op">×</span> ${p}`, answer: a * p };
+    }
+    if (type === 'div') {
+      const p = pick([10, 100, 1000]);
+      const q = randInt(2, 9);
+      const a = q * p;
+      return { cat: `Деление на ${p}`, text: `${a} <span class="op">:</span> ${p}`, answer: q };
+    }
+    if (type === 'divRound') {
+      const b = pick([20, 30, 40, 50, 60, 70, 80, 90, 200, 300, 400, 500]);
+      const q = randInt(2, 9) * pick([1, 10]);
+      const a = b * q;
+      return { cat: 'Деление круглых чисел', text: `${a} <span class="op">:</span> ${b}`, answer: q };
+    }
+    const b = pick([200, 300, 400, 500, 600, 2000, 3000]);
+    const q = randInt(2, 9) * pick([1, 10]);
+    const a = b * q;
+    return { cat: 'Деление круглого на круглое', text: `${a} <span class="op">:</span> ${b}`, answer: q };
+  }
+
+  // ================= СОСТОЯНИЕ =================
+  let score = 0, errors = 0;
+  let stationIndex = 0;
+  let correctInStation = 0;
+  let unlockedCards = [];
+  let current = null;
+  let answered = false;
+  let awaitingCardContinue = false;
+
+  // Шкала температуры
+  const TEMP_MIN = 300;
+  const TEMP_MAX = 1300;
+  const TEMP_START = 350;
+  const TEMP_HEAT = 130;   // + за ошибку
+  const TEMP_COOL = 70;    // − за верный ответ
+  let reactorTemp = TEMP_START;
+  let currentZone = 'safe';
+
+  // ================= ШКАЛА =================
+  function getZone(t) {
+    if (t < 500) return 'safe';
+    if (t < 750) return 'normal';
+    if (t < 1000) return 'high';
+    return 'critical';
+  }
+
+  function renderGauge() {
+    const pct = Math.max(0, Math.min(100, ((reactorTemp - TEMP_MIN) / (TEMP_MAX - TEMP_MIN)) * 100));
+    gaugeMask.style.width = (100 - pct) + '%';
+    gaugeNeedle.style.left = pct + '%';
+    tempValue.textContent = Math.round(reactorTemp) + ' °C';
+
+    const zone = getZone(reactorTemp);
+    let label = '';
+    if (zone === 'safe')     label = '🟢 Стабильно';
+    if (zone === 'normal')   label = '🟡 Штатный режим';
+    if (zone === 'high')     label = '🟠 Повышенная температура';
+    if (zone === 'critical') label = '🔴 КРИТИЧЕСКАЯ!';
+    gaugeStatus.textContent = label;
+
+    reactorGauge.classList.remove('zone-safe', 'zone-normal', 'zone-high', 'zone-critical');
+    reactorGauge.classList.add('zone-' + zone);
+    gameScreen.classList.toggle('danger', zone === 'critical');
+
+    currentZone = zone;
+  }
+
+  function changeTemp(delta) {
+    const oldZone = getZone(reactorTemp);
+
+    // Аварийная защита: реактор уже на максимуме + новая ошибка
+    if (delta > 0 && reactorTemp >= TEMP_MAX) {
+      triggerEmergencyShutdown();
+      return;
+    }
+
+    reactorTemp = Math.max(TEMP_MIN, Math.min(TEMP_MAX, reactorTemp + delta));
+    renderGauge();
+
+    // Флеш при нагреве
+    if (delta > 0) {
+      reactorGauge.classList.add('flash');
+      setTimeout(() => reactorGauge.classList.remove('flash'), 420);
+    }
+
+    // Звуковое предупреждение при переходе в более опасную зону
+    const newZone = getZone(reactorTemp);
+    if (newZone !== oldZone) {
+      if (newZone === 'high') soundWarning();
+      if (newZone === 'critical') soundAlarm();
+    }
+  }
+
+  function triggerEmergencyShutdown() {
+    soundEmergency();
+    reactorGauge.classList.add('flash-emergency');
+    // Показываем сообщение прямо в статусе шкалы
+    gaugeStatus.textContent = '🛑 АЗ-5: аварийная защита!';
+    gaugeStatus.style.color = '#ff5252';
+    tempValue.style.color = '#fff';
+    setTimeout(() => {
+      reactorGauge.classList.remove('flash-emergency');
+      reactorTemp = 500;
+      renderGauge();
+    }, 900);
+  }
+
+  // ================= HUD =================
+  function updateHUD() {
+    scoreEl.textContent = score;
+    errorsEl.textContent = errors;
+    cardsCountEl.textContent = `${unlockedCards.length}/${TOTAL_STATIONS}`;
+
+    const st = STATIONS[Math.min(stationIndex, TOTAL_STATIONS - 1)];
+    stationTitle.innerHTML = `Отсек ${Math.min(stationIndex + 1, TOTAL_STATIONS)}: ${st.name}
+      <small>${st.sub} · ${correctInStation}/${CORRECT_PER_STATION} верных</small>`;
+
+    const done = stationIndex / TOTAL_STATIONS;
+    const partial = (correctInStation / CORRECT_PER_STATION) / TOTAL_STATIONS;
+    progressEl.style.width = Math.min(100, (done + partial) * 100) + '%';
+
+    routeSpans.forEach((s, i) => {
+      s.classList.toggle('active', i === stationIndex);
+      s.classList.toggle('done', i < stationIndex);
+    });
+  }
+
+  function newProblem() {
+    current = generateProblem();
+    topicEl.textContent = current.cat;
+    problemEl.innerHTML = current.text + ' <span class="op">=</span> <span style="color:#4dd0e1">?</span>';
+    answerEl.value = '';
+    answerEl.disabled = false;
+    answerEl.focus();
+    feedback.textContent = '';
+    feedback.className = 'feedback';
+    checkBtn.disabled = false;
+    answered = false;
+  }
+
+  // ================= КАРТОЧКА =================
+  function showFactCard(index, mode) {
+    mode = mode || 'unlock';
+    const f = FACTS[index];
+    cardEmoji.innerHTML = f.svg || `<div style="font-size:3.5rem">${f.emoji}</div>`;
+    cardTitle.textContent = f.title;
+    cardText.textContent = f.text;
+    cardTag.textContent = f.tag;
+    cardNumber.textContent = `${index + 1} / ${TOTAL_STATIONS}`;
+
+    if (mode === 'unlock') {
+      unlockLabel.textContent = 'Открыта новая карточка';
+      continueBtn.textContent = 'Продолжить экскурсию →';
+      awaitingCardContinue = true;
+      soundUnlock();
+    } else {
+      unlockLabel.textContent = 'Карточка из коллекции';
+      continueBtn.textContent = 'Закрыть';
+      awaitingCardContinue = false;
+    }
+    cardModal.classList.add('show');
+  }
+
+  continueBtn.addEventListener('click', () => {
+    soundClick();
+    cardModal.classList.remove('show');
+    if (awaitingCardContinue) {
+      awaitingCardContinue = false;
+      if (stationIndex >= TOTAL_STATIONS) {
+        showFinal();
+      } else {
+        newProblem();
+        updateHUD();
+        answerEl.focus();
+      }
+    }
+  });
+
+  // ================= ПРОВЕРКА =================
+  function checkAnswer() {
+    if (answered || awaitingCardContinue) return;
+    const raw = answerEl.value.trim().replace(/\s+/g, '');
+    if (raw === '') {
+      feedback.textContent = 'Введи ответ 🙂';
+      feedback.className = 'feedback err';
+      return;
+    }
+    const userAns = Number(raw);
+    if (!Number.isFinite(userAns)) {
+      feedback.textContent = 'Введи число';
+      feedback.className = 'feedback err';
+      return;
+    }
+    answered = true;
+
+    if (userAns === current.answer) {
+      score++;
+      correctInStation++;
+      soundCorrect();
+      changeTemp(-TEMP_COOL);   // ❄️ охлаждение
+      feedback.textContent = '✅ Верно! Реактор остывает.';
+      feedback.className = 'feedback ok';
+      answerEl.disabled = true;
+      checkBtn.disabled = true;
+
+      if (correctInStation >= CORRECT_PER_STATION) {
+        const factIdx = stationIndex;
+        unlockedCards.push(factIdx);
+        stationIndex++;
+        correctInStation = 0;
+        updateHUD();
+        collectionBtn.classList.add('pulse');
+        setTimeout(() => collectionBtn.classList.remove('pulse'), 2000);
+        setTimeout(() => showFactCard(factIdx, 'unlock'), 600);
+      } else {
+        updateHUD();
+        setTimeout(newProblem, 550);
+      }
+    } else {
+      errors++;
+      soundWrong();
+      changeTemp(TEMP_HEAT);    // 🔥 нагрев
+      feedback.textContent = `❌ Неверно. Правильный ответ: ${current.answer}`;
+      feedback.className = 'feedback err';
+      answerEl.disabled = true;
+      checkBtn.disabled = true;
+      updateHUD();
+      setTimeout(newProblem, 1600);
+    }
+  }
+
+  // ================= КОЛЛЕКЦИЯ =================
+  function renderCollection() {
+    collectionGrid.innerHTML = '';
+    FACTS.forEach((f, i) => {
+      const unlocked = unlockedCards.includes(i);
+      const el = document.createElement('div');
+      el.className = 'collection-item ' + (unlocked ? 'unlocked' : 'locked');
+      el.innerHTML = `
+        <div class="ci-emoji">${unlocked ? f.emoji : '🔒'}</div>
+        <div class="ci-title">${unlocked ? f.title : 'Не открыта'}</div>
+      `;
+      if (unlocked) {
+        el.addEventListener('click', () => {
+          soundClick();
+          showFactCard(i, 'view');
+        });
+      }
+      collectionGrid.appendChild(el);
+    });
+  }
+  function openCollection() {
+    soundClick(); ensureAudio();
+    renderCollection();
+    collectionModal.classList.add('show');
+  }
+  function closeCollection() { soundClick(); collectionModal.classList.remove('show'); }
+
+  collectionBtn.addEventListener('click', openCollection);
+  if (openCollectionFinal) openCollectionFinal.addEventListener('click', openCollection);
+  closeCollectionBtn.addEventListener('click', closeCollection);
+
+  // ================= ФИНАЛ =================
+  function showFinal() {
+    finalScore.textContent = score;
+    finalErrors.textContent = errors;
+    collectedCards.innerHTML = '';
+    FACTS.forEach(f => {
+      const div = document.createElement('div');
+      div.className = 'mini-card';
+      div.textContent = f.emoji;
+      div.title = f.title;
+      collectedCards.appendChild(div);
+    });
+    gameScreen.classList.remove('active');
+    gameScreen.classList.remove('danger');
+    finalScreen.classList.add('active');
+    soundFinish();
+  }
+
+  // ================= УПРАВЛЕНИЕ =================
+  function startGame() {
+    ensureAudio();
+    soundClick();
+    score = 0; errors = 0;
+    stationIndex = 0;
+    correctInStation = 0;
+    unlockedCards = [];
+    answered = false;
+    awaitingCardContinue = false;
+
+    // Сброс шкалы
+    reactorTemp = TEMP_START;
+    renderGauge();
+
+    startScreen.classList.remove('active');
+    finalScreen.classList.remove('active');
+    gameScreen.classList.remove('danger');
+    gameScreen.classList.add('active');
+
+    updateHUD();
+    newProblem();
+  }
+
+  startBtn.addEventListener('click', startGame);
+  restartBtn.addEventListener('click', () => {
+    soundClick();
+    finalScreen.classList.remove('active');
+    startScreen.classList.add('active');
+  });
+
+  checkBtn.addEventListener('click', checkAnswer);
+  answerEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (!answered) checkAnswer();
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && awaitingCardContinue && cardModal.classList.contains('show')) {
+      e.preventDefault();
+      continueBtn.click();
+    }
+    if (e.key === 'Escape') {
+      if (cardModal.classList.contains('show') && !awaitingCardContinue) {
+        cardModal.classList.remove('show');
+      } else if (collectionModal.classList.contains('show') && !cardModal.classList.contains('show')) {
+        collectionModal.classList.remove('show');
+      }
+    }
+  });
+})();
+</script>
+</body>
+</html>
