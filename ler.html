@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Футбольная академия множеств</title>
+<style>
+:root{--navy:#102a43;--blue:#1976d2;--sky:#dff3ff;--green:#19a974;--lime:#b8f36b;--orange:#ff9f43;--pink:#ff6b9a;--paper:#f5fbff;--ink:#172b4d;--muted:#627d98;--white:#fff;--red:#e84855;--gold:#ffd166}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:linear-gradient(180deg,#c9efff 0,#eefaff 35%,#f7fff4 100%);min-height:100vh}
+button,input{font:inherit}
+button{cursor:pointer}
+.pitch{position:relative;overflow:hidden;background:linear-gradient(135deg,#087f5b,#0a9b65 55%,#087f5b);color:white;padding:22px 16px 28px;border-bottom:7px solid #075e45}
+.pitch:before{content:"";position:absolute;inset:12px;border:2px solid #ffffff45;border-radius:20px;pointer-events:none}
+.pitch:after{content:"";position:absolute;width:180px;height:180px;border:2px solid #ffffff35;border-radius:50%;left:calc(50% - 90px);bottom:-90px;pointer-events:none}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:12px;max-width:1100px;margin:auto;position:relative;z-index:1;flex-wrap:wrap}
+.logo{font-weight:900;letter-spacing:.04em;font-size:.9rem;background:#ffffff20;border:1px solid #ffffff55;padding:8px 12px;border-radius:999px}
+.stats{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+.stat{background:#073f31b8;padding:7px 11px;border-radius:12px;font-weight:800;white-space:nowrap;transition:transform .2s}
+.stat.bump{transform:scale(1.15)}
+.soundbtn{background:#ffffff20;border:1px solid #ffffff55;color:white;font-size:1.05rem;width:38px;height:38px;border-radius:50%;padding:0;display:grid;place-items:center;transition:.15s}
+.soundbtn:hover{background:#ffffff40}
+.soundbtn.muted{opacity:.55}
+.hero{max-width:1000px;margin:22px auto 0;text-align:center;position:relative;z-index:1}
+.hero h1{font-size:clamp(2rem,6vw,4.2rem);line-height:1;margin:8px 0 12px;text-shadow:0 4px 0 #075e45;letter-spacing:-.04em}
+.hero p{max-width:650px;margin:0 auto;color:#e8fff6;font-size:1.05rem}
+.football{font-size:2.3rem;display:inline-block;animation:bob 2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-7px) rotate(12deg)}}
+.wrap{max-width:1100px;margin:0 auto;padding:18px 14px 42px}
+.playerbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:white;padding:12px;border-radius:18px;box-shadow:0 5px 20px #16324f12;margin-bottom:16px}
+.playerbar label{font-weight:800}
+.playerbar input{min-width:150px;flex:1;border:2px solid #c9e4f5;border-radius:12px;padding:10px 12px;outline:none;transition:border-color .2s,box-shadow .2s}
+.playerbar input:focus{border-color:var(--blue);box-shadow:0 0 0 4px #1976d220}
+.btn{border:0;border-radius:12px;padding:10px 15px;font-weight:850;transition:.15s transform,.15s filter}
+.btn:hover{filter:brightness(1.04);transform:translateY(-1px)}
+.btn:active{transform:translateY(1px)}
+.primary{background:var(--blue);color:white}.green{background:var(--green);color:white}.orange{background:var(--orange);color:#482400}.ghost{background:#e8f4fc;color:var(--navy)}.danger{background:#ffe4e8;color:#a31b32}
+.progresscard{background:white;border-radius:18px;padding:14px 16px;margin-bottom:16px;box-shadow:0 5px 20px #16324f10}
+.progressrow{display:flex;justify-content:space-between;gap:10px;align-items:center;font-weight:800;margin-bottom:9px}
+.progress{height:12px;background:#e5f0f5;border-radius:20px;overflow:hidden}
+.progress div{height:100%;width:0;background:linear-gradient(90deg,#19a974,#b8f36b);transition:width .35s;background-size:200% 100%;animation:shimmer 2s linear infinite}
+@keyframes shimmer{from{background-position:0 0}to{background-position:200% 0}}
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:16px;align-items:start}
+.sidebar,.gamepanel{background:white;border-radius:20px;box-shadow:0 8px 24px #16324f12}
+.sidebar{padding:12px;position:sticky;top:10px}
+.sidebar h3{margin:7px 8px 12px}
+.levelbtn{width:100%;display:flex;align-items:center;gap:10px;text-align:left;border:0;background:transparent;padding:11px 10px;border-radius:12px;color:var(--ink);font-weight:800;margin:3px 0;transition:.15s}
+.levelbtn:hover{background:#f4f9fc}
+.levelbtn .badge{display:grid;place-items:center;width:34px;height:34px;flex:none;border-radius:10px;background:#eaf5ff;font-size:1.1rem;transition:.2s}
+.levelbtn.active{background:#e8f7ee;color:#087f5b}.levelbtn.active .badge{background:var(--green);color:white;transform:scale(1.08)}
+.levelbtn.done:after{content:"✓";margin-left:auto;color:var(--green);font-weight:900}
+.sidebar .tip{font-size:.88rem;color:var(--muted);line-height:1.45;background:#f2f9fd;border-radius:12px;padding:12px;margin-top:12px}
+.gamepanel{overflow:hidden;min-height:580px}
+.panelhead{padding:22px 22px 16px;background:linear-gradient(135deg,#eef8ff,#f1fff5);border-bottom:1px solid #dcecf3}
+.eyebrow{font-size:.78rem;letter-spacing:.1em;font-weight:900;text-transform:uppercase;color:#16805c}
+.panelhead h2{margin:5px 0 8px;font-size:clamp(1.4rem,3vw,2rem)}
+.panelhead p{margin:0;color:#526d82;line-height:1.5}
+.taskarea{padding:20px 22px 24px;animation:fadeInUp .35s ease}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.tasktop{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:15px}
+.taskcount{font-weight:900;color:#59758a;background:#f0f7fb;border-radius:999px;padding:7px 11px}
+.question{font-size:1.15rem;font-weight:850;line-height:1.5;margin:10px 0 18px}
+.note{background:#fff8dd;border-left:5px solid var(--gold);padding:11px 13px;border-radius:10px;margin:12px 0;color:#6d5312;line-height:1.45}
+.chips{display:flex;flex-wrap:wrap;gap:9px}
+.chip{border:2px solid #b9dced;background:#f6fcff;color:var(--navy);border-radius:14px;padding:11px 14px;font-size:1.05rem;font-weight:900;min-width:52px;text-align:center;user-select:none;touch-action:manipulation;transition:.15s}
+.chip:hover{transform:translateY(-2px);box-shadow:0 4px 10px #16324f15}
+.chip:active{transform:scale(.97)}
+.chip svg{width:22px;height:22px;vertical-align:middle;margin-right:4px}
+.chip.selected{background:#d9f7e8;border-color:var(--green);box-shadow:0 0 0 3px #19a97420;animation:pulseSel 1.2s ease-in-out infinite}
+@keyframes pulseSel{50%{box-shadow:0 0 0 6px #19a97415}}
+.chip.correct{background:#d9f7e8;border-color:var(--green)}
+.chip.wrong{background:#ffe1e5;border-color:var(--red)}
+.answerline{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:14px 0}
+.answerline input{border:2px solid #c9e4f5;border-radius:12px;padding:11px 12px;min-width:120px;max-width:100%;flex:1}
+.dropzone{min-height:78px;border:2px dashed #9fc8dd;background:#f6fbfe;border-radius:15px;padding:12px;margin:9px 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;transition:.15s}
+.dropzone strong{width:100%;font-size:.95rem;color:#526d82}
+.dropzone.over{border-color:var(--green);background:#eafff3;transform:scale(1.02)}
+.sortbins{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.bin{border:2px dashed #b8d6e5;border-radius:15px;padding:12px;min-height:145px;background:#f7fcff}
+.bin h4{margin:0 0 9px;font-size:1rem}.bin .dropzone{min-height:75px;margin:0;padding:8px}
+.options{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}
+.option{border:2px solid #c6deeb;background:white;padding:11px 14px;border-radius:12px;font-weight:850;color:var(--ink);transition:.15s}
+.option:hover{border-color:#7ec4e8;transform:translateY(-1px)}
+.option.chosen{border-color:var(--blue);background:#e6f4ff;box-shadow:0 0 0 3px #1976d220}
+.feedback{margin-top:15px;border-radius:13px;padding:13px 15px;font-weight:750;line-height:1.5;display:none}
+.feedback.show{display:block}.feedback.good{background:#e4faed;color:#086542;animation:pulseGood .7s ease}.feedback.bad{background:#fff0e3;color:#8c4710}
+@keyframes pulseGood{0%,100%{box-shadow:0 0 0 0 #19a97460}50%{box-shadow:0 0 0 8px #19a97400}}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}
+.explain{font-size:.92rem;color:var(--muted);line-height:1.5;margin-top:12px}
+.field{background:#f7fbfd;border:1px solid #d8eaf2;border-radius:14px;padding:13px;margin:10px 0}
+.field label{display:block;font-weight:800;margin-bottom:7px}
+.field input{width:100%;border:2px solid #c9e4f5;border-radius:10px;padding:10px;transition:.2s}
+.field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px #1976d218}
+
+/* -------- illustrations & venn -------- */
+.illus-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:14px 0 18px;padding:12px;background:linear-gradient(135deg,#f7fcff,#f0fbff);border-radius:14px;border:1px solid #e3f1f9}
+.illus-item{display:flex;flex-direction:column;align-items:center;min-width:48px;padding:4px}
+.illus-ico{width:44px;height:44px;display:grid;place-items:center}
+.illus-ico svg{width:100%;height:100%}
+.illus-lbl{font-size:.82rem;font-weight:800;text-align:center;margin-top:4px;color:var(--ink)}
+.venn-wrap{margin:10px 0 6px;padding:12px 6px;background:linear-gradient(135deg,#f7fcff,#fffef7);border-radius:14px;text-align:center;border:1px solid #e3f1f9}
+.venn-wrap svg{max-width:300px;width:100%;height:auto;display:inline-block}
+.venn-wrap .caption{font-size:.82rem;color:var(--muted);margin-top:4px;font-weight:700}
+.venn-wrap svg text.elem{font-weight:800;fill:#102a43;font-size:11px}
+
+.bigresult{text-align:center;padding:32px 16px;animation:fadeInUp .5s}
+.bigresult .trophy{font-size:4rem;animation:bob 2s ease-in-out infinite}
+.bigresult h2{font-size:2rem;margin:10px 0}.stars{font-size:2rem;letter-spacing:5px}
+footer{text-align:center;color:#6d8798;font-size:.85rem;margin-top:20px}
+
+.confetti-piece{position:fixed;top:-20px;z-index:9999;pointer-events:none;animation:confettiFall 2s ease-in forwards;border-radius:2px}
+@keyframes confettiFall{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(105vh) rotate(720deg);opacity:0}}
+@keyframes shakeX{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.shake{animation:shakeX .4s}
+.flying-ball{position:fixed;z-index:9998;pointer-events:none;font-size:2.2rem;top:50%;animation:flyBall 1.6s ease-out forwards}
+@keyframes flyBall{0%{left:-60px;transform:rotate(0) scale(1)}100%{left:110vw;transform:rotate(1080deg) scale(1.3)}}
+.toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,150%);background:linear-gradient(135deg,#19a974,#087f5b);color:white;padding:13px 22px;border-radius:14px;font-weight:800;box-shadow:0 10px 30px #00000030;z-index:10000;pointer-events:none;transition:transform .35s cubic-bezier(.34,1.56,.64,1);max-width:90vw;text-align:center}
+.toast.show{transform:translate(-50%,0)}
+.toast.info{background:linear-gradient(135deg,#1976d2,#0d47a1)}
+.toast.warn{background:linear-gradient(135deg,#ff9f43,#e84855)}
+
+@media(max-width:760px){.layout{grid-template-columns:1fr}.sidebar{position:static}.level-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px}.sidebar .tip{display:none}.taskarea{padding:16px}.panelhead{padding:18px}.sortbins{grid-template-columns:1fr}.hero p{font-size:.96rem}}
+@media(max-width:390px){.level-list{grid-template-columns:1fr}.stats{font-size:.85rem}.stat{padding:6px 8px}}
+</style>
+</head>
+<body>
+<header class="pitch">
+ <div class="topline">
+  <div class="logo">⚽ ФУТБОЛЬНАЯ АКАДЕМИЯ</div>
+  <div class="stats">
+   <button class="soundbtn" id="soundToggle" title="Звук">🔊</button>
+   <div class="stat" id="scoreStat">⭐ <span id="score">0</span></div>
+   <div class="stat" id="coinsStat">🪙 <span id="coins">0</span></div>
+   <div class="stat" id="streakStat">🔥 Серия: <span id="streak">0</span></div>
+  </div>
+ </div>
+ <div class="hero"><div class="football">⚽</div><h1>ЛИГА МНОЖЕСТВ</h1><p>Собери команду, расставь игроков по позициям и пройди путь от новичка до капитана математической сборной!</p></div>
+</header>
+<main class="wrap">
+ <div class="playerbar">
+  <label for="player">Игрок академии:</label>
+  <input id="player" maxlength="24" placeholder="Введи своё имя">
+  <button class="btn green" id="saveName">Войти на поле</button>
+  <button class="btn danger" id="resetProgress" title="Сбросить прогресс">🔄</button>
+  <span id="welcome" style="font-weight:800;color:#087f5b"></span>
+ </div>
+ <div class="progresscard"><div class="progressrow"><span>Турнирный путь</span><span id="progressText">0 из 30 испытаний</span></div><div class="progress"><div id="progressFill"></div></div></div>
+ <div class="layout">
+  <aside class="sidebar"><h3>🏆 Тренировочные раунды</h3><div class="level-list" id="levelList"></div><div class="tip"><b>Правило капитана</b><br>Множество — это группа объектов. Каждый объект — элемент. Подмножество целиком внутри большего. Пересечение — общее, объединение — всё вместе. Разность A \ B — только A без общих.</div></aside>
+  <section class="gamepanel" id="gamepanel"></section>
+ </div>
+ <footer>Тренируйся, проверяй гипотезы и не бойся ошибаться — даже капитаны начинают с разминки.</footer>
+</main>
+<script>
+/* ============================ SVG ICONS ============================ */
+const ICONS = {
+  ball:`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#fff" stroke="#102a43" stroke-width="1.8"/><path d="M20 9l3 7-3 3-3-3z" fill="#102a43"/><path d="M7 16l5 3M33 16l-5 3M20 30l-2-6h4z" stroke="#102a43" stroke-width="1.4" fill="none" stroke-linejoin="round"/></svg>`,
+  ballN:(n)=>`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#fff" stroke="#102a43" stroke-width="1.8"/><path d="M20 9l3 7-3 3-3-3z" fill="#102a43"/><text x="20" y="27" text-anchor="middle" font-size="10" font-weight="900" fill="#102a43">${n}</text></svg>`,
+  jersey:`<svg viewBox="0 0 40 40"><path d="M9 9l5-3h12l5 3 6 5-4 5-3-2v16H10V17l-3 2-4-5z" fill="#19a974" stroke="#102a43" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
+  goal:`<svg viewBox="0 0 40 40"><rect x="5" y="10" width="30" height="22" fill="none" stroke="#102a43" stroke-width="2"/><path d="M5 14h30M5 18h30M5 22h30M5 26h30M10 10v22M15 10v22M20 10v22M25 10v22M30 10v22" stroke="#102a43" stroke-width=".8" opacity=".4"/></svg>`,
+  whistle:`<svg viewBox="0 0 40 40"><circle cx="26" cy="22" r="9" fill="#ff9f43" stroke="#102a43" stroke-width="1.8"/><path d="M4 14h18l-2 8H4z" fill="#ffd166" stroke="#102a43" stroke-width="1.8"/><rect x="26" y="20" width="8" height="4" rx="2" fill="#102a43"/></svg>`,
+  card:`<svg viewBox="0 0 40 40"><rect x="13" y="6" width="14" height="26" rx="2" fill="#ffd166" stroke="#102a43" stroke-width="1.8"/></svg>`,
+  boots:`<svg viewBox="0 0 40 40"><path d="M4 26v-8l5-3 5 3 5-5 8 3 8-3v10H4z" fill="#1976d2" stroke="#102a43" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 22h4M20 22h4M28 22h4" stroke="#fff" stroke-width="1.5"/></svg>`,
+  flag:`<svg viewBox="0 0 40 40"><path d="M10 4v32" stroke="#102a43" stroke-width="2"/><path d="M10 5l20 5-20 5z" fill="#e84855" stroke="#102a43" stroke-width="1"/></svg>`,
+  player:`<svg viewBox="0 0 40 40"><circle cx="20" cy="10" r="5" fill="#102a43"/><path d="M12 36v-10l-4-4 4-4h16l4 4-4 4v10h-5v-8h-6v8z" fill="#19a974" stroke="#102a43" stroke-width="1.5" stroke-linejoin="round"/></svg>`,
+  fan:`<svg viewBox="0 0 40 40"><circle cx="20" cy="10" r="5" fill="#102a43"/><path d="M8 38l3-16h18l3 16z" fill="#ff6b9a" stroke="#102a43" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
+  glove:`<svg viewBox="0 0 40 40"><path d="M12 36V16l-3-3-3 3v6H4V10l4-4 5 2 1-3 5 2 4-2 4 3 1 4v16l-4 8z" fill="#ff9f43" stroke="#102a43" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
+  shin:`<svg viewBox="0 0 40 40"><path d="M12 4h14v22l-5 6-9-8z" fill="#b8f36b" stroke="#102a43" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
+  drum:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="12" rx="14" ry="5" fill="#ffd166" stroke="#102a43" stroke-width="1.8"/><path d="M6 12v16c0 3 6 5 14 5s14-2 14-5V12" fill="none" stroke="#102a43" stroke-width="1.8"/><path d="M14 8l12 8M26 8l-12 8" stroke="#102a43" stroke-width="1.5"/></svg>`,
+  scarf:`<svg viewBox="0 0 40 40"><path d="M4 14h32v6H4z" fill="#e84855" stroke="#102a43" stroke-width="1.8"/><path d="M4 20v12l4-3 4 3 4-3 4 3 4-3 4 3 4-3 4 3V20" fill="#e84855" stroke="#102a43" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
+  referee:`<svg viewBox="0 0 40 40"><circle cx="20" cy="10" r="5" fill="#102a43"/><path d="M10 36l4-14h12l4 14h-4l-3-10h-2l-3 10z" fill="#102a43"/><path d="M10 12h20v4H10z" fill="#ffd166"/></svg>`,
+  running:`<svg viewBox="0 0 40 40"><circle cx="22" cy="8" r="4" fill="#102a43"/><path d="M14 36l6-10-4-6 4-4 8 4 4 6-4 2-4-3-2 4 4 7z" fill="#1976d2" stroke="#102a43" stroke-width="1.5" stroke-linejoin="round"/></svg>`,
+};
+const itemLabel = it => typeof it === 'string' ? it : it.label;
+const itemIcon  = it => typeof it === 'string' ? '' : (ICONS[it.icon] || '');
+
+function renderIllustration(list){
+  return '<div class="illus-row">'+list.map(it=>{
+    if(typeof it === 'string') return `<div class="illus-item"><div class="illus-ico">${ICONS.ball}</div><div class="illus-lbl">${it}</div></div>`;
+    return `<div class="illus-item"><div class="illus-ico">${ICONS[it.icon]||''}</div><div class="illus-lbl">${it.label}</div></div>`;
+  }).join('')+'</div>';
+}
+
+/* ============================ VENN (2-set, с элементами) ============================ */
+function venn2WithElems(A,B,nameA='A',nameB='B'){
+  const onlyA=A.filter(x=>!B.includes(x));
+  const onlyB=B.filter(x=>!A.includes(x));
+  const both =A.filter(x=>B.includes(x));
+  const col=(arr,cx,cy=95,gap=14)=>{
+    if(!arr.length)return '';
+    const start=cy-(arr.length-1)*gap/2;
+    return arr.map((el,i)=>`<text class="elem" x="${cx}" y="${start+i*gap+4}" text-anchor="middle">${el}</text>`).join('');
+  };
+  return `<div class="venn-wrap"><svg viewBox="0 0 220 200">
+    <defs><clipPath id="clipA_${taskIndex}_${levelIndex}"><circle cx="90" cy="95" r="52"/></clipPath></defs>
+    <circle cx="90" cy="95" r="52" fill="#dff3ff" fill-opacity="0.8"/>
+    <circle cx="130" cy="95" r="52" fill="#ffe1eb" fill-opacity="0.8"/>
+    <circle cx="130" cy="95" r="52" fill="#b8f36b" fill-opacity="0.85" clip-path="url(#clipA_${taskIndex}_${levelIndex})"/>
+    <circle cx="90" cy="95" r="52" fill="none" stroke="#1976d2" stroke-width="2"/>
+    <circle cx="130" cy="95" r="52" fill="none" stroke="#e95f99" stroke-width="2"/>
+    <text x="52" y="34" font-weight="900" fill="#1976d2" font-size="14">${nameA}</text>
+    <text x="150" y="34" font-weight="900" fill="#e95f99" font-size="14">${nameB}</text>
+    ${col(onlyA,60)}
+    ${col(both,110)}
+    ${col(onlyB,160)}
+  </svg><div class="caption">Пересечение подсвечено зелёным — это ${nameA} ∩ ${nameB}</div></div>`;
+}
+
+/* ============================ VENN (3-set, с элементами) ============================ */
+function venn3WithElems(A,B,C,nameA='A',nameB='B',nameC='C'){
+  const inA=x=>A.includes(x), inB=x=>B.includes(x), inC=x=>C.includes(x);
+  const all=[...new Set([...A,...B,...C])];
+  const r={aOnly:[],bOnly:[],cOnly:[],abOnly:[],acOnly:[],bcOnly:[],abc:[]};
+  all.forEach(x=>{
+    const a=inA(x),b=inB(x),c=inC(x);
+    if(a&&b&&c)r.abc.push(x);
+    else if(a&&b)r.abOnly.push(x);
+    else if(a&&c)r.acOnly.push(x);
+    else if(b&&c)r.bcOnly.push(x);
+    else if(a)r.aOnly.push(x);
+    else if(b)r.bOnly.push(x);
+    else if(c)r.cOnly.push(x);
+  });
+  const place=(arr,cx,cy,gap=12)=>{
+    if(!arr.length)return '';
+    const start=cy-(arr.length-1)*gap/2;
+    return arr.map((el,i)=>`<text class="elem" x="${cx}" y="${start+i*gap+3}" text-anchor="middle">${el}</text>`).join('');
+  };
+  return `<div class="venn-wrap"><svg viewBox="0 0 240 220">
+    <circle cx="95" cy="85" r="55" fill="#dff3ff" fill-opacity="0.75"/>
+    <circle cx="145" cy="85" r="55" fill="#fff0f6" fill-opacity="0.75"/>
+    <circle cx="120" cy="130" r="55" fill="#fff8e7" fill-opacity="0.85"/>
+    <circle cx="95" cy="85" r="55" fill="none" stroke="#1976d2" stroke-width="1.8"/>
+    <circle cx="145" cy="85" r="55" fill="none" stroke="#e95f99" stroke-width="1.8"/>
+    <circle cx="120" cy="130" r="55" fill="none" stroke="#f0a43b" stroke-width="1.8"/>
+    <text x="55" y="35" font-weight="900" fill="#1976d2" font-size="13">${nameA}</text>
+    <text x="175" y="35" font-weight="900" fill="#e95f99" font-size="13">${nameB}</text>
+    <text x="115" y="200" font-weight="900" fill="#f0a43b" font-size="13">${nameC}</text>
+    ${place(r.aOnly,68,78)}
+    ${place(r.bOnly,172,78)}
+    ${place(r.cOnly,120,158)}
+    ${place(r.abOnly,120,60)}
+    ${place(r.acOnly,86,120)}
+    ${place(r.bcOnly,154,120)}
+    ${place(r.abc,120,100)}
+  </svg><div class="caption">7 областей: только A, B, C; попарные; и тройное пересечение в центре</div></div>`;
+}
+
+/* ============================ LEVELS ============================ */
+const levels=[
+ {title:"Разминка: состав команды",sub:"Множество и его элементы",desc:"Научись узнавать элементы множества и читать математические обозначения.",icon:"👟",tasks:[
+  {type:"member",q:"В множестве A собраны игроки с номерами {1, 3, 7, 10}. Какие номера принадлежат A?",
+   items:[{icon:"ball",label:"1"},{icon:"ball",label:"2"},{icon:"ball",label:"3"},{icon:"ball",label:"7"},{icon:"ball",label:"8"},{icon:"ball",label:"10"}],
+   correct:["1","3","7","10"],why:"Принадлежат только те элементы, которые записаны в множестве A."},
+  {type:"belong",q:"Множество бутс B = {красные, синие, чёрные}. Выбери верное утверждение.",opts:["зелёные ∈ B","синие ∈ B","белые ∈ B"],correct:1,
+   illustration:[{icon:"boots",label:"красные"},{icon:"boots",label:"синие"},{icon:"boots",label:"чёрные"}],
+   why:"Синие бутсы перечислены в множестве B, значит, синие ∈ B."},
+  {type:"notation",q:"Запиши символом: число 9 принадлежит множеству A.",placeholder:"Например: 2 ∈ B",accept:["9 ∈ A","9∈A"],why:"Символ ∈ читается «принадлежит множеству»."},
+  {type:"member",q:"В множестве болельщиков C = {Аня, Лёша, Миша, Оля}. Кто НЕ является элементом C?",
+   items:[{icon:"fan",label:"Аня"},{icon:"fan",label:"Петя"},{icon:"fan",label:"Миша"},{icon:"fan",label:"Оля"}],
+   correct:["Петя"],why:"Петя не указан среди элементов множества C."},
+  {type:"belong",q:"Вратари команды: V = {Илья, Тимур}. Как записать, что Рома не принадлежит V?",opts:["Рома ∈ V","Рома ⊂ V","Рома ∉ V"],correct:2,
+   illustration:[{icon:"glove",label:"Илья"},{icon:"glove",label:"Тимур"},{icon:"glove",label:"Рома (?)"}],
+   why:"Символ ∉ означает «не принадлежит множеству»."}
+ ]},
+
+ {title:"Раздевалка: сортировка",sub:"Распределение элементов",desc:"Разложи карточки по подходящим группам. Перетаскивай или нажимай на карточку, затем на корзину.",icon:"🧤",tasks:[
+  {type:"sort",q:"Разложи предметы по двум множествам: E — экипировка, F — футбольное поле.",
+   items:["мяч","щитки","ворота","бутсы","флажок угловой","перчатки вратаря"],
+   illustrations:{"мяч":"ball","щитки":"shin","ворота":"goal","бутсы":"boots","флажок угловой":"flag","перчатки вратаря":"glove"},
+   bins:[{name:"E — экипировка",correct:["щитки","бутсы","перчатки вратаря"]},{name:"F — поле",correct:["мяч","ворота","флажок угловой"]}],
+   why:"Экипировка нужна игрокам, а ворота, мяч и флажок относятся к оборудованию поля."},
+  {type:"sort",q:"Раздели игроков по позиции: D — защитники, A — нападающие.",
+   items:["защитник №4","нападающий №9","защитник №2","нападающий №11","защитник №5","нападающий №7"],
+   illustrations:{"защитник №4":"player","нападающий №9":"running","защитник №2":"player","нападающий №11":"running","защитник №5":"player","нападающий №7":"running"},
+   bins:[{name:"D — защитники",correct:["защитник №4","защитник №2","защитник №5"]},{name:"A — нападающие",correct:["нападающий №9","нападающий №11","нападающий №7"]}],
+   why:"Смотри на позицию в названии карточки."},
+  {type:"sort",q:"Разложи числа: P — чётные номера, N — нечётные.",
+   items:["12","3","8","5","10","7","2","9"],
+   bins:[{name:"P — чётные",correct:["12","8","10","2"]},{name:"N — нечётные",correct:["3","5","7","9"]}],
+   why:"Чётные делятся на 2 без остатка; нечётные — нет."},
+  {type:"sort",q:"Распредели карточки: H — на поле, S — на трибуне.",
+   items:["судья","болельщик","футболист","барабан болельщиков","мяч","шарф фаната"],
+   illustrations:{"судья":"referee","болельщик":"fan","футболист":"player","барабан болельщиков":"drum","мяч":"ball","шарф фаната":"scarf"},
+   bins:[{name:"H — на поле",correct:["судья","футболист","мяч"]},{name:"S — на трибуне",correct:["болельщик","барабан болельщиков","шарф фаната"]}],
+   why:"Судья, футболист и мяч находятся на поле."}
+ ]},
+
+ {title:"Юниорская лига",sub:"Подмножество",desc:"Проверь, входит ли каждый элемент одной группы в другую.",icon:"🧢",tasks:[
+  {type:"subset",q:"A — все игроки команды {1, 2, 3, 4, 5}. B — защитники {2, 4}. Какое утверждение верно?",opts:["B ⊂ A","A ⊂ B","B ∉ A"],correct:0,
+   setA:["1","2","3","4","5"],setB:["2","4"],nameA:"A",nameB:"B",
+   why:"Каждый элемент B (2 и 4) есть в A, поэтому B — подмножество A."},
+  {type:"subset",q:"A = {мяч, ворота, бутсы, форма}. B = {мяч, бутсы}. Выбери верное утверждение.",opts:["A ⊂ B","B ⊂ A","B = ∅"],correct:1,
+   setA:["мяч","ворота","бутсы","форма"],setB:["мяч","бутсы"],
+   why:"Все предметы из B входят в A. В A могут быть и другие элементы."},
+  {type:"subset",q:"A = {1, 3, 5, 7, 9}, B = {3, 7, 11}. Является ли B подмножеством A?",opts:["Да, B ⊂ A","Нет, потому что 11 ∉ A","Да, потому что в B три числа"],correct:1,
+   setA:["1","3","5","7","9"],setB:["3","7","11"],
+   why:"Для подмножества каждый элемент B должен быть в A. Числа 11 в A нет."},
+  {type:"subset",q:"В академии A есть {вратарь, защитник, полузащитник, нападающий}. Группа B = {вратарь, защитник, нападающий}. Выбери правильное.",opts:["B ⊂ A","A ⊂ B","B = ∅"],correct:0,
+   setA:["вратарь","защитник","полузащитник","нападающий"],setB:["вратарь","защитник","нападающий"],
+   why:"Все позиции из B входят в состав A."}
+ ]},
+
+ {title:"Тактика: общие игроки",sub:"Пересечение множеств",desc:"Пересечение — элементы, которые есть в обоих множествах одновременно.",icon:"🔵",tasks:[
+  {type:"intersection",q:"K = {2, 4, 6, 8}, L = {1, 2, 3, 4}. Выбери K ∩ L.",opts:["{2, 4}","{1, 3, 6, 8}","{1, 2, 3, 4, 6, 8}"],correct:0,
+   setA:["2","4","6","8"],setB:["1","2","3","4"],nameA:"K",nameB:"L",
+   why:"Общие элементы двух множеств — 2 и 4."},
+  {type:"intersection",q:"A — игроки с Nike {Илья, Саша, Марат}; B — игроки в красной форме {Саша, Марат, Олег}. Кто входит в A ∩ B?",opts:["{Илья, Олег}","{Саша, Марат}","{Илья, Саша, Марат, Олег}"],correct:1,
+   setA:["Илья","Саша","Марат"],setB:["Саша","Марат","Олег"],
+   why:"В оба множества входят Саша и Марат."},
+  {type:"intersection",q:"M = {0, 2, 4, 6, 8}, N = {1, 3, 5, 7, 9}. Чему равно M ∩ N?",opts:["{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}","∅","{2, 4, 6, 8}"],correct:1,
+   setA:["0","2","4","6","8"],setB:["1","3","5","7","9"],
+   why:"У чётных и нечётных чисел нет общих элементов, поэтому пересечение пустое."},
+  {type:"intersection",q:"A = {3, 6, 9, 12}, B = {6, 9, 12, 15}. Найди общие элементы.",opts:["{3, 15}","{6, 9, 12}","{3, 6, 9, 12, 15}"],correct:1,
+   setA:["3","6","9","12"],setB:["6","9","12","15"],
+   why:"Числа 6, 9 и 12 есть в обоих множествах."},
+  {type:"intersection",q:"На тренировку пришли {Лена, Маша, Коля, Тимур}, а на разминку — {Маша, Тимур, Ваня}. Кто был на обоих занятиях?",opts:["{Лена, Коля}","{Маша, Тимур}","{Лена, Маша, Коля, Тимур, Ваня}"],correct:1,
+   setA:["Лена","Маша","Коля","Тимур"],setB:["Маша","Тимур","Ваня"],
+   why:"Пересечение — участники, которые есть в обоих списках."}
+ ]},
+
+ {title:"Командная игра",sub:"Объединение множеств",desc:"Объединение включает все элементы обоих множеств, но одинаковый элемент записывают один раз.",icon:"🟣",tasks:[
+  {type:"union",q:"K = {2, 4, 6}, L = {4, 5, 6}. Найди K ∪ L.",opts:["{4, 6}","{2, 4, 5, 6}","{2, 5}"],correct:1,
+   setA:["2","4","6"],setB:["4","5","6"],nameA:"K",nameB:"L",
+   why:"Объединяем все элементы и не повторяем 4 и 6."},
+  {type:"union",q:"A = {мяч, ворота}, B = {форма, мяч}. Чему равно A ∪ B?",opts:["{мяч}","{мяч, ворота, форма}","{ворота, форма}"],correct:1,
+   setA:["мяч","ворота"],setB:["форма","мяч"],
+   why:"В объединение входят все разные элементы."},
+  {type:"union",q:"P = {1, 3, 5}, Q = {2, 4, 6}. Выбери P ∪ Q.",opts:["{1, 2, 3, 4, 5, 6}","∅","{3, 5}"],correct:0,
+   setA:["1","3","5"],setB:["2","4","6"],nameA:"P",nameB:"Q",
+   why:"В объединении собраны все элементы P и Q."},
+  {type:"union",q:"A = {7, 8, 9}, B = {8, 9, 10}. Сколько элементов в A ∪ B?",opts:["2","4","6"],correct:1,
+   setA:["7","8","9"],setB:["8","9","10"],
+   why:"A ∪ B = {7, 8, 9, 10}: четыре разных элемента."},
+  {type:"union",q:"В первой команде {Артём, Сева, Рома}, во второй {Рома, Игорь}. Кто входит в объединение?",opts:["{Рома}","{Артём, Сева, Рома, Игорь}","{Артём, Сева, Игорь}"],correct:1,
+   setA:["Артём","Сева","Рома"],setB:["Рома","Игорь"],
+   why:"Объединение содержит игроков обеих команд, Рома один раз."}
+ ]},
+
+ {title:"Кубок капитанов",sub:"Смешанная тактика",desc:"Финальные задания объединяют несколько правил.",icon:"🏆",tasks:[
+  {type:"mixed",q:"A = {2, 4, 6, 8, 10}, B = {4, 8}. Какое утверждение неверно?",opts:["B ⊂ A","4 ∈ B","6 ∈ B"],correct:2,
+   setA:["2","4","6","8","10"],setB:["4","8"],
+   why:"В B записаны только 4 и 8, поэтому 6 ∉ B."},
+  {type:"mixed",q:"A = {1, 2, 3, 4}, B = {3, 4, 5}. Найди A ∩ B и A ∪ B.",
+   fields:[{label:"A ∩ B =",accept:["{3, 4}","3,4","3;4"]},{label:"A ∪ B =",accept:["{1, 2, 3, 4, 5}","1,2,3,4,5","1;2;3;4;5"]}],
+   setA:["1","2","3","4"],setB:["3","4","5"],
+   why:"Пересечение: 3 и 4. Объединение: 1, 2, 3, 4, 5."},
+  {type:"mixed",q:"A = {1, 2, 3, 4, 5, 6}. B — чётные номера из A. C = {2, 4}. Какое верное утверждение?",opts:["C ⊂ B и B ⊂ A","A ⊂ C","B ∩ C = ∅"],correct:0,
+   setA:["1","2","3","4","5","6"],setB:["2","4","6"],setC:["2","4"],
+   why:"C = {2, 4} входит в B = {2, 4, 6}, а B входит в A."},
+  {type:"mixed",q:"K = {0, 2, 4, 6, 8}, L = {2, 3, 5, 8}. Заполни результат пересечения.",
+   fields:[{label:"K ∩ L =",accept:["{2, 8}","2,8","2;8"]}],
+   setA:["0","2","4","6","8"],setB:["2","3","5","8"],
+   why:"Общими элементами являются 2 и 8."},
+  {type:"mixed",q:"A = {футболист, судья, мяч}, B = {судья, тренер}. Сколько элементов в A ∪ B и A ∩ B?",
+   fields:[{label:"Элементов в A ∪ B:",accept:["4","четыре"]},{label:"Элементов в A ∩ B:",accept:["1","один"]}],
+   setA:["футболист","судья","мяч"],setB:["судья","тренер"],
+   why:"Объединение: футболист, судья, мяч, тренер — 4. Пересечение: только судья — 1."},
+  {type:"mixed",q:"В клубе A {2, 3, 4, 5, 6}, а в клубе B {1, 3, 5, 7}. Отметь все верные фразы.",
+   multi:true,opts:["3 ∈ A ∩ B","2 ∈ A ∩ B","7 ∈ A ∪ B","B ⊂ A"],correct:[0,2],
+   setA:["2","3","4","5","6"],setB:["1","3","5","7"],
+   why:"3 есть в обоих, 7 входит в объединение. 2 не входит в B, 7 не входит в A — B ⊄ A."}
+ ]},
+
+ /* ================= НОВЫЙ СЛОЖНЫЙ РАУНД 7: РАЗНОСТЬ И ДОПОЛНЕНИЕ ================= */
+ {title:"Высшая лига: разность",sub:"Разность A \\ B и дополнение",desc:"A \\ B — элементы A, которых нет в B. Дополнение A′ = U \\ A. Смотри на диаграммы и считай внимательно.",icon:"⚡",tasks:[
+  {type:"venn2",q:"A = {1, 2, 3, 4, 5}, B = {4, 5, 6}. Найди разность A \\ B (только то, что в A, но не в B).",
+   setA:["1","2","3","4","5"],setB:["4","5","6"],nameA:"A",nameB:"B",
+   opts:["{1, 2, 3}","{4, 5}","{6}"],correct:0,
+   note:"A \\ B = то, что лежит в левой части A (не считая пересечения).",
+   why:"A \\ B убирает из A общие с B элементы: 4 и 5 отпадают, остаются 1, 2, 3."},
+  {type:"venn2",q:"На поле вышли A = {Ваня, Петя, Саша, Коля}. Гол забили B = {Саша, Коля}. Кто был на поле, но НЕ забил? Это A \\ B.",
+   setA:["Ваня","Петя","Саша","Коля"],setB:["Саша","Коля"],
+   opts:["{Ваня, Петя}","{Саша, Коля}","{Ваня, Петя, Саша, Коля}"],correct:0,
+   why:"Из состава A убираем тех, кто в B. Остаются Ваня и Петя."},
+  {type:"venn2",q:"Универсальное множество U = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}. A — чётные числа {2, 4, 6, 8, 10}. Найди дополнение A′ = U \\ A.",
+   setA:["2","4","6","8","10"],setB:["1","3","5","7","9"],nameA:"A",nameB:"A′",
+   opts:["{2, 4, 6, 8, 10}","{1, 3, 5, 7, 9}","∅"],correct:1,
+   note:"Дополнение A′ — всё, что есть в U, но не входит в A. Здесь U разбито на A и A′.",
+   why:"Нечётные числа 1, 3, 5, 7, 9 — это всё из U, что не попало в A."},
+  {type:"difference",q:"В академии 30 учеников (это U). A = 18 защитников. Сколько учеников НЕ защитники (A′)?",
+   fields:[{label:"|A′| =",accept:["12","двенадцать"]}],
+   why:"|A′| = |U| − |A| = 30 − 18 = 12. Дополнение «съедает» всех, кто попал в A."},
+  {type:"difference",q:"A = {1, 2, 3, 4}, B = {3, 4, 5, 6}, C = {5, 6, 7}. Найди (A ∪ B) \\ C.",
+   setA:["1","2","3","4"],setB:["3","4","5","6"],setC:["5","6","7"],
+   opts:["{1, 2, 3, 4}","{5, 6}","{7}"],correct:0,
+   why:"Сначала A ∪ B = {1, 2, 3, 4, 5, 6}. Вычитаем C: убираем 5 и 6, остаётся {1, 2, 3, 4}."}
+ ]},
+
+ /* ================= НОВЫЙ СЛОЖНЫЙ РАУНД 8: СИММЕТРИЧНАЯ РАЗНОСТЬ ================= */
+ {title:"Симметричная атака",sub:"Симметричная разность A △ B",desc:"A △ B = (A \\ B) ∪ (B \\ A). Это всё, что входит ровно в ОДНО из двух множеств, но не в оба сразу.",icon:"🔄",tasks:[
+  {type:"symmetric",q:"A = {1, 2, 3}, B = {3, 4, 5}. Найди A △ B.",
+   setA:["1","2","3"],setB:["3","4","5"],
+   opts:["{1, 2, 4, 5}","{3}","{1, 2, 3, 4, 5}"],correct:0,
+   note:"Симметричная разность «выбрасывает» общий элемент 3 и оставляет только «уникальные».",
+   why:"(A \\ B) = {1, 2}, (B \\ A) = {4, 5}. Объединение даёт {1, 2, 4, 5}."},
+  {type:"symmetric",q:"A = {2, 4, 6, 8}, B = {6, 8, 10, 12}. Чему равно A △ B?",
+   setA:["2","4","6","8"],setB:["6","8","10","12"],
+   opts:["{6, 8}","{2, 4, 10, 12}","{2, 4, 6, 8, 10, 12}"],correct:1,
+   why:"Общие 6 и 8 выпадают. Остаются «уникальные»: 2, 4 из A и 10, 12 из B."},
+  {type:"symmetric",q:"A = {1, 3, 5}, B = {2, 4} — множества не пересекаются. Чему равно A △ B?",
+   setA:["1","3","5"],setB:["2","4"],
+   opts:["∅","{1, 2, 3, 4, 5}","{1, 3, 5}"],correct:1,
+   why:"Если пересечение пусто, симметричная разность равна обычному объединению."},
+  {type:"symmetric",q:"A = {1, 2, 3, 4, 5}, B = {2, 4} (B ⊂ A). Найди A △ B.",
+   setA:["1","2","3","4","5"],setB:["2","4"],
+   opts:["{2, 4}","{1, 3, 5}","{1, 2, 3, 4, 5}"],correct:1,
+   why:"Если B ⊂ A, то A △ B = A \\ B = {1, 3, 5}."},
+  {type:"symmetric",q:"Две группы тренируют разные элементы: A = {бег, пресс, прыжки, растяжка}, B = {пресс, растяжка, отжимания}. Что тренируется ТОЛЬКО в одной из групп (A △ B)?",
+   setA:["бег","пресс","прыжки","растяжка"],setB:["пресс","растяжка","отжимания"],
+   opts:["{пресс, растяжка}","{бег, прыжки, отжимания}","{бег, пресс, прыжки, растяжка, отжимания}"],correct:1,
+   why:"Пресс и растяжка — общие, выпадают. Уникальные: бег, прыжки (только A) и отжимания (только B)."}
+ ]},
+
+ /* ================= НОВЫЙ СЛОЖНЫЙ РАУНД 9: ТРИ МНОЖЕСТВА ================= */
+ {title:"Три круга стратегии",sub:"Три множества и включения-исключения",desc:"Диаграмма Венна из трёх кругов делит мир на 7 областей. Формула включений-исключений: |A ∪ B| = |A| + |B| − |A ∩ B|.",icon:"🎯",tasks:[
+  {type:"venn3",q:"A = {1, 2, 3, 4}, B = {3, 4, 5, 6}, C = {4, 6, 7}. Найди A ∩ B ∩ C.",
+   setA:["1","2","3","4"],setB:["3","4","5","6"],setC:["4","6","7"],
+   opts:["{4}","{3, 4, 6}","{1, 2, 5, 7}"],correct:0,
+   why:"Тройное пересечение — единственный элемент, который есть во всех трёх множествах. Это 4 (в центре диаграммы)."},
+  {type:"venn3",q:"Те же A = {1, 2, 3, 4}, B = {3, 4, 5, 6}, C = {4, 6, 7}. Сколько элементов в A ∪ B ∪ C?",
+   setA:["1","2","3","4"],setB:["3","4","5","6"],setC:["4","6","7"],
+   opts:["7","10","12"],correct:0,
+   why:"A ∪ B ∪ C = {1, 2, 3, 4, 5, 6, 7} — семь разных элементов."},
+  {type:"venn3",q:"На диаграмме A = {1, 2, 3}, B = {3, 4, 5}, C = {5, 6, 7}. В какую область попадает число 4?",
+   setA:["1","2","3"],setB:["3","4","5"],setC:["5","6","7"],
+   opts:["Только B","A ∩ B","B ∩ C"],correct:0,
+   note:"Смотри на диаграмму: где именно лежит 4?",
+   why:"4 ∈ B, но 4 ∉ A и 4 ∉ C. Значит, это «только B»."},
+  {type:"counting",q:"В турнире |A| = 15 участников, |B| = 12 участников, |A ∩ B| = 5. Сколько участников в A ∪ B? Используй формулу включений-исключений.",
+   fields:[{label:"|A ∪ B| =",accept:["22","двадцать два"]}],
+   note:"Формула: |A ∪ B| = |A| + |B| − |A ∩ B|. Общих считаем дважды, поэтому вычитаем один раз.",
+   why:"|A ∪ B| = 15 + 12 − 5 = 22. Если бы мы просто сложили 15 + 12, то 5 общих посчитали бы дважды."},
+  {type:"counting",q:"Класс: 20 учеников играют в футбол, 14 — в баскетбол, 6 играют и там, и там. Сколько всего учеников играет хотя бы в одну игру?",
+   fields:[{label:"Хотя бы в одну игру:",accept:["28","двадцать восемь"]}],
+   why:"|Ф ∪ Б| = 20 + 14 − 6 = 28. Шестерых «универсалов» считаем один раз."}
+ ]}
+];
+
+/* ============================ STATE ============================ */
+let levelIndex=0,taskIndex=0,score=0,coins=0,streak=0,wrongAttempts=0;
+let completed=new Set();
+let achievementsShown=new Set();
+let currentSort={},selectedChip=null;
+let soundEnabled=true,audioCtx=null;
+
+const $=id=>document.getElementById(id);
+const totalTasks=()=>levels.reduce((a,l)=>a+l.tasks.length,0);
+
+/* ============================ AUDIO ============================ */
+function initAudio(){
+ if(!audioCtx){try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){audioCtx=null;}}
+ if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
+ return audioCtx;
+}
+function playSound(type){
+ if(!soundEnabled)return;
+ const ctx=initAudio(); if(!ctx)return;
+ const now=ctx.currentTime;
+ if(type==='correct'){
+  [523.25,659.25,783.99].forEach((f,i)=>{
+   const o=ctx.createOscillator(),g=ctx.createGain();
+   o.connect(g);g.connect(ctx.destination);
+   o.type='sine';o.frequency.value=f;
+   const t=now+i*.09;
+   g.gain.setValueAtTime(0,t);
+   g.gain.linearRampToValueAtTime(.15,t+.02);
+   g.gain.exponentialRampToValueAtTime(.001,t+.35);
+   o.start(t);o.stop(t+.35);
+  });
+ } else if(type==='wrong'){
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  o.connect(g);g.connect(ctx.destination);
+  o.type='sawtooth';
+  o.frequency.setValueAtTime(220,now);
+  o.frequency.exponentialRampToValueAtTime(100,now+.35);
+  g.gain.setValueAtTime(.12,now);
+  g.gain.exponentialRampToValueAtTime(.001,now+.35);
+  o.start(now);o.stop(now+.35);
+ } else if(type==='click'){
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  o.connect(g);g.connect(ctx.destination);
+  o.type='square';o.frequency.value=900;
+  g.gain.setValueAtTime(.04,now);
+  g.gain.exponentialRampToValueAtTime(.001,now+.05);
+  o.start(now);o.stop(now+.05);
+ } else if(type==='levelup'){
+  [523.25,659.25,783.99,1046.5].forEach((f,i)=>{
+   const o=ctx.createOscillator(),g=ctx.createGain();
+   o.connect(g);g.connect(ctx.destination);
+   o.type='triangle';o.frequency.value=f;
+   const t=now+i*.1;
+   g.gain.setValueAtTime(0,t);
+   g.gain.linearRampToValueAtTime(.15,t+.02);
+   g.gain.exponentialRampToValueAtTime(.001,t+.4);
+   o.start(t);o.stop(t+.4);
+  });
+ }
+}
+
+function confetti(n=35){
+ const colors=['#19a974','#1976d2','#ff9f43','#ff6b9a','#ffd166','#b8f36b','#e84855'];
+ for(let i=0;i<n;i++){
+  const p=document.createElement('div');
+  p.className='confetti-piece';
+  p.style.left=(Math.random()*100)+'vw';
+  p.style.background=colors[Math.floor(Math.random()*colors.length)];
+  p.style.animationDelay=(Math.random()*.3)+'s';
+  p.style.animationDuration=(1.6+Math.random()*.8)+'s';
+  p.style.width=(6+Math.random()*6)+'px';
+  p.style.height=(10+Math.random()*8)+'px';
+  document.body.appendChild(p);
+  setTimeout(()=>p.remove(),2500);
+ }
+}
+
+function showToast(text,emoji='🏆',type=''){
+ let t=document.getElementById('toast');
+ if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t);}
+ t.className='toast '+type;
+ t.textContent=emoji+' '+text;
+ requestAnimationFrame(()=>t.classList.add('show'));
+ clearTimeout(t._tid);
+ t._tid=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function shake(el){if(!el)return;el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');setTimeout(()=>el.classList.remove('shake'),500);}
+function flyBall(){
+ const b=document.createElement('div');b.className='flying-ball';b.textContent='⚽';
+ document.body.appendChild(b);setTimeout(()=>b.remove(),1800);
+}
+function checkAchievements(){
+ const got=id=>{if(achievementsShown.has(id))return true;achievementsShown.add(id);return false;};
+ if(streak===3&&!got('h3')){showToast('Хет-трик! Серия 3','🎩');playSound('levelup');}
+ else if(streak===5&&!got('s5')){showToast('Серия из 5!','🔥');playSound('levelup');}
+ else if(streak===10&&!got('s10')){showToast('Легендарная серия из 10!','💫');playSound('levelup');}
+ if(completed.size===10&&!got('c10'))showToast('10 испытаний пройдено!','🌟');
+ if(completed.size===20&&!got('c20'))showToast('20 испытаний позади!','⭐');
+ if(completed.size===totalTasks()&&!got('all')){showToast('Все испытания пройдены!','🏆');confetti(60);}
+}
+function saveProgress(){
+ try{localStorage.setItem('setsFootballSave',JSON.stringify({
+  score,coins,streak,wrongAttempts,completed:[...completed],
+  achievements:[...achievementsShown],levelIndex,taskIndex,soundEnabled
+ }));}catch(e){}
+}
+function loadProgress(){
+ try{
+  const s=JSON.parse(localStorage.getItem('setsFootballSave')||'null');
+  if(!s)return;
+  score=s.score||0;coins=s.coins||0;streak=s.streak||0;wrongAttempts=s.wrongAttempts||0;
+  completed=new Set(s.completed||[]);
+  achievementsShown=new Set(s.achievements||[]);
+  levelIndex=s.levelIndex||0;taskIndex=s.taskIndex||0;
+  if(typeof s.soundEnabled==='boolean')soundEnabled=s.soundEnabled;
+ }catch(e){}
+}
+
+/* ============================ VENN helpers ============================ */
+function vennForTask(t){
+ if(t.setA && t.setB && t.setC) return venn3WithElems(t.setA,t.setB,t.setC,t.nameA||'A',t.nameB||'B',t.nameC||'C');
+ if(t.setA && t.setB) return venn2WithElems(t.setA,t.setB,t.nameA||'A',t.nameB||'B');
+ if(t.type==='intersection') return `<div class="venn-wrap"><svg viewBox="0 0 220 200"><circle cx="90" cy="95" r="52" fill="#dff3ff" fill-opacity="0.8"/><circle cx="130" cy="95" r="52" fill="#ffe1eb" fill-opacity="0.8"/><circle cx="130" cy="95" r="52" fill="#b8f36b" fill-opacity="0.85" clip-path="url(#cI)"/><defs><clipPath id="cI"><circle cx="90" cy="95" r="52"/></clipPath></defs><circle cx="90" cy="95" r="52" fill="none" stroke="#1976d2" stroke-width="2"/><circle cx="130" cy="95" r="52" fill="none" stroke="#e95f99" stroke-width="2"/><text x="52" y="34" font-weight="900" fill="#1976d2" font-size="14">A</text><text x="150" y="34" font-weight="900" fill="#e95f99" font-size="14">B</text></svg><div class="caption">Пересечение — зелёная середина</div></div>`;
+ if(t.type==='union') return `<div class="venn-wrap"><svg viewBox="0 0 220 200"><circle cx="90" cy="95" r="52" fill="#b8f36b"/><circle cx="130" cy="95" r="52" fill="#b8f36b"/><circle cx="90" cy="95" r="52" fill="none" stroke="#19a974" stroke-width="2"/><circle cx="130" cy="95" r="52" fill="none" stroke="#19a974" stroke-width="2"/><text x="52" y="34" font-weight="900" fill="#19a974" font-size="14">A</text><text x="150" y="34" font-weight="900" fill="#19a974" font-size="14">B</text></svg><div class="caption">Объединение — вся закрашенная фигура</div></div>`;
+ return '';
+}
+
+/* ============================ UI RENDER ============================ */
+function updateStats(){
+ $("score").textContent=score;$("coins").textContent=coins;$("streak").textContent=streak;
+ $("progressText").textContent=completed.size+" из "+totalTasks()+" испытаний";
+ $("progressFill").style.width=(completed.size/totalTasks()*100)+"%";
+}
+function bumpStat(id){const el=$(id);if(!el)return;el.classList.add('bump');setTimeout(()=>el.classList.remove('bump'),220);}
+
+function renderLevels(){
+ let h="";
+ levels.forEach((l,i)=>{
+  const done=l.tasks.every((t,j)=>completed.has(i+"-"+j));
+  h+=`<button class="levelbtn ${i===levelIndex?"active":""} ${done?"done":""}" data-level="${i}"><span class="badge">${l.icon}</span><span>${i+1}. ${l.title}</span></button>`;
+ });
+ $("levelList").innerHTML=h;
+ document.querySelectorAll("[data-level]").forEach(b=>b.onclick=()=>{
+  playSound('click');levelIndex=+b.dataset.level;taskIndex=0;saveProgress();render();
+ });
+}
+
+function header(){
+ const l=levels[levelIndex];
+ return `<div class="panelhead"><div class="eyebrow">Раунд ${levelIndex+1} · Академия множеств</div><h2>${l.icon} ${l.sub}</h2><p>${l.desc}</p></div>`;
+}
+function taskBase(t){
+ let h=`<div class="tasktop"><span class="taskcount">Задание ${taskIndex+1} из ${levels[levelIndex].tasks.length}</span><span class="taskcount">Награда: +10 очков · +2 🪙</span></div>`;
+ if(t.illustration) h+=renderIllustration(t.illustration);
+ h+=`<div class="question">${t.q}</div>`;
+ if(t.note) h+=`<div class="note">${t.note}</div>`;
+ return h;
+}
+
+function render(){
+ renderLevels();updateStats();
+ const l=levels[levelIndex];
+
+ if(taskIndex>=l.tasks.length){
+  $("gamepanel").innerHTML=header()+`<div class="bigresult"><div class="trophy">🏅</div><h2>Раунд пройден!</h2><p>Ты справился со всеми заданиями раунда «${l.sub}».</p><div class="stars">⭐ ⭐ ⭐</div><button class="btn green" id="nextLevel">${levelIndex===levels.length-1?"Посмотреть итог":"Следующий раунд →"}</button></div>`;
+  $("nextLevel").onclick=()=>{
+   playSound('click');
+   if(levelIndex===levels.length-1)showFinal();
+   else{levelIndex++;taskIndex=0;saveProgress();render();}
+  };
+  return;
+ }
+
+ const t=l.tasks[taskIndex];
+ let body=taskBase(t);
+
+ if(t.type==="member"){
+  body+=`<div class="note">Нажми на все элементы, которые входят в указанное множество.</div><div class="chips" id="choices">${t.items.map(x=>`<button class="chip" data-value="${itemLabel(x)}">${itemIcon(x)}${itemLabel(x)}</button>`).join("")}</div>`;
+ }
+ else if(["belong","subset","intersection","union","mixed","venn2","venn3","symmetric","difference"].includes(t.type)){
+  if(t.setA && t.setB) body+=vennForTask(t);
+  if(t.fields){
+   body+=t.fields.map((f,i)=>`<div class="field"><label>${f.label}</label><input data-field="${i}" placeholder="Запиши ответ"></div>`).join("");
+  } else {
+   body+=`<div class="options" id="options">${t.opts.map((o,i)=>`<button class="option" data-option="${i}">${o}</button>`).join("")}</div>`;
+  }
+ }
+ else if(t.type==="counting"){
+  body+=t.fields.map((f,i)=>`<div class="field"><label>${f.label}</label><input data-field="${i}" placeholder="Введи число"></div>`).join("");
+ }
+ else if(t.type==="notation"){
+  body+=`<div class="field"><label>Математическая запись</label><input id="textAnswer" placeholder="${t.placeholder}"></div>`;
+ }
+ else if(t.type==="sort"){
+  currentSort={};selectedChip=null;
+  body+=`<div class="note">Перетащи карточку в корзину. На телефоне: нажми карточку, затем нажми на корзину. Нажатие на карточку внутри корзины вернёт её назад.</div><div class="chips" id="sourceChips">${t.items.map(x=>`<button draggable="true" class="chip sortchip" data-item="${x}">${t.illustrations?.[x]?ICONS[t.illustrations[x]]:''}${x}</button>`).join("")}</div><div class="sortbins">${t.bins.map((b,i)=>`<div class="bin"><h4>${b.name}</h4><div class="dropzone" data-bin="${i}"><strong>Перетащи карточки сюда</strong></div></div>`).join("")}</div>`;
+ }
+
+ body+=`<div class="feedback" id="feedback"></div><div class="actions"><button class="btn primary" id="check">Проверить ответ</button><button class="btn ghost" id="hint">💡 Подсказка (−2 🪙)</button><button class="btn ghost" id="reset">Обновить задание</button></div><div class="explain" id="explain"></div>`;
+
+ $("gamepanel").innerHTML=header()+`<div class="taskarea">${body}</div>`;
+ wireTask(t);
+}
+
+function wireTask(t){
+ if(t.type==="member"){
+  document.querySelectorAll("#choices .chip").forEach(b=>b.onclick=()=>{b.classList.toggle("selected");playSound('click');});
+ }
+
+ if(["belong","subset","intersection","union","mixed","venn2","venn3","symmetric","difference"].includes(t.type)&&!t.fields){
+  document.querySelectorAll("[data-option]").forEach(b=>b.onclick=()=>{
+   playSound('click');
+   if(t.multi)b.classList.toggle("chosen");
+   else{document.querySelectorAll("[data-option]").forEach(x=>x.classList.remove("chosen"));b.classList.add("chosen");}
+  });
+ }
+
+ if(t.type==="sort")wireSort(t);
+
+ document.querySelectorAll("#gamepanel input").forEach(inp=>{
+  inp.addEventListener("keydown",e=>{
+   if(e.key==="Enter"){e.preventDefault();checkTask(t);}
+  });
+ });
+
+ $("check").onclick=()=>checkTask(t);
+ $("hint").onclick=()=>{
+  const f=$("feedback");
+  if(coins>=2){coins-=2;updateStats();showToast('Списано 2 монеты','💡','info');}
+  else showToast('Совет тренера бесплатно!','🆓','warn');
+  playSound('click');
+  f.className="feedback show";
+  f.style.background='#fff8dd';f.style.color='#6d5312';
+  f.innerHTML="💡 Подсказка: "+t.why;
+ };
+ $("reset").onclick=()=>{playSound('click');render();};
+}
+
+function wireSort(t){
+ document.querySelectorAll(".sortchip").forEach(ch=>{
+  ch.addEventListener("dragstart",e=>{
+   if(currentSort[ch.dataset.item]!==undefined){e.preventDefault();return;}
+   e.dataTransfer.setData("text/plain",ch.dataset.item);
+   selectedChip=ch.dataset.item;
+  });
+  ch.onclick=()=>{
+   const item=ch.dataset.item;
+   if(currentSort[item]!==undefined){delete currentSort[item];selectedChip=null;playSound('click');renderSortState(t);return;}
+   selectedChip=item;
+   document.querySelectorAll(".sortchip").forEach(c=>c.classList.remove("selected"));
+   ch.classList.add("selected");
+   playSound('click');
+  };
+ });
+ document.querySelectorAll(".dropzone").forEach(z=>{
+  z.addEventListener("dragover",e=>{e.preventDefault();z.classList.add("over");});
+  z.addEventListener("dragleave",()=>z.classList.remove("over"));
+  z.addEventListener("drop",e=>{e.preventDefault();z.classList.remove("over");putItem(e.dataTransfer.getData("text/plain"),+z.dataset.bin,t);});
+  z.onclick=()=>{if(selectedChip)putItem(selectedChip,+z.dataset.bin,t);};
+ });
+}
+function putItem(item,bin,t){
+ if(!item)return;
+ currentSort[item]=bin;selectedChip=null;
+ document.querySelectorAll(".sortchip").forEach(c=>c.classList.remove("selected"));
+ playSound('click');renderSortState(t);
+}
+function renderSortState(t){
+ document.querySelectorAll(".dropzone").forEach(z=>{
+  z.querySelectorAll(".chip").forEach(c=>c.remove());
+  const s=z.querySelector("strong");if(s)s.style.display="block";
+ });
+ Object.entries(currentSort).forEach(([it,bi])=>{
+  const z=document.querySelector(`.dropzone[data-bin="${bi}"]`);
+  if(!z)return;
+  const s=z.querySelector("strong");if(s)s.style.display="none";
+  const c=document.createElement("button");
+  c.className="chip";
+  c.innerHTML=(t.illustrations?.[it]?ICONS[t.illustrations[it]]:'')+it;
+  c.title="Нажми, чтобы вернуть";
+  c.onclick=()=>{delete currentSort[it];playSound('click');renderSortState(t);};
+  z.appendChild(c);
+ });
+ document.querySelectorAll(".sortchip").forEach(c=>{
+  const placed=currentSort[c.dataset.item]!==undefined;
+  c.style.opacity=placed?'0.3':'1';
+  c.draggable=!placed;
+ });
+}
+
+/* ============================ CHECK ============================ */
+function norm(s){
+ return String(s??"").toLowerCase().replace(/[{}]/g,"").replace(/\s+/g,"").replace(/[;|]/g,",").replace(/∈/g,"in").replace(/∉/g,"notin").replace(/\\/g,"");
+}
+
+function checkTask(t){
+ let ok=false;
+
+ if(t.type==="member"){
+  const got=[...document.querySelectorAll("#choices .selected")].map(x=>x.dataset.value);
+  ok=got.length===t.correct.length&&t.correct.every(x=>got.includes(x));
+ }
+ else if(t.type==="sort"){
+  ok=t.bins.every((b,i)=>b.correct.every(x=>currentSort[x]===i))&&
+     t.items.every(x=>currentSort[x]!==undefined)&&
+     Object.keys(currentSort).length===t.items.length;
+ }
+ else if(t.type==="notation"){
+  const val=$("textAnswer").value;
+  ok=t.accept.some(a=>norm(a)===norm(val));
+ }
+ else if(t.fields){
+  const inputs=[...document.querySelectorAll("[data-field]")];
+  ok=inputs.every((inp,i)=>t.fields[i].accept.some(a=>norm(a)===norm(inp.value)));
+ }
+ else{
+  const chosen=[...document.querySelectorAll(".option.chosen")].map(x=>+x.dataset.option);
+  if(t.multi)ok=chosen.length===t.correct.length&&t.correct.every(x=>chosen.includes(x));
+  else ok=chosen.length===1&&chosen[0]===t.correct;
+ }
+
+ const fb=$("feedback");
+ fb.style.background='';fb.style.color='';
+ fb.className="feedback show "+(ok?"good":"bad");
+ const key=levelIndex+"-"+taskIndex;
+
+ if(ok){
+  const isNew=!completed.has(key);
+  if(isNew){score+=10;coins+=2;completed.add(key);bumpStat('scoreStat');bumpStat('coinsStat');}
+  streak++;bumpStat('streakStat');
+  playSound('correct');confetti(28);flyBall();
+  fb.innerHTML="⚽ Гол! Верно!"+(isNew?" +10 очков и 2 монеты.":"")+" "+t.why;
+  $("check").disabled=true;$("check").textContent="Верно ✓";
+  $("check").classList.remove("primary");$("check").classList.add("green");
+  $("explain").textContent="Отличная работа! Нажми «Дальше».";
+  if(!document.getElementById('nextBtn')){
+   const next=document.createElement("button");
+   next.id='nextBtn';next.className="btn green";
+   next.textContent=taskIndex===levels[levelIndex].tasks.length-1?"Завершить раунд":"Дальше →";
+   next.onclick=()=>{playSound('click');taskIndex++;saveProgress();render();};
+   $("check").parentNode.appendChild(next);
+  }
+  checkAchievements();saveProgress();
+ } else {
+  streak=0;wrongAttempts++;
+  playSound('wrong');
+  shake(fb);shake($("gamepanel").querySelector(".taskarea"));
+  fb.innerHTML="Почти! Попробуй ещё раз. Перечитай условие и посмотри на диаграмму.";
+  $("explain").textContent="Тренерская подсказка: "+t.why;
+ }
+ updateStats();renderLevels();
+}
+
+function showFinal(){
+ const total=totalTasks();
+ const pct=Math.round(completed.size/total*100);
+ const name=$("player").value.trim()||"капитан";
+ $("gamepanel").innerHTML=`<div class="bigresult"><div class="trophy">🏆</div><div class="eyebrow">Финал турнира</div><h2>Поздравляем, ${name}!</h2><p>Ты прошёл <b>${completed.size} из ${total}</b> испытаний, набрал <b>${score} очков</b> и <b>${coins} монет</b>.</p><p style="color:#627d98;font-size:.95rem">Ошибок за игру: ${wrongAttempts}</p><div class="stars">${pct>=90?"⭐ ⭐ ⭐":pct>=60?"⭐ ⭐":"⭐"}</div><h3>${pct>=90?"Легенда Лиги множеств!":pct>=60?"Отличный результат, капитан!":"Хорошая тренировка!"}</h3><button class="btn green" id="restart">Сыграть ещё раз</button></div>`;
+ $("restart").onclick=()=>{
+  playSound('click');
+  levelIndex=0;taskIndex=0;score=0;coins=0;streak=0;wrongAttempts=0;
+  completed.clear();achievementsShown.clear();saveProgress();render();
+ };
+ confetti(60);playSound('levelup');
+ renderLevels();updateStats();
+}
+
+/* ============================ INIT ============================ */
+function updateWelcome(){
+ const name=$("player").value.trim()||"капитан";
+ $("welcome").textContent="Удачи на поле, "+name+"!";
+}
+
+$("saveName").onclick=()=>{
+ playSound('click');
+ const name=$("player").value.trim()||"капитан";
+ $("welcome").textContent="Удачи на поле, "+name+"!";
+ try{localStorage.setItem("setsFootballName",$("player").value.trim());}catch(e){}
+ showToast("Добро пожаловать, "+name+"!","⚽","info");
+};
+
+$("resetProgress").onclick=()=>{
+ if(!confirm('Сбросить весь прогресс?'))return;
+ score=0;coins=0;streak=0;wrongAttempts=0;
+ completed.clear();achievementsShown.clear();
+ levelIndex=0;taskIndex=0;
+ try{localStorage.removeItem('setsFootballSave');}catch(e){}
+ showToast('Прогресс сброшен','🔄','warn');render();
+};
+
+$("soundToggle").onclick=()=>{
+ soundEnabled=!soundEnabled;
+ $("soundToggle").textContent=soundEnabled?'🔊':'🔇';
+ $("soundToggle").classList.toggle('muted',!soundEnabled);
+ if(soundEnabled)playSound('click');
+ saveProgress();
+};
+
+try{$("player").value=localStorage.getItem("setsFootballName")||"";}catch(e){}
+loadProgress();
+$("soundToggle").textContent=soundEnabled?'🔊':'🔇';
+$("soundToggle").classList.toggle('muted',!soundEnabled);
+updateWelcome();
+render();
+</script>
+</body>
+</html>
