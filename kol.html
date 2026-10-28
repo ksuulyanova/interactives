@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Математический футбол 3 класс</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Arial Black', sans-serif;
+    background: #1a3d1a;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  #field {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background: url('https://i.pinimg.com/1200x/0e/89/b3/0e89b319806a74f43587bdb6929a4ea0.jpg') center/cover no-repeat;
+    overflow: hidden;
+  }
+  #field::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 60, 0, 0.25);
+    pointer-events: none;
+  }
+
+  .player {
+    position: absolute;
+    width: 70px;
+    height: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    transition: all 0.6s ease-in-out;
+    z-index: 5;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+  }
+  .player .body {
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: bold; color: #fff;
+    border: 3px solid #fff;
+    animation: bob 2s ease-in-out infinite;
+  }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .player .name {
+    font-size: 11px;
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 2px 5px;
+    border-radius: 4px;
+    margin-top: 2px;
+    white-space: nowrap;
+  }
+
+  .star .body   { background: linear-gradient(135deg, #1e4fff, #6a9cff); box-shadow: 0 0 20px #4a9fff; }
+  .modern .body { background: linear-gradient(135deg, #ff1e1e, #ff7a7a); box-shadow: 0 0 20px #ff4a4a; }
+  .gk .body     { background: linear-gradient(135deg, #ffb800, #ffe066); color: #000; }
+
+  /* Подсветка выбранной команды */
+  .player.my-team .body { border: 4px solid #ffd700; box-shadow: 0 0 30px #ffd700; animation: bob 2s ease-in-out infinite, glow 1.2s ease-in-out infinite; }
+  @keyframes glow {
+    0%,100% { filter: brightness(1); }
+    50% { filter: brightness(1.4); }
+  }
+
+  #ball {
+    position: absolute;
+    width: 40px; height: 40px;
+    font-size: 36px; line-height: 40px;
+    text-align: center;
+    z-index: 10;
+    transition: all 0.5s ease-in-out;
+    filter: drop-shadow(0 3px 5px rgba(0,0,0,0.6));
+    animation: spin 3s linear infinite;
+  }
+  @keyframes spin { from { transform: rotate(0deg);} to { transform: rotate(360deg);} }
+
+  #scoreboard {
+    position: absolute; top: 15px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 10px 30px;
+    border-radius: 15px;
+    font-size: 24px;
+    display: flex; gap: 30px; align-items: center;
+    z-index: 100;
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 25px rgba(255,215,0,0.6);
+  }
+  #scoreboard .team { display: flex; align-items: center; gap: 10px; }
+  #scoreboard .flag-star { color: #4a9fff; }
+  #scoreboard .flag-modern { color: #ff4a4a; }
+  #scoreboard .you-marker { font-size: 12px; background:#ffd700; color:#000; padding:2px 6px; border-radius:6px; margin-left:5px; }
+
+  #modal {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: linear-gradient(145deg, #ffffff, #e0e0e0);
+    border-radius: 25px;
+    padding: 30px 40px;
+    text-align: center;
+    z-index: 200;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.7);
+    border: 4px solid #ffd700;
+    transition: transform 0.3s ease;
+    min-width: 380px;
+  }
+  #modal.show { transform: translate(-50%, -50%) scale(1); }
+  #modal h2 { font-size: 20px; color: #333; margin-bottom: 15px; }
+  #question { font-size: 42px; color: #1a3d1a; margin: 15px 0; font-weight: bold; }
+  #answers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+  .answer-btn {
+    padding: 15px; font-size: 26px; font-weight: bold;
+    border: none; border-radius: 15px; cursor: pointer;
+    background: linear-gradient(145deg, #4a9fff, #1e4fff);
+    color: #fff;
+    transition: transform 0.15s, box-shadow 0.15s;
+    font-family: inherit;
+  }
+  .answer-btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(30,79,255,0.5); }
+  .answer-btn:active { transform: scale(0.95); }
+  .answer-btn.correct { background: linear-gradient(145deg, #2ecc40, #1a9c2a); }
+  .answer-btn.wrong { background: linear-gradient(145deg, #cc2e2e, #9c1a1a); }
+
+  #message {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    font-size: 60px; font-weight: bold; color: #fff;
+    text-shadow: 0 0 20px #000, 0 0 40px #ffd700;
+    z-index: 300;
+    transition: transform 0.3s ease;
+    pointer-events: none; text-align: center;
+  }
+  #message.show { transform: translate(-50%, -50%) scale(1); }
+
+  #passBtn {
+    position: absolute; bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 40px;
+    font-size: 22px; font-weight: bold;
+    background: linear-gradient(145deg, #ffd700, #ff9500);
+    color: #1a3d1a;
+    border: none; border-radius: 20px; cursor: pointer;
+    z-index: 100; display: none; font-family: inherit;
+    box-shadow: 0 5px 20px rgba(255,215,0,0.6);
+    animation: pulse 1s ease-in-out infinite;
+  }
+  #passBtn:hover { transform: translateX(-50%) scale(1.08); }
+  #passBtn.show { display: block; }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 5px 20px rgba(255,215,0,0.6); }
+    50% { box-shadow: 0 5px 35px rgba(255,215,0,1); }
+  }
+
+  #info {
+    position: absolute; top: 15px; left: 15px;
+    background: rgba(0,0,0,0.8); color: #fff;
+    padding: 10px 18px; border-radius: 12px;
+    font-size: 14px; z-index: 100;
+    max-width: 260px; line-height: 1.4;
+  }
+
+  /* Экран выбора команды */
+  #teamSelect {
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at center, rgba(0,0,0,0.75), rgba(0,0,0,0.95));
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 800; color: #fff; text-align: center;
+    padding: 20px;
+  }
+  #teamSelect h1 { font-size: 42px; margin-bottom: 8px; color:#ffd700; text-shadow: 0 0 20px #ffd700; }
+  #teamSelect p { font-size: 18px; margin-bottom: 30px; color:#ddd; }
+  .team-cards { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; }
+  .team-card {
+    width: 260px;
+    padding: 25px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 4px solid transparent;
+    background: rgba(255,255,255,0.05);
+    text-align: center;
+  }
+  .team-card:hover { transform: translateY(-8px) scale(1.03); }
+  .team-card.star-card { border-color:#4a9fff; box-shadow: 0 0 30px rgba(74,159,255,0.6); }
+  .team-card.modern-card { border-color:#ff4a4a; box-shadow: 0 0 30px rgba(255,74,74,0.6); }
+  .team-card h2 { font-size: 24px; margin-bottom: 12px; }
+  .star-card h2 { color:#6a9cff; }
+  .modern-card h2 { color:#ff7a7a; }
+  .team-card .lineup { font-size: 14px; color:#ddd; line-height: 1.6; }
+  .team-card .choose-btn {
+    margin-top: 15px; padding: 10px 20px;
+    border: none; border-radius: 12px;
+    font-family: inherit; font-weight: bold; font-size: 16px;
+    cursor: pointer; background: #ffd700; color:#000;
+  }
+
+  #winScreen {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.9);
+    display: none; align-items: center; justify-content: center;
+    flex-direction: column; z-index: 1000; color: #fff;
+    text-align: center; padding: 20px;
+  }
+  #winScreen.show { display: flex; }
+  #winScreen h1 { font-size: 60px; margin-bottom: 20px; }
+  #winScreen p { font-size: 24px; margin-bottom: 30px; }
+  #restartBtn {
+    padding: 20px 50px; font-size: 24px;
+    background: linear-gradient(145deg, #ffd700, #ff9500);
+    color: #000; border: none; border-radius: 20px;
+    cursor: pointer; font-family: inherit; font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<div id="field">
+  <div id="scoreboard">
+    <div class="team">
+      <span class="flag-star">⭐ ЗВЁЗДЫ</span> <span id="scoreStar">0</span>
+      <span id="markStar" style="display:none" class="you-marker">ТЫ</span>
+    </div>
+    <div style="color:#ffd700">—</div>
+    <div class="team">
+      <span id="markModern" style="display:none" class="you-marker">ТЫ</span>
+      <span id="scoreModern">0</span> <span class="flag-modern">СОВРЕМЕННИКИ 👥</span>
+    </div>
+  </div>
+
+  <div id="info">🏆 Выбери команду и забей больше голов!</div>
+
+  <div id="ball" style="display:none;">⚽</div>
+
+  <!-- ЭКРАН ВЫБОРА КОМАНДЫ -->
+  <div id="teamSelect">
+    <h1>⚽ ВЫБЕРИ СВОЮ КОМАНДУ</h1>
+    <p>За кого будешь играть? Решай примеры и забивай голы!</p>
+    <div class="team-cards">
+      <div class="team-card star-card">
+        <h2>⭐ ЗВЁЗДЫ</h2>
+        <div class="lineup">
+          🇫🇷 Зидан · 🇧🇷 Пеле · 🇦🇷 Марадона<br>
+          🇧🇷 Роналдиньо · 🇪🇸 Рамос · 🇧🇷 Роналдо
+        </div>
+        <button class="choose-btn" onclick="chooseTeam('star')">ИГРАТЬ ЗА ЗВЁЗД</button>
+      </div>
+      <div class="team-card modern-card">
+        <h2>👥 СОВРЕМЕННИКИ</h2>
+        <div class="lineup">
+          🇵🇹 Роналду · 🇬🇧 Хари Кейн · 🇪🇸 Ямаль<br>
+          🇦🇷 Месси · 🇫🇷 Мбаппе
+        </div>
+        <button class="choose-btn" onclick="chooseTeam('modern')">ИГРАТЬ ЗА СОВРЕМЕННИКОВ</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal">
+    <h2 id="modalTitle">Реши пример!</h2>
+    <div id="question">7 × 8 = ?</div>
+    <div id="answers"></div>
+  </div>
+
+  <button id="passBtn">🎯 ОТДАТЬ ПАС (реши пример!)</button>
+
+  <div id="message"></div>
+
+  <div id="winScreen">
+    <h1 id="winTitle">🏆 ПОБЕДА!</h1>
+    <p id="winText"></p>
+    <button id="restartBtn">🔄 Играть снова</button>
+  </div>
+</div>
+
+<script>
+// ========== ДАННЫЕ ==========
+const stars = [
+  { name: 'Зидан',      emoji: '🇫🇷', x: 18, y: 30 },
+  { name: 'Пеле',       emoji: '🇧🇷', x: 18, y: 50 },
+  { name: 'Марадона',   emoji: '🇦🇷', x: 18, y: 70 },
+  { name: 'Роналдиньо', emoji: '🇧🇷', x: 35, y: 40 },
+  { name: 'Рамос',      emoji: '🇪🇸', x: 35, y: 60 },
+  { name: 'Роналдо',    emoji: '🇧🇷', x: 35, y: 80 }
+];
+const moderns = [
+  { name: 'Роналду',  emoji: '🇵🇹', x: 55, y: 25 },
+  { name: 'Хари Кейн',emoji: '🇬🇧', x: 55, y: 50 },
+  { name: 'Ямаль',    emoji: '🇪🇸', x: 55, y: 75 },
+  { name: 'Месси',    emoji: '🇦🇷', x: 70, y: 35 },
+  { name: 'Мбаппе',   emoji: '🇫🇷', x: 70, y: 65 }
+];
+const goalkeeper = { name: 'Вратарь', x: 88, y: 50 };
+
+// ========== СОСТОЯНИЕ ==========
+let scoreStar = 0, scoreModern = 0;
+let myTeam = null;          // 'star' или 'modern'
+let attackerIndex = 0;      // индекс текущего атакующего в моей команде
+let ballEl;
+let starsElements = [], modernsElements = [];
+let actionState = 'idle';
+let currentProblem = null;
+
+// ========== ГЕНЕРАТОР ПРИМЕРОВ ==========
+function genProblem() {
+  const type = Math.floor(Math.random() * 4);
+  let a, b, answer, text;
+  if (type === 0) { a = 2 + Math.floor(Math.random()*8); b = 2 + Math.floor(Math.random()*8); answer = a*b; text = `${a} × ${b}`; }
+  else if (type === 1) { a = 10 + Math.floor(Math.random()*90); b = 10 + Math.floor(Math.random()*90); answer = a+b; text = `${a} + ${b}`; }
+  else if (type === 2) { a = 30 + Math.floor(Math.random()*70); b = 5 + Math.floor(Math.random()*(a-10)); answer = a-b; text = `${a} − ${b}`; }
+  else { b = 2 + Math.floor(Math.random()*8); answer = 2 + Math.floor(Math.random()*9); a = b*answer; text = `${a} ÷ ${b}`; }
+
+  const opts = new Set([answer]);
+  while (opts.size < 4) {
+    const d = [-10,-5,-3,-2,-1,1,2,3,5,10][Math.floor(Math.random()*10)];
+    const v = answer + d;
+    if (v >= 0 && v !== answer) opts.add(v);
+  }
+  return { text, answer, options: [...opts].sort(()=>Math.random()-0.5) };
+}
+
+// ========== СОЗДАНИЕ ==========
+function createPlayer(p, cls, isMine) {
+  const el = document.createElement('div');
+  el.className = 'player ' + cls + (isMine ? ' my-team' : '');
+  el.style.left = p.x + '%';
+  el.style.top = p.y + '%';
+  el.innerHTML = `<div class="body">${p.emoji}</div><div class="name">${p.name}</div>`;
+  document.getElementById('field').appendChild(el);
+  return el;
+}
+function createGK() {
+  const el = document.createElement('div');
+  el.className = 'player gk';
+  el.style.left = goalkeeper.x + '%';
+  el.style.top = goalkeeper.y + '%';
+  el.innerHTML = `<div class="body">🧤</div><div class="name">${goalkeeper.name}</div>`;
+  document.getElementById('field').appendChild(el);
+}
+
+// ========== АНИМАЦИЯ ДВИЖЕНИЯ ==========
+function animatePlayers() {
+  setInterval(() => {
+    [...starsElements, ...modernsElements].forEach(el => {
+      const dx = (Math.random()-0.5)*6;
+      const dy = (Math.random()-0.5)*6;
+      const cx = parseFloat(el.style.left);
+      const cy = parseFloat(el.style.top);
+      el.style.left = Math.max(5, Math.min(80, cx+dx)) + '%';
+      el.style.top  = Math.max(10, Math.min(90, cy+dy)) + '%';
+    });
+  }, 1800);
+}
+
+// ========== ПОКАЗ ПРИМЕРА ==========
+function showProblem(title, onCorrect, onWrong) {
+  currentProblem = genProblem();
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('question').textContent = currentProblem.text + ' = ?';
+  const div = document.getElementById('answers');
+  div.innerHTML = '';
+  currentProblem.options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      if (opt === currentProblem.answer) {
+        btn.classList.add('correct');
+        setTimeout(() => {
+          document.getElementById('modal').classList.remove('show');
+          onCorrect();
+        }, 400);
+      } else {
+        btn.classList.add('wrong');
+        btn.disabled = true;
+        setTimeout(() => {
+          document.getElementById('modal').classList.remove('show');
+          onWrong();
+        }, 600);
+      }
+    };
+    div.appendChild(btn);
+  });
+  document.getElementById('modal').classList.add('show');
+}
+
+function showMessage(text, color = '#ffd700', duration = 1200) {
+  const m = document.getElementById('message');
+  m.textContent = text;
+  m.style.color = color;
+  m.classList.add('show');
+  setTimeout(() => m.classList.remove('show'), duration);
+}
+function moveBall(x, y, d = 600) {
+  ballEl.style.transition = `all ${d}ms ease-in-out`;
+  ballEl.style.left = x + '%';
+  ballEl.style.top  = y + '%';
+}
+
+// ========== ВЫБОР КОМАНДЫ (ОБЯЗАТЕЛЬНО) ==========
+function chooseTeam(team) {
+  myTeam = team;
+  document.getElementById('teamSelect').style.display = 'none';
+  document.getElementById('ball').style.display = 'block';
+
+  // Создаём всех игроков. Подсвечиваем «мою» команду.
+  starsElements   = stars.map(s   => createPlayer(s,   'star',   myTeam === 'star'));
+  modernsElements = moderns.map(m => createPlayer(m,   'modern', myTeam === 'modern'));
+  createGK();
+
+  // Пометки «ТЫ» в счёте
+  if (myTeam === 'star') document.getElementById('markStar').style.display = 'inline-block';
+  else document.getElementById('markModern').style.display = 'inline-block';
+
+  document.getElementById('info').innerHTML =
+    myTeam === 'star'
+      ? '⭐ Ты играешь за ЗВЁЗД! Решай примеры и забивай голы.'
+      : '👥 Ты играешь за СОВРЕМЕННИКОВ! Решай примеры и забивай голы.';
+
+  ballEl = document.getElementById('ball');
+  ballEl.style.left = '15%';
+  ballEl.style.top  = '50%';
+
+  animatePlayers();
+  setTimeout(myAttack, 800);
+}
+
+// ========== АТАКА МОЕЙ КОМАНДЫ ==========
+function myAttack() {
+  const roster = myTeam === 'star' ? stars : moderns;
+  if (attackerIndex >= roster.length) {
+    // Мои атаки закончились — даём шанс сопернику (контратака)
+    attackerIndex = 0;
+    enemyCounterAttack();
+    return;
+  }
+  const player = roster[attackerIndex];
+  moveBall(player.x, player.y, 500);
+
+  setTimeout(() => {
+    showProblem(
+      `⚡ ${player.name} атакует! Реши, чтобы обойти защитника:`,
+      () => {
+        showMessage('✅ ПРОШЁЛ!', '#2ecc40');
+        moveBall(80, 50 + (Math.random()-0.5)*20, 800);
+        setTimeout(() => shotAtGoal(player), 900);
+      },
+      () => {
+        showMessage('❌ Защитник отобрал мяч!', '#ff4a4a');
+        setTimeout(enemyCounterAttack, 1200);
+      }
+    );
+  }, 700);
+}
+
+function shotAtGoal(player) {
+  showProblem(
+    `🎯 ${player.name} бьёт по воротам! Реши пример:`,
+    () => {
+      if (myTeam === 'star') scoreStar++; else scoreModern++;
+      updateScore();
+      showMessage('⚽ ГООООЛ! 🎉', '#ffd700', 1500);
+      attackerIndex++;
+      setTimeout(myAttack, 1800);
+    },
+    () => {
+      showMessage('🧤 Вратарь поймал!', '#ffb800');
+      attackerIndex++;
+      setTimeout(myAttack, 1500);
+    }
+  );
+}
+
+// ========== КОНТРАТАКА СОПЕРНИКА ==========
+function enemyCounterAttack() {
+  const enemyRoster = myTeam === 'star' ? moderns : stars;
+  const enemy = enemyRoster[Math.floor(Math.random()*enemyRoster.length)];
+  moveBall(enemy.x, enemy.y, 500);
+  showMessage('⚠️ Контратака: ' + enemy.name, '#ff7a7a');
+
+  setTimeout(() => {
+    const passBtn = document.getElementById('passBtn');
+    passBtn.classList.add('show');
+    actionState = 'waitingPass';
+
+    passBtn.onclick = () => {
+      passBtn.classList.remove('show');
+      passBtn.onclick = null;
+      actionState = 'idle';
+
+      showProblem(
+        `🎯 ${enemy.name} атакует! Реши с УМНОЖЕНИЕМ, чтобы отдать пас:`,
+        () => {
+          showMessage('👟 Отличный пас!', '#4a9fff');
+          moveBall(75, 40 + Math.random()*20, 700);
+          setTimeout(() => {
+            showProblem(
+              `🛡️ Защита! Реши, чтобы отбить удар:`,
+              () => {
+                showMessage('🛡️ ОТБИЛИ!', '#2ecc40');
+                setTimeout(myAttack, 1200);
+              },
+              () => {
+                if (myTeam === 'star') scoreModern++; else scoreStar++;
+                updateScore();
+                showMessage('⚽ Соперник забил!', '#ff4a4a', 1500);
+                setTimeout(myAttack, 1800);
+              }
+            );
+          }, 900);
+        },
+        () => {
+          if (myTeam === 'star') scoreModern++; else scoreStar++;
+          updateScore();
+          showMessage('❌ Потеря! Соперник забил!', '#ff4a4a', 1500);
+          setTimeout(myAttack, 1800);
+        }
+      );
+    };
+  }, 600);
+}
+
+function updateScore() {
+  document.getElementById('scoreStar').textContent = scoreStar;
+  document.getElementById('scoreModern').textContent = scoreModern;
+}
+
+// ========== КОНЕЦ ИГРЫ ==========
+function endGame() {
+  const ws = document.getElementById('winScreen');
+  const title = document.getElementById('winTitle');
+  const text = document.getElementById('winText');
+  const myScore = myTeam === 'star' ? scoreStar : scoreModern;
+  const enScore = myTeam === 'star' ? scoreModern : scoreStar;
+
+  if (myScore > enScore) {
+    title.textContent = '🏆 ТВОЯ КОМАНДА ПОБЕДИЛА!';
+    title.style.color = '#ffd700';
+  } else if (myScore < enScore) {
+    title.textContent = '😢 Соперник победил...';
+    title.style.color = '#ff7a7a';
+  } else {
+    title.textContent = '🤝 НИЧЬЯ!';
+    title.style.color = '#fff';
+  }
+  text.textContent = `⭐ Звёзды ${scoreStar} : ${scoreModern} Современники 👥`;
+  ws.classList.add('show');
+}
+
+document.getElementById('restartBtn').onclick = () => location.reload();
+
+// Конец матча проверяется в myAttack, когда все атаки завершены.
+// Добавим таймер: после 6 атак игрока и 6 контратак игра завершится
+let totalRounds = 0;
+const originalMyAttack = myAttack;
+myAttack = function() {
+  if (totalRounds >= 12) { endGame(); return; }
+  totalRounds++;
+  originalMyAttack();
+};
+</script>
+</body>
+</html>
