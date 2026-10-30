@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Математический футбол 3.0</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Arial Black', sans-serif;
+    background: #1a3d1a;
+    overflow: hidden;
+    height: 100vh;
+  }
+  #field {
+    position: relative;
+    width: 100vw; height: 100vh;
+    background: url('https://i.pinimg.com/1200x/0e/89/b3/0e89b319806a74f43587bdb6929a4ea0.jpg') center/cover no-repeat;
+    overflow: hidden;
+  }
+  #field::before {
+    content: ''; position: absolute; inset: 0;
+    background: rgba(0, 60, 0, 0.25);
+    pointer-events: none;
+  }
+
+  /* ======== ИГРОКИ ======== */
+  .player {
+    position: absolute;
+    width: 70px; height: 90px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-end;
+    transition: all 0.6s ease-in-out;
+    z-index: 5;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+  }
+  .player .body {
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: bold; color: #fff;
+    border: 3px solid #fff;
+    animation: bob 2s ease-in-out infinite;
+  }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .player .name {
+    font-size: 11px;
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 2px 5px;
+    border-radius: 4px;
+    margin-top: 2px;
+    white-space: nowrap;
+  }
+  .star .body   { background: linear-gradient(135deg, #1e4fff, #6a9cff); box-shadow: 0 0 20px #4a9fff; }
+  .modern .body { background: linear-gradient(135deg, #ff1e1e, #ff7a7a); box-shadow: 0 0 20px #ff4a4a; }
+  .gk .body     { background: linear-gradient(135deg, #ffb800, #ffe066); color: #000; }
+
+  .player.my-team .body {
+    border: 4px solid #ffd700;
+    box-shadow: 0 0 30px #ffd700;
+    animation: bob 2s ease-in-out infinite, glow 1.2s ease-in-out infinite;
+  }
+  @keyframes glow {
+    0%,100% { filter: brightness(1); }
+    50% { filter: brightness(1.4); }
+  }
+
+  /* ======== МЯЧ ======== */
+  #ball {
+    position: absolute;
+    width: 40px; height: 40px;
+    font-size: 36px; line-height: 40px;
+    text-align: center;
+    z-index: 10;
+    transition: all 0.5s ease-in-out;
+    filter: drop-shadow(0 3px 5px rgba(0,0,0,0.6));
+    animation: spin 3s linear infinite;
+  }
+  @keyframes spin { from { transform: rotate(0);} to { transform: rotate(360deg);} }
+
+  /* ======== СЧЁТ ======== */
+  #scoreboard {
+    position: absolute; top: 15px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 10px 30px;
+    border-radius: 15px;
+    font-size: 24px;
+    display: flex; gap: 30px; align-items: center;
+    z-index: 100;
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 25px rgba(255,215,0,0.6);
+  }
+  #scoreboard.flash {
+    animation: scoreFlash 0.6s ease-out 2;
+  }
+  @keyframes scoreFlash {
+    50% { background: rgba(255,215,0,0.95); transform: translateX(-50%) scale(1.15); }
+  }
+  #scoreboard .team { display: flex; align-items: center; gap: 10px; }
+  #scoreboard .flag-star { color: #4a9fff; }
+  #scoreboard .flag-modern { color: #ff4a4a; }
+  #scoreboard .you-marker {
+    font-size: 12px; background: #ffd700; color: #000;
+    padding: 2px 6px; border-radius: 6px; margin-left: 5px;
+  }
+
+  /* ======== МОДАЛКА ======== */
+  #modal {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: linear-gradient(145deg, #ffffff, #e0e0e0);
+    border-radius: 25px;
+    padding: 30px 40px;
+    text-align: center;
+    z-index: 200;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.7);
+    border: 4px solid #ffd700;
+    transition: transform 0.3s ease;
+    min-width: 420px;
+    max-width: 90vw;
+  }
+  #modal.show { transform: translate(-50%, -50%) scale(1); }
+  #modalTitle { font-size: 22px; color: #333; margin-bottom: 5px; }
+  #modalSub { font-size: 14px; color: #666; margin-bottom: 10px; font-family: Arial, sans-serif; }
+  #question {
+    font-size: 40px; color: #1a3d1a;
+    margin: 15px 0; font-weight: bold;
+    white-space: pre-line;
+    line-height: 1.2;
+  }
+  #answers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+  .answer-btn {
+    padding: 15px; font-size: 26px; font-weight: bold;
+    border: none; border-radius: 15px; cursor: pointer;
+    background: linear-gradient(145deg, #4a9fff, #1e4fff);
+    color: #fff;
+    transition: transform 0.15s, box-shadow 0.15s;
+    font-family: inherit;
+  }
+  .answer-btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(30,79,255,0.5); }
+  .answer-btn:active { transform: scale(0.95); }
+  .answer-btn.correct { background: linear-gradient(145deg, #2ecc40, #1a9c2a); }
+  .answer-btn.wrong { background: linear-gradient(145deg, #cc2e2e, #9c1a1a); }
+
+  /* Цвета по типу события */
+  #modal.penalty { border-color: #ffd700; box-shadow: 0 0 60px rgba(255,215,0,0.9); }
+  #modal.freeKick { border-color: #b14fff; box-shadow: 0 0 60px rgba(177,79,255,0.8); }
+  #modal.save { border-color: #ff4a4a; box-shadow: 0 0 60px rgba(255,74,74,0.8); }
+  #modal.logic { border-color: #2ecc40; box-shadow: 0 0 60px rgba(46,204,64,0.8); }
+  #modal.pressing { border-color: #ff9500; box-shadow: 0 0 60px rgba(255,149,0,0.8); }
+
+  /* ======== СООБЩЕНИЕ ======== */
+  #message {
+    position: absolute; top: 45%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    font-size: 64px; font-weight: bold; color: #fff;
+    text-shadow: 0 0 20px #000, 0 0 40px #ffd700;
+    z-index: 300;
+    transition: transform 0.3s ease;
+    pointer-events: none;
+    text-align: center;
+    white-space: nowrap;
+  }
+  #message.show { transform: translate(-50%, -50%) scale(1); }
+
+  /* ======== КОММЕНТАРИЙ ======== */
+  #commentary {
+    position: absolute;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.9);
+    color: #fff;
+    padding: 12px 25px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+    z-index: 50;
+    max-width: 80%;
+    text-align: center;
+    border-left: 5px solid #ffd700;
+    display: none;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+  }
+  #commentary.show { display: block; }
+
+  /* ======== КОНФЕТТИ ======== */
+  .confetti {
+    position: absolute;
+    width: 12px; height: 12px;
+    top: -20px;
+    z-index: 250;
+    animation: fall 2.5s linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ======== КНОПКА ПАСА ======== */
+  #passBtn {
+    position: absolute; bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 40px;
+    font-size: 22px; font-weight: bold;
+    background: linear-gradient(145deg, #ffd700, #ff9500);
+    color: #1a3d1a;
+    border: none; border-radius: 20px; cursor: pointer;
+    z-index: 100; display: none; font-family: inherit;
+    box-shadow: 0 5px 20px rgba(255,215,0,0.6);
+    animation: pulse 1s ease-in-out infinite;
+  }
+  #passBtn.show { display: block; }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 5px 20px rgba(255,215,0,0.6); }
+    50% { box-shadow: 0 5px 35px rgba(255,215,0,1); }
+  }
+
+  #info {
+    position: absolute; top: 15px; left: 15px;
+    background: rgba(0,0,0,0.8); color: #fff;
+    padding: 10px 18px; border-radius: 12px;
+    font-size: 14px; z-index: 100;
+    max-width: 260px; line-height: 1.4;
+    font-family: Arial, sans-serif;
+  }
+
+  /* ======== ВЫБОР КОМАНДЫ ======== */
+  #teamSelect {
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at center, rgba(0,0,0,0.75), rgba(0,0,0,0.95));
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 800; color: #fff; text-align: center;
+    padding: 20px;
+  }
+  #teamSelect h1 {
+    font-size: 42px; margin-bottom: 8px;
+    color: #ffd700; text-shadow: 0 0 20px #ffd700;
+  }
+  #teamSelect p { font-size: 18px; margin-bottom: 30px; color: #ddd; font-family: Arial, sans-serif; }
+  .team-cards { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; }
+  .team-card {
+    width: 260px;
+    padding: 25px 20px;
+    border-radius: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 4px solid transparent;
+    background: rgba(255,255,255,0.05);
+    text-align: center;
+  }
+  .team-card:hover { transform: translateY(-8px) scale(1.03); }
+  .team-card.star-card { border-color: #4a9fff; box-shadow: 0 0 30px rgba(74,159,255,0.6); }
+  .team-card.modern-card { border-color: #ff4a4a; box-shadow: 0 0 30px rgba(255,74,74,0.6); }
+  .team-card h2 { font-size: 24px; margin-bottom: 12px; }
+  .star-card h2 { color: #6a9cff; }
+  .modern-card h2 { color: #ff7a7a; }
+  .team-card .lineup { font-size: 14px; color: #ddd; line-height: 1.6; font-family: Arial, sans-serif; }
+  .choose-btn {
+    margin-top: 15px; padding: 12px 22px;
+    border: none; border-radius: 12px;
+    font-family: inherit; font-weight: bold; font-size: 16px;
+    cursor: pointer; background: #ffd700; color: #000;
+    transition: transform 0.15s;
+  }
+  .choose-btn:hover { transform: scale(1.08); }
+
+  /* ======== ЭКРАН ПОБЕДЫ ======== */
+  #winScreen {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.9);
+    display: none; align-items: center; justify-content: center;
+    flex-direction: column; z-index: 1000; color: #fff;
+    text-align: center; padding: 20px;
+  }
+  #winScreen.show { display: flex; }
+  #winScreen h1 { font-size: 60px; margin-bottom: 20px; }
+  #winScreen p { font-size: 24px; margin-bottom: 30px; font-family: Arial, sans-serif; }
+  #winScreen .stats { font-size: 16px; color: #ccc; margin-bottom: 20px; font-family: Arial, sans-serif; }
+  #restartBtn {
+    padding: 20px 50px; font-size: 24px;
+    background: linear-gradient(145deg, #ffd700, #ff9500);
+    color: #000; border: none; border-radius: 20px;
+    cursor: pointer; font-family: inherit; font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<div id="field">
+  <div id="scoreboard">
+    <div class="team">
+      <span class="flag-star">⭐ ЗВЁЗДЫ</span>
+      <span id="scoreStar">0</span>
+      <span id="markStar" style="display:none" class="you-marker">ТЫ</span>
+    </div>
+    <div style="color:#ffd700">—</div>
+    <div class="team">
+      <span id="markModern" style="display:none" class="you-marker">ТЫ</span>
+      <span id="scoreModern">0</span>
+      <span class="flag-modern">СОВРЕМЕННИКИ 👥</span>
+    </div>
+  </div>
+
+  <div id="info">🏆 Выбери команду</div>
+
+  <div id="ball" style="display:none;">⚽</div>
+
+  <!-- ЭКРАН ВЫБОРА КОМАНДЫ -->
+  <div id="teamSelect">
+    <h1>⚽ ВЫБЕРИ СВОЮ КОМАНДУ</h1>
+    <p>Решай примеры до 1000, логические задачи и забивай голы!</p>
+    <div class="team-cards">
+      <div class="team-card star-card">
+        <h2>⭐ ЗВЁЗДЫ</h2>
+        <div class="lineup">
+          🇫🇷 Зидан · 🇧🇷 Пеле · 🇦🇷 Марадона<br>
+          🇧🇷 Роналдиньо · 🇪🇸 Рамос · 🇧🇷 Роналдо
+        </div>
+        <button class="choose-btn" onclick="chooseTeam('star')">ИГРАТЬ ЗА ЗВЁЗД</button>
+      </div>
+      <div class="team-card modern-card">
+        <h2>👥 СОВРЕМЕННИКИ</h2>
+        <div class="lineup">
+          🇵🇹 Роналду · 🇬🇧 Хари Кейн · 🇪🇸 Ямаль<br>
+          🇦🇷 Месси · 🇫🇷 Мбаппе
+        </div>
+        <button class="choose-btn" onclick="chooseTeam('modern')">ИГРАТЬ ЗА СОВРЕМЕННИКОВ</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal">
+    <h2 id="modalTitle">Реши пример!</h2>
+    <div id="modalSub"></div>
+    <div id="question">7 × 8 = ?</div>
+    <div id="answers"></div>
+  </div>
+
+  <div id="commentary"></div>
+  <div id="message"></div>
+
+  <div id="winScreen">
+    <h1 id="winTitle">🏆 ПОБЕДА!</h1>
+    <p id="winText"></p>
+    <div class="stats" id="winStats"></div>
+    <button id="restartBtn">🔄 Играть снова</button>
+  </div>
+</div>
+
+<script>
+// ================ ДАННЫЕ ================
+const stars = [
+  { name: 'Зидан',      emoji: '🇫🇷', x: 18, y: 30 },
+  { name: 'Пеле',       emoji: '🇧🇷', x: 18, y: 50 },
+  { name: 'Марадона',   emoji: '🇦🇷', x: 18, y: 70 },
+  { name: 'Роналдиньо', emoji: '🇧🇷', x: 35, y: 40 },
+  { name: 'Рамос',      emoji: '🇪🇸', x: 35, y: 60 },
+  { name: 'Роналдо',    emoji: '🇧🇷', x: 35, y: 80 }
+];
+const moderns = [
+  { name: 'Роналду',   emoji: '🇵🇹', x: 55, y: 25 },
+  { name: 'Хари Кейн', emoji: '🇬🇧', x: 55, y: 50 },
+  { name: 'Ямаль',     emoji: '🇪🇸', x: 55, y: 75 },
+  { name: 'Месси',     emoji: '🇦🇷', x: 70, y: 35 },
+  { name: 'Мбаппе',    emoji: '🇫🇷', x: 70, y: 65 }
+];
+
+// ================ ЛОГИЧЕСКИЕ ЗАДАЧИ (Петерсон) ================
+const logicProblems = [
+  { text: 'Найди следующее число:\n2, 4, 8, 16, ?', answer: 32,
+    options: [20, 24, 30, 32] },
+  { text: 'Найди следующее число:\n1, 4, 9, 16, ?', answer: 25,
+    options: [20, 24, 25, 36] },
+  { text: 'Найди следующее число:\n3, 6, 12, 24, ?', answer: 48,
+    options: [30, 36, 48, 60] },
+  { text: 'Найди следующее число:\n100, 90, 81, 73, ?', answer: 66,
+    options: [63, 65, 66, 68] },
+  { text: 'Найди следующее число:\n5, 10, 20, 40, ?', answer: 80,
+    options: [60, 70, 80, 100] },
+  { text: 'Какое число лишнее?\n12, 18, 24, 27, 30', answer: 27,
+    options: [12, 18, 27, 30] },
+  { text: 'Найди следующее число:\n1, 1, 2, 3, 5, 8, ?', answer: 13,
+    options: [11, 12, 13, 14] },
+  { text: 'Петя задумал число, вычел 18,\nумножил на 3 и получил 45.\nКакое число задумано?', answer: 33,
+    options: [15, 27, 33, 63] },
+  { text: 'Найди следующее число:\n2, 5, 11, 23, ?', answer: 47,
+    options: [35, 41, 46, 47] },
+  { text: 'Найди следующее число:\n64, 32, 16, 8, ?', answer: 4,
+    options: [0, 2, 4, 6] },
+  { text: 'Найди следующее число:\n6, 12, 24, 48, ?', answer: 96,
+    options: [72, 84, 96, 108] },
+  { text: 'Если x − 45 = 180,\nто x = ?', answer: 225,
+    options: [135, 175, 225, 275] },
+  { text: 'Найди следующее число:\n10, 20, 40, 80, ?', answer: 160,
+    options: [100, 120, 160, 200] },
+  { text: 'Сколько квадратов на поле 2×2?', answer: 5,
+    options: [4, 5, 6, 8] }
+];
+
+// ================ ИНФО О СОБЫТИЯХ ================
+const EVENT_INFO = {
+  dribble: {
+    title: '👟 ОБВОДКА',
+    sub: 'Реши пример — обойди защитника!',
+    intro: 'Атака! Нужно обойти защитника!',
+    cls: '',
+    onSuccess: '✅ Прошёл защитника!',
+    onFail: '❌ Защитник отобрал мяч!'
+  },
+  penalty: {
+    title: '🎯 ПЕНАЛЬТИ!',
+    sub: 'Одиннадцатиметровый! Точный удар — пример посложнее!',
+    intro: '⚡ ПЕНАЛЬТИ! Судья указывает на точку!',
+    cls: 'penalty',
+    onSuccess: '⚽ ГОЛ С ПЕНАЛЬТИ! 🎉',
+    onFail: '🧤 Вратарь отбил пенальти!'
+  },
+  freeKick: {
+    title: '⚡ ШТРАФНОЙ',
+    sub: 'Сложный пример — обведи стенку и вратаря!',
+    intro: '⚡ Штрафной удар! Отличный шанс!',
+    cls: 'freeKick',
+    onSuccess: '🌟 ШЕДЕВР! Гол со штрафного!',
+    onFail: '❌ Мяч ушёл выше ворот...'
+  },
+  corner: {
+    title: '📐 УГЛОВОЙ',
+    sub: 'Логическая задача — подай точно на голову!',
+    intro: '📐 Угловой! Все идут в штрафную!',
+    cls: 'logic',
+    onSuccess: '🥅 Гол головой после углового!',
+    onFail: '❌ Защитник выбил мяч!'
+  },
+  logic: {
+    title: '🧠 ЛОГИЧЕСКАЯ ЗАДАЧА',
+    sub: 'Найди закономерность — пас на гол!',
+    intro: '🧠 Хитрый пас! Разгадай загадку футбола!',
+    cls: 'logic',
+    onSuccess: '✨ Гениальный пас — ГОЛ!',
+    onFail: '❌ Перехват! Логика подвела!'
+  },
+  oneOnOne: {
+    title: '🥅 ОДИН НА ОДИН',
+    sub: 'Выход с вратарём — реши и забей!',
+    intro: '🥅 Выход один на один с вратарём!',
+    cls: '',
+    onSuccess: '⚽ ХОЛОДНОКРОВНО! Гол!',
+    onFail: '🧤 Вратарь выручил!'
+  },
+  pressing: {
+    title: '⚠️ ПРЕССИНГ!',
+    sub: '3 примера подряд — не потеряй мяч!',
+    intro: '⚠️ Соперник прессингует! Держи мяч!',
+    cls: 'pressing',
+    onSuccess: '💪 ВЫРВАЛСЯ ИЗ ПРЕССИНГА! Гол!',
+    onFail: '❌ Отобрали мяч под прессингом!'
+  },
+  save: {
+    title: '🧤 СЕЙВ!',
+    sub: 'Соперник атакует — отрази удар!',
+    intro: '⚠️ ОПАСНАЯ АТАКА СОПЕРНИКА!',
+    cls: 'save',
+    onSuccess: '🛡️ ОТБИЛИ УДАР!',
+    onFail: '⚽ Соперник забил!'
+  }
+};
+
+// ================ СОСТОЯНИЕ ================
+let scoreStar = 0, scoreModern = 0;
+let myTeam = null;
+let eventQueue = [];
+let eventIndex = 0;
+let ballEl;
+let starsElements = [], modernsElements = [];
+let hatTrickCounter = 0;
+let bonusMultiplier = 1;
+let goalsScored = 0, goalsConceded = 0;
+
+// ================ ГЕНЕРАТОР ПРИМЕРОВ ДО 1000 ================
+function genMathProblem() {
+  const type = Math.floor(Math.random() * 6);
+  let text, answer;
+
+  if (type === 0) {
+    // Двузначное × однозначное
+    const a = 12 + Math.floor(Math.random() * 88);
+    const b = 2 + Math.floor(Math.random() * 8);
+    answer = a * b;
+    text = `${a} × ${b}`;
+  } else if (type === 1) {
+    // Трёхзначное ÷ однозначное
+    const b = 2 + Math.floor(Math.random() * 8);
+    const r = 15 + Math.floor(Math.random() * 80);
+    const a = b * r;
+    if (a > 999) return genMathProblem();
+    answer = r;
+    text = `${a} ÷ ${b}`;
+  } else if (type === 2) {
+    // Трёхзначное + трёхзначное (сумма ≤ 1000)
+    let a = 100 + Math.floor(Math.random() * 400);
+    let b = 100 + Math.floor(Math.random() * 400);
+    if (a + b > 1000) b = 1000 - a - 5;
+    answer = a + b;
+    text = `${a} + ${b}`;
+  } else if (type === 3) {
+    // Трёхзначное − трёхзначное
+    const a = 300 + Math.floor(Math.random() * 650);
+    const b = 100 + Math.floor(Math.random() * (a - 100));
+    answer = a - b;
+    text = `${a} − ${b}`;
+  } else if (type === 4) {
+    // Порядок действий: a + b × c или a − b × c
+    const b = 2 + Math.floor(Math.random() * 8);
+    const c = 2 + Math.floor(Math.random() * 8);
+    const bc = b * c;
+    if (Math.random() < 0.5) {
+      const a = 10 + Math.floor(Math.random() * 60);
+      answer = a + bc;
+      text = `${a} + ${b} × ${c}`;
+    } else {
+      const a = bc + 10 + Math.floor(Math.random() * 40);
+      answer = a - bc;
+      text = `${a} − ${b} × ${c}`;
+    }
+  } else {
+    // Уравнение: x − a = b
+    const a = 30 + Math.floor(Math.random() * 150);
+    const b = 100 + Math.floor(Math.random() * 300);
+    answer = a + b;
+    text = `x − ${a} = ${b}`;
+  }
+
+  const opts = new Set([answer]);
+  const deltas = [-100, -50, -30, -20, -15, -10, -5, -3, -2, -1, 1, 2, 3, 5, 10, 15, 20, 30, 50, 100];
+  while (opts.size < 4) {
+    const v = answer + deltas[Math.floor(Math.random() * deltas.length)];
+    if (v >= 0 && v !== answer) opts.add(v);
+  }
+  return { text: text + ' = ?', answer, options: [...opts].sort(() => Math.random() - 0.5) };
+}
+
+function getLogicProblem() {
+  const p = logicProblems[Math.floor(Math.random() * logicProblems.length)];
+  return { text: p.text, answer: p.answer, options: [...p.options].sort(() => Math.random() - 0.5) };
+}
+
+// ================ СОЗДАНИЕ ИГРОКОВ ================
+function createPlayer(p, cls, isMine) {
+  const el = document.createElement('div');
+  el.className = 'player ' + cls + (isMine ? ' my-team' : '');
+  el.style.left = p.x + '%';
+  el.style.top = p.y + '%';
+  el.innerHTML = `<div class="body">${p.emoji}</div><div class="name">${p.name}</div>`;
+  document.getElementById('field').appendChild(el);
+  return el;
+}
+function createGK() {
+  const el = document.createElement('div');
+  el.className = 'player gk';
+  el.style.left = '88%';
+  el.style.top = '50%';
+  el.innerHTML = `<div class="body">🧤</div><div class="name">Вратарь</div>`;
+  document.getElementById('field').appendChild(el);
+}
+
+function animatePlayers() {
+  setInterval(() => {
+    [...starsElements, ...modernsElements].forEach(el => {
+      const dx = (Math.random() - 0.5) * 6;
+      const dy = (Math.random() - 0.5) * 6;
+      const cx = parseFloat(el.style.left);
+      const cy = parseFloat(el.style.top);
+      el.style.left = Math.max(5, Math.min(80, cx + dx)) + '%';
+      el.style.top = Math.max(10, Math.min(90, cy + dy)) + '%';
+    });
+  }, 1800);
+}
+
+// ================ УТИЛИТЫ ================
+function moveBall(x, y, d = 600) {
+  ballEl.style.transition = `all ${d}ms ease-in-out`;
+  ballEl.style.left = x + '%';
+  ballEl.style.top = y + '%';
+}
+
+function showMessage(text, color = '#ffd700', duration = 1400) {
+  const m = document.getElementById('message');
+  m.textContent = text;
+  m.style.color = color;
+  m.textContent = text;
+  m.classList.add('show');
+  setTimeout(() => m.classList.remove('show'), duration);
+}
+
+function updateCommentary(text) {
+  const c = document.getElementById('commentary');
+  c.textContent = '🎙️ ' + text;
+  c.classList.add('show');
+}
+
+function confetti() {
+  const colors = ['#ffd700', '#ff4a4a', '#4a9fff', '#2ecc40', '#ff9500', '#b14fff'];
+  for (let i = 0; i < 60; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + '%';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDelay = (Math.random() * 0.5) + 's';
+    c.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+    c.style.transform = `rotate(${Math.random() * 360}deg)`;
+    document.getElementById('field').appendChild(c);
+    setTimeout(() => c.remove(), 3000);
+  }
+}
+
+function flashScore() {
+  const sb = document.getElementById('scoreboard');
+  sb.classList.add('flash');
+  setTimeout(() => sb.classList.remove('flash'), 1300);
+}
+
+function updateScore() {
+  document.getElementById('scoreStar').textContent = scoreStar;
+  document.getElementById('scoreModern').textContent = scoreModern;
+}
+
+// ================ ВЫБОР КОМАНДЫ ================
+function chooseTeam(team) {
+  myTeam = team;
+  document.getElementById('teamSelect').style.display = 'none';
+  document.getElementById('ball').style.display = 'block';
+  ballEl = document.getElementById('ball');
+  ballEl.style.left = '15%';
+  ballEl.style.top = '50%';
+
+  starsElements = stars.map(s => createPlayer(s, 'star', myTeam === 'star'));
+  modernsElements = moderns.map(m => createPlayer(m, 'modern', myTeam === 'modern'));
+  createGK();
+
+  if (myTeam === 'star') document.getElementById('markStar').style.display = 'inline-block';
+  else document.getElementById('markModern').style.display = 'inline-block';
+
+  document.getElementById('info').innerHTML =
+    myTeam === 'star'
+      ? '⭐ <b>Ты за ЗВЁЗД!</b><br>Примеры до 1000 + логика. Забивай!'
+      : '👥 <b>Ты за СОВРЕМЕННИКОВ!</b><br>Примеры до 1000 + логика. Забивай!';
+
+  animatePlayers();
+  buildEventQueue();
+  setTimeout(startEvent, 900);
+}
+
+// ================ ОЧЕРЕДЬ СОБЫТИЙ ================
+function buildEventQueue() {
+  // Гарантированное разнообразие
+  const queue = [
+    'dribble', 'penalty', 'logic', 'save', 'dribble',
+    'freeKick', 'corner', 'pressing', 'oneOnOne', 'dribble'
+  ];
+  // Перемешиваем
+  eventQueue = queue.sort(() => Math.random() - 0.5);
+}
+
+// ================ ЗАПУСК СОБЫТИЯ ================
+function startEvent() {
+  if (eventIndex >= eventQueue.length) {
+    endGame();
+    return;
+  }
+  const type = eventQueue[eventIndex];
+  eventIndex++;
+  const info = EVENT_INFO[type];
+
+  updateCommentary(info.intro);
+
+  // Мяч к атакующему
+  const roster = myTeam === 'star' ? stars : moderns;
+  const attacker = roster[Math.floor(Math.random() * roster.length)];
+
+  if (type === 'save') {
+    // Соперник атакует — мяч на его стороне
+    const enemyRoster = myTeam === 'star' ? moderns : stars;
+    const enemy = enemyRoster[Math.floor(Math.random() * enemyRoster.length)];
+    moveBall(enemy.x, enemy.y, 500);
+    setTimeout(() => playSave(enemy), 700);
+  } else {
+    moveBall(attacker.x, attacker.y, 500);
+    setTimeout(() => playEvent(type, attacker), 700);
+  }
+}
+
+// ================ ПОКАЗ ПРИМЕРА ================
+function showProblem(problem, modalCls, title, sub, onCorrect, onWrong) {
+  const modal = document.getElementById('modal');
+  modal.className = modalCls + ' show';
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalSub').textContent = sub;
+  document.getElementById('question').textContent = problem.text;
+
+  const div = document.getElementById('answers');
+  div.innerHTML = '';
+  problem.options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      if (opt === problem.answer) {
+        btn.classList.add('correct');
+        setTimeout(() => {
+          document.getElementById('modal').classList.remove('show');
+          onCorrect();
+        }, 400);
+      } else {
+        btn.classList.add('wrong');
+        btn.disabled = true;
+        setTimeout(() => {
+          document.getElementById('modal').classList.remove('show');
+          onWrong();
+        }, 600);
+      }
+    };
+    div.appendChild(btn);
+  });
+}
+
+// ================ ЛОГИКА НАЧИСЛЕНИЯ ГОЛОВ ================
+function scoreGoal() {
+  let points = 1;
+  if (bonusMultiplier > 1) {
+    points = bonusMultiplier;
+    bonusMultiplier = 1;
+  }
+  if (myTeam === 'star') scoreStar += points;
+  else scoreModern += points;
+
+  goalsScored += points;
+  hatTrickCounter++;
+
+  updateScore();
+  flashScore();
+
+  if (hatTrickCounter >= 3) {
+    setTimeout(() => showMessage('🎩 ХЕТ-ТРИК! Следующий гол ×2!', '#ffd700', 2200), 1500);
+    bonusMultiplier = 2;
+    hatTrickCounter = 0;
+  }
+}
+
+function scoreConceded() {
+  if (myTeam === 'star') scoreModern++;
+  else scoreStar++;
+  goalsConceded++;
+  updateScore();
+  flashScore();
+}
+
+// ================ ИГРА СОБЫТИЙ ================
+function playEvent(type, attacker) {
+  const info = EVENT_INFO[type];
+
+  if (type === 'pressing') {
+    // 3 примера подряд
+    playPressingSequence(attacker, info, 0);
+    return;
+  }
+
+  const problem = (type === 'logic' || type === 'corner') ? getLogicProblem() : genMathProblem();
+
+  showProblem(problem, 'modal ' + info.cls, info.title, info.sub,
+    () => {
+      // УСПЕХ
+      updateCommentary(`${attacker.name}: ${info.onSuccess}`);
+      moveBall(92, 50 + (Math.random() - 0.5) * 15, 600);
+      setTimeout(() => {
+        if (type !== 'save') {
+          scoreGoal();
+          confetti();
+          showMessage('⚽ ГООООЛ! 🎉', '#ffd700', 1600);
+        }
+        setTimeout(startEvent, 1800);
+      }, 700);
+    },
+    () => {
+      // ПРОВАЛ
+      updateCommentary(`${attacker.name}: ${info.onFail}`);
+      moveBall(50, 50, 600);
+      setTimeout(() => {
+        showMessage('❌ Мимо!', '#ff4a4a', 1200);
+        setTimeout(startEvent, 1500);
+      }, 700);
+    }
+  );
+}
+
+function playPressingSequence(attacker, info, step) {
+  if (step >= 3) {
+    // Все 3 решены — успех
+    updateCommentary(`${attacker.name}: ${info.onSuccess}`);
+    moveBall(92, 50, 600);
+    setTimeout(() => {
+      scoreGoal();
+      confetti();
+      showMessage('⚽ ГООООЛ! 🎉', '#ffd700', 1600);
+      setTimeout(startEvent, 1800);
+    }, 700);
+    return;
+  }
+
+  const problem = genMathProblem();
+  showProblem(problem, 'modal pressing',
+    `⚠️ ПРЕССИНГ! Пример ${step + 1} из 3`,
+    'Реши без ошибок — иначе потеряешь мяч!',
+    () => {
+      showMessage(`✅ ${step + 1} / 3`, '#2ecc40', 800);
+      setTimeout(() => playPressingSequence(attacker, info, step + 1), 900);
+    },
+    () => {
+      updateCommentary(`Прессинг сработал — мяч потерян!`);
+      showMessage('❌ Прессинг!', '#ff4a4a', 1400);
+      setTimeout(startEvent, 1600);
+    }
+  );
+}
+
+function playSave(enemy) {
+  const info = EVENT_INFO['save'];
+  const problem = genMathProblem();
+
+  showProblem(problem, 'modal save', info.title, info.sub,
+    () => {
+      // Спасение
+      updateCommentary(`Вратарь спас! ${info.onSuccess}`);
+      moveBall(50, 50, 600);
+      setTimeout(() => {
+        showMessage('🛡️ СЕЙВ!', '#2ecc40', 1400);
+        setTimeout(startEvent, 1600);
+      }, 700);
+    },
+    () => {
+      // Пропустили
+      updateCommentary(`${enemy.name} забивает! ${info.onFail}`);
+      moveBall(5, 50, 600);
+      setTimeout(() => {
+        scoreConceded();
+        showMessage('⚽ Соперник забил!', '#ff4a4a', 1600);
+        setTimeout(startEvent, 1800);
+      }, 700);
+    }
+  );
+}
+
+// ================ КОНЕЦ ИГРЫ ================
+function endGame() {
+  const ws = document.getElementById('winScreen');
+  const title = document.getElementById('winTitle');
+  const text = document.getElementById('winText');
+  const stats = document.getElementById('winStats');
+
+  const myScore = myTeam === 'star' ? scoreStar : scoreModern;
+  const enScore = myTeam === 'star' ? scoreModern : scoreStar;
+
+  if (myScore > enScore) {
+    title.textContent = '🏆 ТВОЯ КОМАНДА ПОБЕДИЛА!';
+    title.style.color = '#ffd700';
+  } else if (myScore < enScore) {
+    title.textContent = '😢 Соперник победил...';
+    title.style.color = '#ff7a7a';
+  } else {
+    title.textContent = '🤝 НИЧЬЯ!';
+    title.style.color = '#fff';
+  }
+  text.textContent = `⭐ Звёзды ${scoreStar} : ${scoreModern} Современники 👥`;
+  stats.innerHTML = `Забито: ${goalsScored} · Пропущено: ${goalsConceded} · Событий: ${eventQueue.length}`;
+  ws.classList.add('show');
+}
+
+document.getElementById('restartBtn').onclick = () => location.reload();
+</script>
+</body>
+</html>
