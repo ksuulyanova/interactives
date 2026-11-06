@@ -1,0 +1,1815 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Мой уютный город — версия для мальчика</title>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#4a90d9; --blue-dark:#2c5f99; --blue-light:#7ab8f0;
+    --orange:#ff9e3d; --orange-dark:#d97f1a; --orange-light:#ffbe76;
+    --green:#4a9c5e; --green-dark:#2d6b3d; --green-light:#7ed957;
+    --red:#e63946; --navy:#2c3e50; --cream:#f5f0e1;
+    --text:#2c3e50; --muted:#7a8fa6;
+    --shadow:0 8px 24px rgba(44,62,80,.25);
+    --shadow-strong:0 12px 30px rgba(44,62,80,.35);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{overflow-x:hidden;height:100%}
+  body{
+    font-family:'Comfortaa',sans-serif;color:var(--text);min-height:100vh;
+    background:linear-gradient(160deg,#e8f2ff 0%,#c0d8f0 45%,#a0c8e8 100%);
+    background-attachment:fixed;position:relative;
+  }
+  body::before{
+    content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      radial-gradient(2px 2px at 15% 20%, rgba(255,255,255,.7), transparent),
+      radial-gradient(1.5px 1.5px at 70% 30%, rgba(255,255,255,.8), transparent),
+      radial-gradient(1px 1px at 40% 60%, rgba(255,255,255,.6), transparent),
+      radial-gradient(2px 2px at 85% 75%, rgba(255,255,255,.7), transparent),
+      radial-gradient(1.5px 1.5px at 25% 85%, rgba(255,255,255,.65), transparent),
+      radial-gradient(1px 1px at 55% 15%, rgba(255,255,255,.7), transparent);
+    background-size:300px 300px,250px 250px,200px 200px,280px 280px,220px 220px,240px 240px;
+    opacity:.5;
+  }
+  #app{position:relative;z-index:1;min-height:100vh;padding:14px;max-width:1200px;margin:0 auto}
+  .screen{display:none}
+  .screen.active{display:block;animation:fadeIn .4s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+  .btn{
+    font-family:inherit;font-weight:800;border:none;cursor:pointer;
+    border-radius:22px;padding:12px 24px;font-size:15px;
+    transition:transform .12s, box-shadow .15s;
+  }
+  .btn:active{transform:translateY(3px)}
+  .btn-primary{
+    background:linear-gradient(135deg,#5fb8e0,#4a90d9);color:#fff;
+    box-shadow:0 6px 0 #2c5f99;
+  }
+  .btn-primary:active{box-shadow:0 2px 0 #2c5f99}
+  .btn-accent{
+    background:linear-gradient(135deg,#ffb95e,#ff9e3d);color:#fff;
+    box-shadow:0 6px 0 #d97f1a;
+  }
+  .btn-accent:active{box-shadow:0 2px 0 #d97f1a}
+  .btn-ghost{background:rgba(255,255,255,.9);color:var(--navy);box-shadow:var(--shadow)}
+  .btn-small{font-size:13px;padding:8px 16px;border-radius:16px}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+
+  /* ==== Welcome ==== */
+  .welcome-wrap{min-height:90vh;display:flex;align-items:center;justify-content:center}
+  .welcome-card{
+    background:rgba(255,255,255,.96);backdrop-filter:blur(8px);
+    border-radius:36px;padding:44px 40px;text-align:center;max-width:560px;
+    box-shadow:var(--shadow-strong);border:3px solid rgba(255,255,255,.8);
+  }
+  .welcome-card h1{
+    font-size:36px;margin-bottom:8px;font-weight:800;
+    background:linear-gradient(135deg,#2c5f99,#4a9c5e);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .welcome-card p{font-size:15px;line-height:1.6;color:var(--muted);margin:16px 0 24px}
+  .welcome-emoji{font-size:44px;letter-spacing:10px;margin-bottom:10px}
+  .welcome-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+  /* ==== Character ==== */
+  .char-wrap{max-width:640px;margin:0 auto}
+  .char-card{
+    background:rgba(255,255,255,.96);border-radius:30px;padding:32px;
+    box-shadow:var(--shadow);border:3px solid rgba(255,255,255,.8);
+  }
+  .char-card h2{font-size:26px;color:var(--blue-dark);text-align:center;margin-bottom:6px;font-weight:800}
+  .char-card .sub{text-align:center;color:var(--muted);font-size:14px;margin-bottom:22px;font-weight:700}
+  .form-label{font-weight:800;color:var(--navy);margin:14px 0 8px;font-size:14px;display:block}
+  .name-input{
+    width:100%;padding:14px 18px;font-size:18px;font-weight:700;font-family:inherit;
+    border:3px solid #c8dcee;border-radius:16px;background:#f8fbff;
+    color:var(--text);outline:none;text-align:center;
+  }
+  .name-input:focus{border-color:var(--blue);background:#fff}
+  .avatar-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:8px 0 20px}
+  .avatar-opt{
+    background:#f8fbff;border:3px solid #d0e4f5;border-radius:22px;padding:14px 8px;
+    cursor:pointer;text-align:center;transition:all .2s;position:relative;
+  }
+  .avatar-opt:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(74,144,217,.3)}
+  .avatar-opt.selected{border-color:var(--green);background:linear-gradient(160deg,#e8f6ec,#d4f0dc);box-shadow:0 0 0 4px rgba(74,156,94,.25)}
+  .avatar-opt.selected::after{
+    content:'✓';position:absolute;top:6px;right:8px;width:24px;height:24px;
+    background:var(--green);color:#fff;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;
+  }
+  .avatar-opt .av-name{font-weight:800;font-size:14px;color:var(--navy);margin-top:4px}
+  .avatar-opt .av-sub{font-size:11px;color:var(--muted);font-weight:700;margin-top:2px}
+
+  /* ==== Hub ==== */
+  .hub-header{
+    background:rgba(255,255,255,.96);border-radius:24px;padding:16px 20px;
+    display:flex;align-items:center;gap:14px;margin-bottom:18px;
+    box-shadow:var(--shadow);border:3px solid rgba(255,255,255,.8);
+  }
+  .hub-player{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+  .hub-player svg{flex:0 0 auto;border-radius:50%}
+  .hub-player .hub-pname{font-weight:800;font-size:17px;color:var(--navy)}
+  .hub-player .hub-psub{font-size:12px;color:var(--muted);font-weight:700}
+  .hub-stats{display:flex;gap:8px;flex-wrap:wrap}
+  .hub-stat{
+    background:#e8f2ff;border-radius:14px;padding:8px 14px;
+    font-weight:800;font-size:14px;color:var(--blue-dark);
+    display:flex;align-items:center;gap:5px;white-space:nowrap;
+  }
+  .hub-stat.green{color:var(--green-dark);background:#e8f6ec}
+  .hub-stat.orange{color:var(--orange-dark);background:#fff0d6}
+
+  .hub-title{font-size:22px;color:var(--blue-dark);margin:6px 0 14px;font-weight:800}
+  .hub-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+  .job-card{
+    background:rgba(255,255,255,.96);border-radius:26px;padding:22px;
+    text-align:center;cursor:pointer;transition:all .2s;
+    box-shadow:var(--shadow);border:3px solid rgba(255,255,255,.8);
+    position:relative;overflow:hidden;
+  }
+  .job-card:hover{transform:translateY(-5px);box-shadow:0 14px 32px rgba(74,144,217,.35)}
+  .job-card:active{transform:translateY(-2px)}
+  .job-emoji{font-size:52px;margin-bottom:6px}
+  .job-name{font-weight:800;font-size:18px;color:var(--navy);margin-bottom:4px}
+  .job-desc{font-size:13px;color:var(--muted);font-weight:600;line-height:1.5;margin-bottom:12px}
+  .job-btn{
+    display:inline-block;padding:10px 22px;border-radius:16px;
+    font-weight:800;font-size:14px;color:#fff;
+  }
+  .job-cashier .job-btn{background:linear-gradient(135deg,#5fb8e0,#4a90d9);box-shadow:0 4px 0 #2c5f99}
+  .job-designer .job-btn{background:linear-gradient(135deg,#7ed957,#4a9c5e);box-shadow:0 4px 0 #2d6b3d}
+  .job-home .job-btn{background:linear-gradient(135deg,#ffb95e,#ff9e3d);box-shadow:0 4px 0 #d97f1a}
+
+  /* ==== Page header ==== */
+  .page-header{
+    display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;
+    background:rgba(255,255,255,.96);border-radius:20px;padding:10px 14px;
+    box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.8);
+  }
+  .icon-btn{
+    width:42px;height:42px;border-radius:14px;border:none;background:#f8fbff;
+    box-shadow:0 3px 0 #c8dcee;cursor:pointer;font-size:18px;color:var(--blue-dark);
+    font-family:inherit;display:flex;align-items:center;justify-content:center;
+    transition:.1s;flex:0 0 auto;
+  }
+  .icon-btn:active{transform:translateY(3px);box-shadow:none}
+  .page-title{font-weight:800;font-size:17px;color:var(--navy);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .header-stats{display:flex;gap:6px;flex-wrap:wrap}
+  .h-stat{
+    background:#e8f2ff;border-radius:12px;padding:5px 11px;
+    font-weight:800;font-size:13px;color:var(--blue-dark);white-space:nowrap;
+  }
+  .h-stat.green{background:#e8f6ec;color:var(--green-dark)}
+  .h-stat.orange{background:#fff0d6;color:var(--orange-dark)}
+
+  /* ==== Cashier ==== */
+  .cashier-grid{display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:start}
+  @media(max-width:860px){.cashier-grid{grid-template-columns:1fr}}
+  .receipt{
+    background:#fffdf5;border-radius:16px 16px 24px 24px;padding:22px 18px 18px;
+    box-shadow:var(--shadow-strong);position:relative;
+  }
+  .task-banner{
+    background:linear-gradient(135deg,#ffe0b2,#ffb95e);border:2px dashed var(--blue-dark);
+    border-radius:12px;padding:8px 12px;margin-bottom:12px;text-align:center;
+  }
+  .task-label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--navy);margin-bottom:2px;font-weight:800}
+  .task-text{font-size:14px;font-weight:800;color:var(--navy)}
+  .receipt h3{font-size:18px;text-align:center;color:var(--blue-dark);letter-spacing:2px;font-weight:800}
+  .receipt-shop{text-align:center;font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;font-weight:700}
+  .receipt-cashier{text-align:center;font-size:11px;color:var(--muted);margin-bottom:10px;font-family:'Courier New',monospace;font-weight:700}
+  .receipt-cashier strong{color:var(--blue-dark)}
+  .receipt-row{
+    display:grid;grid-template-columns:56px 1fr 74px 100px;align-items:center;gap:8px;
+    padding:8px 4px;border-bottom:1px dashed #e8dcc0;
+  }
+  .receipt-row:last-child{border-bottom:none}
+  .prod-sticker{
+    width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:26px;box-shadow:0 4px 10px rgba(0,0,0,.2),inset 0 -3px 6px rgba(0,0,0,.12);
+    border:3px solid #fff;flex-shrink:0;
+  }
+  .prod-name{font-weight:800;font-size:14px;color:var(--navy)}
+  .qty-block{text-align:center}
+  .qty-lbl{font-size:10px;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin-bottom:2px;font-weight:800}
+  .qty-val{font-size:15px;font-weight:800;color:var(--navy)}
+  .qty-answer input,.ans-input{
+    width:100%;padding:8px 6px;font-family:'Courier New',monospace;
+    font-size:16px;font-weight:800;text-align:center;border:2.5px solid #c8dcee;
+    border-radius:10px;background:#f8fbff;color:var(--navy);outline:none;
+    -moz-appearance:textfield;appearance:textfield;
+  }
+  .qty-answer input::-webkit-inner-spin-button,.ans-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .qty-answer input:focus,.ans-input:focus{border-color:var(--orange);background:#fffbe8;box-shadow:0 0 0 3px rgba(255,158,61,.25)}
+  .qty-answer input.correct,.ans-input.correct{border-color:var(--green);background:#e8f6ec}
+  .qty-answer input.wrong,.ans-input.wrong{border-color:var(--red);background:#fde8ea;animation:shake .4s}
+  .ans-field{position:relative}
+  .ans-field-lbl{
+    position:absolute;top:-6px;left:6px;background:#fffdf5;padding:0 5px;
+    font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;
+    border-radius:4px;font-family:'Courier New',monospace;font-weight:800;
+  }
+  .ans-input{padding:9px 6px 7px;font-size:15px}
+  .ans-input:disabled{background:#f0ead8;color:var(--muted);border-color:#e0d5b8}
+  .total-row{
+    display:flex;justify-content:space-between;align-items:center;margin-top:12px;
+    padding:10px 14px;background:#fff0d6;border-radius:12px;border:2px solid #ffd9a0;
+  }
+  .total-row label{font-weight:800;color:var(--orange-dark);letter-spacing:1px}
+  .total-row .ans-field{width:130px}
+  .checkout-btn{
+    display:block;width:100%;margin-top:12px;padding:12px;
+    font-family:inherit;font-size:15px;font-weight:800;letter-spacing:1px;
+    text-transform:uppercase;color:#fff;background:linear-gradient(145deg,#5fb8e0,#4a90d9);
+    border:3px solid #a8d0ee;border-radius:12px;cursor:pointer;
+    box-shadow:0 6px 0 #2c5f99;transition:.12s;
+  }
+  .checkout-btn:hover:not(:disabled){background:linear-gradient(145deg,#7ac8ec,#5fa3e5)}
+  .checkout-btn:active:not(:disabled){transform:translateY(4px);box-shadow:0 2px 0 #2c5f99}
+  .checkout-btn:disabled{background:#b8c8d8;box-shadow:0 6px 0 #7a8fa6;cursor:not-allowed}
+
+  .price-panel{
+    background:rgba(255,248,235,.98);border:3px solid var(--orange);border-radius:20px;
+    padding:14px 12px;box-shadow:var(--shadow-strong);
+  }
+  .price-panel h3{font-size:15px;color:var(--orange-dark);text-align:center;margin-bottom:4px;letter-spacing:1px;font-weight:800}
+  .price-panel .sub{text-align:center;font-size:10px;color:var(--muted);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase;font-weight:800}
+  .price-list{display:grid;gap:6px;list-style:none}
+  .price-list li{
+    display:flex;align-items:center;gap:8px;padding:6px 10px 6px 6px;
+    background:#fffef9;border-radius:12px;border:1.5px solid #ece0c2;
+  }
+  .price-list .mini{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid #fff;box-shadow:0 3px 6px rgba(0,0,0,.15);flex-shrink:0}
+  .price-list .p-name{font-weight:700;color:var(--navy);font-size:13px;flex:1}
+  .price-list .p-price{font-weight:800;color:var(--orange-dark);background:#ffe4b5;padding:3px 10px;border-radius:20px;font-size:13px;border:1px solid #dfa86a;white-space:nowrap}
+
+  /* ==== Designer tasks ==== */
+  .task-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+  .task-card{
+    border-radius:22px;padding:14px 10px;cursor:pointer;transition:all .2s;
+    box-shadow:0 6px 18px rgba(74,144,217,.22);border:3px solid rgba(255,255,255,.8);
+    text-align:center;position:relative;
+  }
+  .task-card:hover:not(.locked){transform:translateY(-4px);box-shadow:0 12px 24px rgba(74,144,217,.35)}
+  .task-card.locked{opacity:.45;cursor:not-allowed;filter:grayscale(.5)}
+  .task-card.solved::after{
+    content:'✓';position:absolute;top:8px;right:8px;
+    background:var(--green);color:#fff;width:22px;height:22px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;
+  }
+  .task-card.locked::before{content:'🔒';position:absolute;top:8px;right:8px;font-size:14px}
+  .task-num{position:absolute;top:8px;left:8px;background:rgba(255,255,255,.85);width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px}
+  .task-emoji{font-size:36px;margin-bottom:2px}
+  .task-title-sm{font-size:12px;font-weight:800;margin-bottom:4px;min-height:30px;line-height:1.2;color:var(--navy)}
+  .task-stars{font-size:14px;letter-spacing:1px}
+
+  /* ==== Active task ==== */
+  .task-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:860px){.task-layout{grid-template-columns:1fr}}
+  .task-panel{
+    background:rgba(255,255,255,.96);border-radius:22px;padding:18px;
+    box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.8);
+  }
+  .client-bubble{
+    display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;
+    background:#e8f2ff;border-radius:16px;padding:10px 14px;
+    border:2px dashed var(--blue);
+  }
+  .client-bubble .b-text{flex:1;font-size:14px;font-weight:700;color:var(--navy);line-height:1.4}
+  .client-bubble .b-text b{color:var(--blue-dark)}
+  .plan-wrap{display:flex;align-items:center;justify-content:center;min-height:240px}
+  .plan-wrap svg{max-width:100%;max-height:340px}
+  .task-question{
+    background:#fff0d6;padding:12px 14px;border-radius:14px;margin-bottom:12px;
+    font-size:14px;line-height:1.55;font-weight:700;color:var(--navy);
+    border:2px dashed var(--orange);
+  }
+  .notebook{
+    width:100%;min-height:80px;padding:14px;padding-top:18px;font-family:'Caveat',cursive;
+    font-size:20px;line-height:1.8;color:var(--navy);border:2px solid #c8dcee;
+    border-radius:14px;resize:vertical;background-color:#f8fbff;outline:none;margin-bottom:10px;
+  }
+  .notebook:focus{border-color:var(--blue)}
+  .nb-lbl{font-weight:800;font-size:12px;color:var(--muted);margin-bottom:6px;display:block}
+  .ans-fields{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .ans-field-big{flex:1;min-width:130px;background:#fff0d6;padding:9px 11px;border-radius:12px;border:2px solid #ffd9a0}
+  .ans-field-big label{display:block;font-size:11px;font-weight:800;color:var(--orange-dark);margin-bottom:5px}
+  .ans-field-big .inp-wrap{display:flex;align-items:center;gap:5px}
+  .ans-field-big input{
+    flex:1;padding:7px 8px;font-family:inherit;font-size:18px;font-weight:800;
+    border:2px solid #c8dcee;border-radius:9px;background:#fff;color:var(--navy);
+    outline:none;width:100%;
+  }
+  .ans-field-big input:focus{border-color:var(--blue)}
+  .ans-field-big input.wrong{border-color:#ff9a9e;background:#fff0f0;animation:shake .4s}
+  .ans-field-big input.correct{border-color:var(--green);background:#f0fff4}
+  .ans-field-big .unit{font-weight:800;font-size:12px;color:var(--muted)}
+  .task-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .feedback{margin-top:12px;font-size:14px;font-weight:700;line-height:1.4}
+  .feedback.err{background:#ffe1e6;padding:12px;border-radius:14px;color:#a3564d;border:2px solid #ffb3ba}
+  .feedback.hint{background:#fff6e5;padding:12px;border-radius:14px;color:var(--orange-dark);border:2px dashed var(--orange)}
+
+  /* ==== Home ==== */
+  .home-wrap{max-width:1000px;margin:0 auto}
+  .room-scene{
+    --wall-color:#d8e8f5;
+    position:relative;aspect-ratio:3/2;max-width:700px;margin:0 auto 14px;
+    background:linear-gradient(180deg, var(--wall-color) 0%, var(--wall-color) 55%, #a0704a 55%, #a0704a 100%);
+    border-radius:22px;overflow:hidden;box-shadow:var(--shadow);
+    border:4px solid #fff;touch-action:none;user-select:none;
+  }
+  .room-floor{position:absolute;left:0;right:0;bottom:0;height:45%;pointer-events:none}
+  .room-window{
+    position:absolute;left:60%;top:12%;width:22%;height:28%;
+    background:linear-gradient(135deg,#87ceeb,#b8e0f5);
+    border:4px solid #fff;border-radius:8px;box-shadow:inset 0 0 20px rgba(255,255,255,.6);
+    pointer-events:none;
+  }
+  .room-window::before,.room-window::after{content:'';position:absolute;background:#fff}
+  .room-window::before{left:50%;top:0;bottom:0;width:4px;transform:translateX(-50%)}
+  .room-window::after{top:50%;left:0;right:0;height:4px;transform:translateY(-50%)}
+
+  .room-item{
+    position:absolute;transform:translate(-50%,-50%);cursor:grab;user-select:none;
+    touch-action:none;filter:drop-shadow(0 3px 5px rgba(60,50,40,.2));
+    transform-origin:center center;
+  }
+  .room-item svg{width:100%;height:auto;display:block;pointer-events:none}
+  .room-item.dragging{cursor:grabbing;z-index:100!important}
+  .room-item.selected{z-index:50!important}
+  .room-handle{
+    position:absolute;width:18px;height:18px;background:#fff;border:3px solid var(--blue);
+    border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,.15);z-index:60;
+    touch-action:none;display:none;box-sizing:border-box;
+  }
+  .room-item.selected .room-handle{display:block}
+  .room-handle.tl{top:-9px;left:-9px;cursor:nwse-resize}
+  .room-handle.tr{top:-9px;right:-9px;cursor:nesw-resize}
+  .room-handle.bl{bottom:-9px;left:-9px;cursor:nesw-resize}
+  .room-handle.br{bottom:-9px;right:-9px;cursor:nwse-resize}
+  .room-rotate{
+    position:absolute;top:-32px;left:50%;transform:translateX(-50%);
+    width:22px;height:22px;background:var(--orange);border:3px solid #fff;border-radius:50%;
+    display:none;align-items:center;justify-content:center;cursor:grab;
+    font-size:11px;color:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2);z-index:60;touch-action:none;
+  }
+  .room-item.selected .room-rotate{display:flex}
+  .room-rotate::before{
+    content:'';position:absolute;bottom:100%;left:50%;transform:translateX(-50%);
+    width:2px;height:10px;background:var(--orange);
+  }
+  .sel-panel{
+    display:none;background:#fff;border-radius:16px;padding:10px 12px;
+    max-width:700px;margin:0 auto 12px;box-shadow:var(--shadow);
+    border:2px solid var(--blue);
+  }
+  .sel-panel.visible{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .sel-name{font-weight:800;font-size:14px;color:var(--blue-dark);flex:1;min-width:90px}
+  .sel-btn{
+    border:none;padding:7px 12px;border-radius:10px;font-family:inherit;
+    font-weight:800;font-size:12px;cursor:pointer;
+  }
+  .sel-btn.rot{background:#fff0d6;color:var(--orange-dark)}
+  .sel-btn.del{background:#ffe1e6;color:#a3564d}
+
+  .decor-grid{display:grid;grid-template-columns:1fr;gap:10px;max-width:700px;margin:0 auto 14px}
+  .decor-box{background:rgba(255,255,255,.96);border-radius:16px;padding:10px 14px;box-shadow:var(--shadow);border:2px solid #fff}
+  .decor-lbl{font-weight:800;font-size:13px;color:var(--navy);margin-bottom:8px}
+  .swatch-row{display:flex;gap:8px;flex-wrap:wrap}
+  .swatch{
+    width:34px;height:34px;border-radius:50%;border:3px solid #fff;cursor:pointer;
+    box-shadow:0 2px 6px rgba(0,0,0,.15);padding:0;position:relative;
+    transition:.15s;outline:none;
+  }
+  .swatch:hover{transform:scale(1.1)}
+  .swatch.active{box-shadow:0 0 0 3px var(--blue), 0 2px 6px rgba(0,0,0,.15);transform:scale(1.1)}
+  .swatch.active::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(44,62,80,.9);font-weight:800;font-size:15px;text-shadow:0 0 3px #fff}
+
+  .floor-swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px}
+  .fswatch{
+    aspect-ratio:1.3;border-radius:10px;cursor:pointer;padding:0;border:3px solid #fff;
+    box-shadow:0 2px 6px rgba(0,0,0,.15);position:relative;overflow:hidden;
+    transition:.15s;outline:none;
+  }
+  .fswatch:hover{transform:scale(1.05)}
+  .fswatch.active{box-shadow:0 0 0 3px var(--blue), 0 2px 6px rgba(0,0,0,.15);transform:scale(1.05)}
+  .fswatch.active::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.4);color:var(--navy);font-weight:800;font-size:16px}
+  .fswatch-lbl{position:absolute;bottom:0;left:0;right:0;background:rgba(255,255,255,.88);font-size:9px;font-weight:800;text-align:center;padding:2px 0;color:var(--navy)}
+
+  .inv-grid,.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px}
+  .inv-item,.shop-card{
+    background:rgba(255,255,255,.96);border-radius:16px;padding:8px;text-align:center;
+    box-shadow:0 4px 12px rgba(74,144,217,.2);border:2px solid #fff;position:relative;
+  }
+  .inv-item{cursor:pointer;transition:all .15s}
+  .inv-item:hover{transform:translateY(-3px);border-color:var(--blue)}
+  .item-art{height:56px;display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+  .item-art svg{height:56px;width:auto;max-width:100%}
+  .item-name{font-size:11px;font-weight:800;margin-bottom:4px;min-height:22px;line-height:1.2;color:var(--navy)}
+  .inv-count{position:absolute;top:-6px;right:-6px;background:var(--orange);color:#fff;font-weight:800;font-size:11px;border-radius:10px;padding:2px 7px;border:2px solid #fff}
+  .buy-btn{
+    width:100%;border:none;padding:7px;border-radius:10px;font-family:inherit;
+    font-weight:800;font-size:12px;background:linear-gradient(135deg,#ffb95e,#ff9e3d);
+    color:#fff;cursor:pointer;
+  }
+  .buy-btn:disabled{opacity:.5;cursor:not-allowed}
+  .empty-msg{color:var(--muted);font-size:13px;text-align:center;padding:16px;font-weight:700;grid-column:1/-1}
+  .section-lbl{font-size:15px;font-weight:800;color:var(--navy);margin:18px 0 10px;text-align:center}
+
+  /* ==== Overlays ==== */
+  .overlay{
+    position:fixed;inset:0;background:rgba(44,62,80,.55);backdrop-filter:blur(4px);
+    display:none;align-items:center;justify-content:center;z-index:100;
+    padding:16px;animation:fadeIn .25s ease;
+  }
+  .overlay.show{display:flex}
+  .modal{
+    background:linear-gradient(160deg,#fff,#f0f8ff);border-radius:28px;padding:24px 26px;
+    max-width:440px;width:100%;text-align:center;box-shadow:var(--shadow-strong);
+    border:4px solid #fff;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);
+    max-height:90vh;overflow-y:auto;
+  }
+  @keyframes popIn{from{transform:scale(.75);opacity:0}to{transform:scale(1);opacity:1}}
+  .modal h2{font-size:22px;color:var(--blue-dark);margin-bottom:8px;font-weight:800}
+  .modal .stars{font-size:40px;letter-spacing:6px;margin:8px 0}
+  .modal .row{
+    display:flex;align-items:center;gap:10px;background:#fffbea;padding:10px 14px;
+    border-radius:14px;margin:8px 0;font-weight:800;font-size:14px;
+    border:2px dashed #ffe0b2;text-align:left;color:var(--navy);
+  }
+  .modal .row .emoji{font-size:22px;flex:0 0 auto}
+  .modal .row.ach{background:#e8f6ec;border-color:var(--green-light)}
+  .modal .row.lvl{background:#e8f2ff;border-color:var(--blue-light)}
+  .modal .client-msg{background:#f0f8ff;padding:10px 14px;border-radius:14px;font-size:13px;font-style:italic;color:var(--blue-dark);margin:10px 0;border-left:4px solid var(--blue);text-align:left}
+  .modal .sol{background:#fff;padding:10px 14px;border-radius:10px;margin:8px 0;font-family:'Caveat',cursive;font-size:18px;line-height:1.5;color:var(--navy);text-align:left;border:2px solid #e8dcf5}
+  .modal .hint-bar{background:#fff0d6;padding:8px 12px;border-radius:10px;border:2px dashed var(--orange);font-size:12px;color:var(--orange-dark);font-weight:800;margin:8px 0;text-align:center}
+  .modal .btn{width:100%;margin-top:8px}
+
+  .angry-modal{
+    background:linear-gradient(160deg,#fff0f0,#ffe0e0);border:5px solid var(--red);
+    border-radius:28px;padding:24px 28px;max-width:400px;width:100%;text-align:center;
+    box-shadow:var(--shadow-strong);animation:popIn .4s;
+  }
+  .angry-emoji{font-size:60px;display:block;margin-bottom:8px;animation:shake .6s infinite}
+  .angry-modal .speech{background:#fff;border:3px dashed var(--red);border-radius:16px;padding:12px 16px;font-size:15px;font-weight:800;color:#a32635;margin:12px 0 14px;line-height:1.4}
+  .angry-modal .pen{background:var(--red);color:#fff;font-size:20px;font-weight:800;padding:10px 18px;border-radius:12px;margin-bottom:14px;letter-spacing:.5px}
+  .angry-modal .btn{background:linear-gradient(145deg,#6a8caf,#4a6d8f);color:#fff;box-shadow:0 6px 0 #2f4d68;width:100%}
+
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  .toast{
+    position:fixed;top:20px;left:50%;transform:translateX(-50%);
+    background:linear-gradient(135deg,#7ab8f0,#4a90d9);color:#fff;
+    padding:12px 22px;border-radius:22px;font-weight:800;font-size:14px;
+    box-shadow:var(--shadow-strong);z-index:500;animation:toastIn .4s ease;
+    max-width:90vw;text-align:center;
+  }
+  .toast.success{background:linear-gradient(135deg,#7ed957,#4a9c5e)}
+  .toast.error{background:linear-gradient(135deg,#ffb3c1,#e63946)}
+  @keyframes toastIn{from{transform:translate(-50%,-30px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+
+  @media(max-width:600px){
+    #app{padding:10px}
+    .welcome-card{padding:28px 20px}
+    .welcome-card h1{font-size:28px}
+    .char-card{padding:20px}
+    .cashier-grid{gap:10px}
+    .receipt{padding:16px 12px 14px}
+    .receipt-row{grid-template-columns:44px 1fr 60px 82px;gap:5px;padding:6px 2px}
+    .prod-sticker{width:40px;height:40px;font-size:20px;border-width:2px}
+    .prod-name{font-size:12px}
+    .ans-input{font-size:13px;padding:7px 4px 6px}
+    .qty-answer input{font-size:13px;padding:6px 4px}
+    .hub-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- WELCOME -->
+  <div class="screen active" id="screen-welcome">
+    <div class="welcome-wrap">
+      <div class="welcome-card">
+        <div class="welcome-emoji">🚀 ⚽ 🎮</div>
+        <h1>Мой уютный город</h1>
+        <p>Выбери героя, устройся на работу — кассиром в спортивном магазине или мастером по обустройству комнат — зарабатывай монеты и прокачивай свою комнату!</p>
+        <div class="welcome-actions" id="welcome-actions"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARACTER -->
+  <div class="screen" id="screen-character">
+    <div class="char-wrap">
+      <div class="char-card">
+        <h2>Знакомство</h2>
+        <div class="sub">Как тебя зовут и как ты выглядишь?</div>
+        <label class="form-label">✏️ Твоё имя</label>
+        <input type="text" class="name-input" id="char-name" placeholder="Введи имя" maxlength="14" autocomplete="off">
+        <label class="form-label">🎭 Выбери героя</label>
+        <div class="avatar-row" id="avatar-row"></div>
+        <button class="btn btn-primary" style="width:100%" id="char-done" disabled>Начать</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HUB -->
+  <div class="screen" id="screen-hub">
+    <div class="hub-header">
+      <div class="hub-player">
+        <div id="hub-avatar"></div>
+        <div>
+          <div class="hub-pname" id="hub-pname">—</div>
+          <div class="hub-psub" id="hub-psub">Житель города</div>
+        </div>
+      </div>
+      <div class="hub-stats">
+        <div class="hub-stat">💰 <span id="hub-coins">0</span></div>
+        <div class="hub-stat green">⭐ <span id="hub-stars">0</span></div>
+      </div>
+    </div>
+    <div class="hub-title">Чем займёмся?</div>
+    <div class="hub-grid">
+      <div class="job-card job-cashier" onclick="startCashier()">
+        <div class="job-emoji">🏀</div>
+        <div class="job-name">Спорттовары</div>
+        <div class="job-desc">Работа кассиром — считай чеки и получай монеты</div>
+        <span class="job-btn">Работать кассиром →</span>
+      </div>
+      <div class="job-card job-designer" onclick="startDesigner()">
+        <div class="job-emoji">🔨</div>
+        <div class="job-name">Мастерская</div>
+        <div class="job-desc">Считай площадь и периметр — заказы на обустройство</div>
+        <span class="job-btn">Открыть мастерскую →</span>
+      </div>
+      <div class="job-card job-home" onclick="startHome()">
+        <div class="job-emoji">🛸</div>
+        <div class="job-name">Моя комната</div>
+        <div class="job-desc">Покупай мебель и прокачивай комнату</div>
+        <span class="job-btn">Открыть комнату →</span>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:24px">
+      <button class="btn btn-ghost btn-small" onclick="resetAll()">🔄 Начать заново</button>
+    </div>
+  </div>
+
+  <!-- CASHIER -->
+  <div class="screen" id="screen-cashier">
+    <header class="page-header">
+      <button class="icon-btn" onclick="goHub()">←</button>
+      <div class="page-title">🏀 Спорттовары</div>
+      <div class="header-stats">
+        <span class="h-stat">💰 <span id="c-coins">0</span></span>
+        <span class="h-stat green">Ур. <span id="c-level">1</span></span>
+        <span class="h-stat orange">🔥 <span id="c-streak">0</span>/4</span>
+      </div>
+      <button class="icon-btn" onclick="closeShift()" title="Закрыть смену">🔒</button>
+    </header>
+    <div class="cashier-grid">
+      <div class="receipt">
+        <div class="task-banner">
+          <span class="task-label">🎯 Задание</span>
+          <span class="task-text" id="c-task-text">Посчитай стоимость</span>
+        </div>
+        <h3>🧾 ЧЕК</h3>
+        <div class="receipt-shop">МАГАЗИН «СПОРТИВНЫЙ МИР»</div>
+        <div class="receipt-cashier">Кассир: <strong id="c-cashier-name">—</strong></div>
+        <div id="c-receipt-body"></div>
+        <div class="total-row">
+          <label>ИТОГО:</label>
+          <div class="ans-field">
+            <input type="text" inputmode="numeric" class="ans-input" id="c-total-input" placeholder="?" autocomplete="off">
+          </div>
+        </div>
+        <button class="checkout-btn" id="c-checkout">✅ Пробить чек</button>
+      </div>
+      <aside class="price-panel">
+        <h3>📋 ПРАЙС-ЛИСТ</h3>
+        <div class="sub">Ассортимент</div>
+        <ul class="price-list" id="c-price-list"></ul>
+      </aside>
+    </div>
+  </div>
+
+  <!-- DESIGNER -->
+  <div class="screen" id="screen-designer">
+    <header class="page-header">
+      <button class="icon-btn" onclick="goHub()">←</button>
+      <div class="page-title">🔨 Заказы на обустройство</div>
+      <div class="header-stats">
+        <span class="h-stat">💰 <span id="d-coins">0</span></span>
+        <span class="h-stat green">✅ <span id="d-solved">0</span>/<span id="d-total">0</span></span>
+      </div>
+    </header>
+    <div class="task-grid" id="d-task-grid"></div>
+  </div>
+
+  <!-- ACTIVE TASK -->
+  <div class="screen" id="screen-task">
+    <header class="page-header">
+      <button class="icon-btn" onclick="startDesigner()">←</button>
+      <div class="page-title" id="task-header-title">Заказ</div>
+    </header>
+    <div class="task-layout">
+      <div class="task-panel">
+        <div class="client-bubble" id="task-client-row"></div>
+        <div class="plan-wrap" id="task-plan"></div>
+      </div>
+      <div class="task-panel">
+        <div class="task-question" id="task-question"></div>
+        <label class="nb-lbl">✏️ Блокнот мастера</label>
+        <textarea class="notebook" id="task-notebook" placeholder="Пиши здесь свои расчёты..."></textarea>
+        <div class="ans-fields" id="task-ans-fields"></div>
+        <div class="task-actions">
+          <button class="btn btn-primary btn-small" onclick="checkTask()">Проверить ✨</button>
+          <button class="btn btn-accent btn-small" onclick="showTaskHint()">Подсказка 💡</button>
+        </div>
+        <div class="feedback" id="task-feedback"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="screen" id="screen-home">
+    <header class="page-header">
+      <button class="icon-btn" onclick="goHub()">←</button>
+      <div class="page-title">🛸 Моя комната</div>
+      <div class="header-stats">
+        <span class="h-stat">💰 <span id="h-coins">0</span></span>
+      </div>
+    </header>
+    <div class="home-wrap">
+      <div class="room-scene" id="room-scene">
+        <div class="room-floor" id="room-floor"></div>
+        <div class="room-window"></div>
+      </div>
+      <div class="sel-panel" id="sel-panel"></div>
+      <div class="decor-grid">
+        <div class="decor-box">
+          <div class="decor-lbl">🎨 Цвет стен</div>
+          <div class="swatch-row" id="wall-swatches"></div>
+        </div>
+        <div class="decor-box">
+          <div class="decor-lbl">🪵 Покрытие пола</div>
+          <div class="floor-swatches" id="floor-swatches"></div>
+        </div>
+      </div>
+      <div class="section-lbl">📦 Склад</div>
+      <div class="inv-grid" id="home-inventory"></div>
+      <div class="section-lbl">🛒 Магазин</div>
+      <div class="shop-grid" id="home-shop"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- OVERLAYS -->
+<div class="overlay" id="overlay-angry">
+  <div class="angry-modal">
+    <span class="angry-emoji" id="angry-emoji">😡</span>
+    <div class="speech" id="angry-speech">Неправильно!</div>
+    <div class="pen" id="angry-pen">Штраф: -5 💰</div>
+    <button class="btn" id="angry-accept">Принять штраф</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-summary">
+  <div class="modal">
+    <h2>Смена закрыта</h2>
+    <div id="summary-content"></div>
+    <button class="btn btn-primary" onclick="restartShift()">Ещё смена</button>
+    <button class="btn btn-ghost btn-small" onclick="goHub();hideOverlay('overlay-summary')">🏙 В город</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-letter">
+  <div class="modal" style="background:linear-gradient(160deg,#fffdf5,#f0f8ff);border-color:#a8d0ee">
+    <div style="font-size:36px">📬</div>
+    <h2 id="letter-title">Новости магазина</h2>
+    <div id="letter-body" style="font-size:14px;line-height:1.6;color:var(--navy);text-align:left;background:#e8f2ff;border-left:4px solid var(--blue);padding:12px 16px;border-radius:8px;margin:10px 0"></div>
+    <div style="font-size:13px;color:var(--muted);font-style:italic;text-align:right;margin-bottom:10px" id="letter-sign">— Директор магазина</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;background:#e8f6ec;border:2px dashed var(--green);border-radius:14px;padding:10px;margin-bottom:12px">
+      <div style="text-align:center">
+        <div style="font-size:10px;text-transform:uppercase;color:var(--muted);letter-spacing:1px;font-weight:800">Уровень</div>
+        <div style="font-size:22px;font-weight:800;color:var(--green-dark)" id="letter-level">2</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:10px;text-transform:uppercase;color:var(--muted);letter-spacing:1px;font-weight:800">Что нового</div>
+        <div style="font-size:12px;color:var(--green-dark);font-weight:700" id="letter-feature">Сложнее заказы</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="hideOverlay('overlay-letter')">Продолжить</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-reward">
+  <div class="modal" id="reward-content"></div>
+</div>
+
+<script>
+/* ============================================================
+   STATE
+   ============================================================ */
+const STORAGE_KEY = 'cozy_city_boy_v1';
+
+const DEFAULT_STATE = {
+  player: null,
+  coins: 30,
+  cashier: {level:1, streak:0, seenLetters:[], records:[]},
+  designer: {tasks:{}},
+  home: {placed:[], wallpaper:'sky', floor:'wood', inventory:{}, selected:null}
+};
+
+let state = loadState();
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return deepMerge(JSON.parse(JSON.stringify(DEFAULT_STATE)), JSON.parse(raw));
+  }catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT_STATE));
+}
+function deepMerge(base, over){
+  const out = JSON.parse(JSON.stringify(base));
+  for(const k in over){
+    if(over[k] && typeof over[k]==='object' && !Array.isArray(over[k]) && base[k] && typeof base[k]==='object'){
+      out[k] = deepMerge(base[k], over[k]);
+    } else out[k] = over[k];
+  }
+  return out;
+}
+function save(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+
+/* ============================================================
+   SCREENS
+   ============================================================ */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if(el) el.classList.add('active');
+  window.scrollTo(0,0);
+}
+function goHub(){
+  if(state.player){
+    document.getElementById('hub-avatar').innerHTML = avatarSVG(state.player.char, 52);
+    document.getElementById('hub-pname').textContent = state.player.name;
+    document.getElementById('hub-coins').textContent = state.coins;
+    document.getElementById('hub-stars').textContent = totalStars();
+  }
+  showScreen('screen-hub');
+}
+function totalStars(){
+  return Object.values(state.designer.tasks).reduce((a,t)=>a+(t.stars||0),0);
+}
+
+/* ============================================================
+   AVATARS — 3 мальчика
+   ============================================================ */
+let avCounter = 0;
+function avatarSVG(char, size=80){
+  avCounter++;
+  const id = 'av'+avCounter;
+
+  let hair='#4a3524', skin='#f8cfae', shirt='#4a90d9', extra='';
+
+  if(char==='boy1'){ // Макс — обычный парень
+    hair='#6b4423'; skin='#f8cfae'; shirt='#4a90d9';
+  } else if(char==='boy2'){ // Тимка — с кепкой
+    hair='#2e241e'; skin='#e8b58a'; shirt='#ff9e3d';
+    extra = `<path d="M22 30 Q22 12 50 12 Q78 12 78 30 L78 34 Q78 32 50 32 Q22 32 22 34 Z" fill="#e63946"/>
+      <rect x="66" y="30" width="18" height="6" rx="3" fill="#c1292e"/>`;
+  } else if(char==='boy3'){ // Космо — в очках, звёздная футболка
+    hair='#1a1a1a'; skin='#ffd9b8'; shirt='#7a5a9a';
+    extra = `<circle cx="25" cy="45" r="2" fill="#ffd166"/>
+      <circle cx="75" cy="65" r="1.8" fill="#ffd166"/>
+      <circle cx="40" cy="72" r="1.5" fill="#ffd166"/>
+      <circle cx="60" cy="42" r="1.5" fill="#fff"/>`;
+  }
+
+  const glasses = char==='boy3' ? `
+    <circle cx="41" cy="52" r="6.5" fill="rgba(255,255,255,.35)" stroke="#2c3e50" stroke-width="2"/>
+    <circle cx="59" cy="52" r="6.5" fill="rgba(255,255,255,.35)" stroke="#2c3e50" stroke-width="2"/>
+    <line x1="47.5" y1="52" x2="52.5" y2="52" stroke="#2c3e50" stroke-width="2"/>` : `
+    <circle cx="41" cy="52" r="3.6" fill="#2c3e50"/>
+    <circle cx="59" cy="52" r="3.6" fill="#2c3e50"/>
+    <circle cx="42.2" cy="50.8" r="1.3" fill="#fff"/>
+    <circle cx="60.2" cy="50.8" r="1.3" fill="#fff"/>`;
+
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" style="border-radius:50%">
+    <defs><clipPath id="${id}"><circle cx="50" cy="50" r="50"/></clipPath></defs>
+    <circle cx="50" cy="50" r="50" fill="${shirt}"/>
+    <g clip-path="url(#${id})">
+      <path d="M8 100 Q8 72 50 72 Q92 72 92 100 Z" fill="${shirt}"/>
+      ${extra}
+      <ellipse cx="50" cy="52" rx="25" ry="27" fill="${skin}"/>
+      <path d="M26 44 Q28 18 50 18 Q72 18 74 44 Q68 32 50 32 Q32 32 26 44 Z" fill="${hair}"/>
+      ${glasses}
+      <ellipse cx="33" cy="60" rx="4.5" ry="2.5" fill="#ff9aa8" opacity=".4"/>
+      <ellipse cx="67" cy="60" rx="4.5" ry="2.5" fill="#ff9aa8" opacity=".4"/>
+      <path d="M42 63 Q50 70 58 63" fill="none" stroke="#a8563f" stroke-width="2.4" stroke-linecap="round"/>
+    </g>
+  </svg>`;
+}
+
+/* ============================================================
+   WELCOME / CHARACTER
+   ============================================================ */
+function renderWelcome(){
+  const box = document.getElementById('welcome-actions');
+  if(state.player){
+    box.innerHTML = `
+      <button class="btn btn-primary" onclick="goHub()">▶ Продолжить</button>
+      <button class="btn btn-ghost btn-small" onclick="showScreen('screen-character')">🎭 Новый герой</button>
+    `;
+  } else {
+    box.innerHTML = `<button class="btn btn-primary" onclick="showScreen('screen-character')">▶ Начать</button>`;
+  }
+}
+
+let charSelected = null;
+
+function renderCharacter(){
+  const row = document.getElementById('avatar-row');
+  const list = [
+    {id:'boy1', name:'Макс', sub:'Обычный парень'},
+    {id:'boy2', name:'Тимка', sub:'В кепке'},
+    {id:'boy3', name:'Космо', sub:'В очках'}
+  ];
+  row.innerHTML = list.map(c=>`
+    <div class="avatar-opt" data-char="${c.id}">
+      <div style="display:flex;justify-content:center">${avatarSVG(c.id, 76)}</div>
+      <div class="av-name">${c.name}</div>
+      <div class="av-sub">${c.sub}</div>
+    </div>`).join('');
+  row.querySelectorAll('.avatar-opt').forEach(el=>{
+    el.onclick = ()=>{
+      row.querySelectorAll('.avatar-opt').forEach(x=>x.classList.remove('selected'));
+      el.classList.add('selected');
+      charSelected = el.dataset.char;
+      updateCharDone();
+    };
+  });
+  const nameEl = document.getElementById('char-name');
+  nameEl.value = state.player ? state.player.name : '';
+  if(state.player && state.player.char){
+    charSelected = state.player.char;
+    const opt = row.querySelector(`[data-char="${state.player.char}"]`);
+    if(opt) opt.classList.add('selected');
+  }
+  nameEl.oninput = updateCharDone;
+  updateCharDone();
+}
+function updateCharDone(){
+  const name = document.getElementById('char-name').value.trim();
+  document.getElementById('char-done').disabled = !(name.length>=2 && charSelected);
+}
+document.getElementById('char-done').addEventListener('click', ()=>{
+  const name = document.getElementById('char-name').value.trim();
+  if(!name || !charSelected) return;
+  state.player = {name, char:charSelected};
+  save();
+  goHub();
+});
+
+function resetAll(){
+  if(!confirm('Начать заново? Весь прогресс будет потерян.')) return;
+  state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  save();
+  renderWelcome();
+  showScreen('screen-welcome');
+}
+
+/* ============================================================
+   CASHIER — спортивный магазин
+   ============================================================ */
+const PRODUCTS = {
+  ball:       { name:'Мяч',         emoji:'⚽', color:'#a8e6cf' },
+  sneakers:   { name:'Кроссовки',   emoji:'👟', color:'#ffd3b6' },
+  cap:        { name:'Кепка',       emoji:'🧢', color:'#9b8ce0' },
+  backpack:   { name:'Рюкзак',      emoji:'🎒', color:'#ffb3c1' },
+  basketball: { name:'Баскетбол',   emoji:'🏀', color:'#f0b87b' },
+  gloves:     { name:'Перчатки',    emoji:'🥊', color:'#e07a5f' },
+  skateboard: { name:'Скейтборд',   emoji:'🛹', color:'#c9a227' },
+  headphones: { name:'Наушники',    emoji:'🎧', color:'#4a9ec4' }
+};
+const PRODUCT_KEYS = Object.keys(PRODUCTS);
+
+const LEVELS = [
+  {num:1, name:'Новичок',        prices:[5,10,15,20],             maxItems:3, types:['sum'],                 reward:10, penalty:5},
+  {num:2, name:'Популярный',     prices:[5,6,7,8,10,12,15],      maxItems:3, types:['sum','sum','qty'],    reward:12, penalty:8},
+  {num:3, name:'Спортивный бум', prices:[5,6,7,8,9,12,13,15,18], maxItems:4, types:['sum','sum','qty','price'], reward:15, penalty:12},
+  {num:4, name:'Легенда',        prices:[7,8,9,11,13,14,16,18,20,25], maxItems:5, types:['sum','qty','price','mixed'], reward:20, penalty:18}
+];
+
+const LEVEL_LETTERS = {
+  2:{ title:'📬 Магазин растёт!', body:'Слух о нашем магазине разлетелся по городу! Теперь покупатели берут больше товаров, а иногда просят найти <strong>количество</strong>, а не стоимость.', feature:'Появились задания с количеством' },
+  3:{ title:'📬 Очередь до улицы!', body:'О нас написали в спортивной газете! Заказы стали <strong>больше</strong>, и покупатели просят найти ещё и <strong>цену</strong> товара. Держись!', feature:'Новые типы заданий' },
+  4:{ title:'📬 Ты — звезда!', body:'Тебя рекомендуют всем друзьям! Огромные заказы и задачи на все типы расчётов. Покажи класс!', feature:'Максимальная сложность' }
+};
+
+let sessionStats = {served:0, happy:0, angry:0, earned:0, penalties:0};
+let currentTask = null;
+
+function levelConfig(){ return LEVELS[state.cashier.level-1]; }
+function applyPrices(){
+  const cfg = levelConfig();
+  PRODUCT_KEYS.forEach((key, i)=>{
+    PRODUCTS[key].price = cfg.prices[i % cfg.prices.length];
+  });
+}
+
+function startCashier(){
+  if(!state.player) return;
+  sessionStats = {served:0, happy:0, angry:0, earned:0, penalties:0};
+  applyPrices();
+  renderPriceList();
+  updateCashierHeader();
+  newClient();
+  showScreen('screen-cashier');
+}
+
+function updateCashierHeader(){
+  document.getElementById('c-coins').textContent = state.coins;
+  document.getElementById('c-level').textContent = state.cashier.level;
+  document.getElementById('c-streak').textContent = state.cashier.streak;
+  document.getElementById('c-cashier-name').textContent = state.player ? state.player.name : '—';
+}
+
+function renderPriceList(){
+  const list = document.getElementById('c-price-list');
+  list.innerHTML = PRODUCT_KEYS.map(k=>{
+    const p = PRODUCTS[k];
+    return `<li>
+      <div class="mini" style="background:${p.color}">${p.emoji}</div>
+      <span class="p-name">${p.name}</span>
+      <span class="p-price">${p.price} ₽</span>
+    </li>`;
+  }).join('');
+}
+
+function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function shuffle(a){
+  const arr = a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  return arr;
+}
+
+function generateTask(){
+  const cfg = levelConfig();
+  const type = pick(cfg.types);
+  const n = type==='mixed' ? randInt(2, Math.min(3, cfg.maxItems)) : randInt(2, cfg.maxItems);
+  const keys = shuffle(PRODUCT_KEYS).slice(0, n);
+  const items = keys.map(key=>{
+    const p = PRODUCTS[key];
+    const qty = randInt(2, state.cashier.level>=3 ? 7 : 5);
+    return {productKey:key, product:{...p}, qty, price:p.price, total:p.price*qty, unknown:null};
+  });
+  let description='', totalUnknown=false;
+  if(type==='sum'){
+    items.forEach(it=>it.unknown='total');
+    totalUnknown = true;
+    description = 'Посчитай стоимость каждого товара и общий итог';
+  } else if(type==='qty'){
+    const idx = randInt(0, items.length-1);
+    items[idx].unknown='qty';
+    description = `Сколько взяли «${items[idx].product.name}»? Найди количество`;
+  } else if(type==='price'){
+    const idx = randInt(0, items.length-1);
+    items[idx].unknown='price';
+    description = `Сколько стоит один «${items[idx].product.name}»? Найди цену`;
+  } else {
+    const iq = randInt(0, items.length-1);
+    let ip = randInt(0, items.length-1);
+    while(ip===iq && items.length>1) ip = randInt(0, items.length-1);
+    items[iq].unknown='qty';
+    items[ip].unknown='price';
+    description = 'Найди пропущенные значения в чеке';
+  }
+  const grandTotal = items.reduce((s,it)=>s+it.total, 0);
+  return {type, items, grandTotal, totalUnknown, description};
+}
+
+function renderReceipt(){
+  const body = document.getElementById('c-receipt-body');
+  body.innerHTML = '';
+  document.getElementById('c-task-text').textContent = currentTask.description;
+  currentTask.items.forEach((it, index)=>{
+    const row = document.createElement('div');
+    row.className = 'receipt-row';
+
+    const sticker = `<div class="prod-sticker" style="background:${it.product.color}">${it.product.emoji}</div>`;
+    const info = `<div><div class="prod-name">${it.product.name}</div></div>`;
+
+    let qtyBlock;
+    if(it.unknown==='qty'){
+      qtyBlock = `<div class="qty-block"><div class="qty-lbl">Кол-во</div>
+        <div class="qty-answer"><input type="text" inputmode="numeric" data-index="${index}" data-field="qty" placeholder="?" maxlength="3" autocomplete="off"></div></div>`;
+    } else {
+      qtyBlock = `<div class="qty-block"><div class="qty-lbl">Кол-во</div><div class="qty-val">${it.qty} шт</div></div>`;
+    }
+
+    let ansBlock;
+    if(it.unknown==='total'){
+      ansBlock = `<div class="ans-field"><span class="ans-field-lbl">Стоимость</span>
+        <input type="text" inputmode="numeric" class="ans-input" data-index="${index}" data-field="total" placeholder="?" autocomplete="off"></div>`;
+    } else if(it.unknown==='price'){
+      ansBlock = `<div class="ans-field"><span class="ans-field-lbl">Цена</span>
+        <input type="text" inputmode="numeric" class="ans-input" data-index="${index}" data-field="price" placeholder="?" autocomplete="off"></div>`;
+    } else {
+      ansBlock = `<div class="ans-field"><span class="ans-field-lbl">Стоимость</span>
+        <input type="text" class="ans-input" value="${it.total}" disabled></div>`;
+    }
+
+    row.innerHTML = sticker + info + qtyBlock + ansBlock;
+    body.appendChild(row);
+  });
+
+  const totalInput = document.getElementById('c-total-input');
+  if(currentTask.totalUnknown){
+    totalInput.disabled = false;
+    totalInput.value = '';
+    totalInput.placeholder = '?';
+  } else {
+    totalInput.disabled = true;
+    totalInput.value = String(currentTask.grandTotal);
+  }
+  document.getElementById('c-checkout').disabled = false;
+}
+
+function newClient(){
+  currentTask = generateTask();
+  renderReceipt();
+}
+
+function readNum(el){
+  const raw = String(el.value||'').replace(/[^0-9]/g,'');
+  return raw==='' ? null : parseInt(raw,10);
+}
+
+function checkAnswers(){
+  let errors = 0;
+  const body = document.getElementById('c-receipt-body');
+  body.querySelectorAll('input:not([disabled])').forEach(inp=>{
+    const i = Number(inp.dataset.index);
+    const field = inp.dataset.field;
+    const it = currentTask.items[i];
+    const val = readNum(inp);
+    let correct = null;
+    if(field==='total') correct = it.total;
+    else if(field==='price') correct = it.price;
+    else if(field==='qty') correct = it.qty;
+    inp.classList.remove('correct','wrong');
+    if(correct!==null && val===correct) inp.classList.add('correct');
+    else { inp.classList.add('wrong'); errors++; }
+  });
+  const totalInp = document.getElementById('c-total-input');
+  if(!totalInp.disabled){
+    totalInp.classList.remove('correct','wrong');
+    if(readNum(totalInp)===currentTask.grandTotal) totalInp.classList.add('correct');
+    else { totalInp.classList.add('wrong'); errors++; }
+  }
+  return {allCorrect: errors===0, errors};
+}
+
+document.getElementById('c-checkout').addEventListener('click', ()=>{
+  const allInputs = [
+    ...document.getElementById('c-receipt-body').querySelectorAll('input:not([disabled])'),
+    ...(!document.getElementById('c-total-input').disabled ? [document.getElementById('c-total-input')] : [])
+  ];
+  allInputs.forEach(inp=>inp.value = String(inp.value).replace(/[^0-9]/g,''));
+  const empty = allInputs.some(inp=>String(inp.value).trim()==='');
+  if(empty){ showToast('✍️ Заполни все поля!', 'error'); return; }
+  const res = checkAnswers();
+  const cfg = levelConfig();
+  if(res.allCorrect){
+    state.coins += cfg.reward;
+    sessionStats.served++; sessionStats.happy++; sessionStats.earned += cfg.reward;
+    state.cashier.streak++;
+    updateCashierHeader();
+    save();
+    showToast(`🎉 +${cfg.reward} монет!`, 'success');
+    document.getElementById('c-checkout').disabled = true;
+    const nextLvl = state.cashier.level+1;
+    if(state.cashier.streak >= 4 && nextLvl <= LEVELS.length){
+      state.cashier.level = nextLvl;
+      state.cashier.streak = 0;
+      save();
+      updateCashierHeader();
+      applyPrices();
+      renderPriceList();
+      if(LEVEL_LETTERS[nextLvl] && !state.cashier.seenLetters.includes(nextLvl)){
+        state.cashier.seenLetters.push(nextLvl);
+        save();
+        showLetter(nextLvl);
+        setTimeout(newClient, 400);
+      } else {
+        showToast(`🎉 Новый уровень: ${LEVELS[nextLvl-1].name}!`, 'success');
+        setTimeout(newClient, 1500);
+      }
+    } else {
+      setTimeout(newClient, 1400);
+    }
+  } else {
+    showAngry(res.errors);
+  }
+});
+
+function showAngry(errors){
+  const pen = errors * levelConfig().penalty;
+  document.getElementById('angry-pen').textContent = `Штраф: -${pen} 💰`;
+  document.getElementById('angry-speech').textContent = pick([
+    'Это неправильно! Я не буду это покупать!',
+    'Что за безобразие! Верните деньги!',
+    'Вы обсчитали меня! Безобразие!',
+    'Я больше сюда не приду!'
+  ]);
+  document.getElementById('angry-emoji').textContent = pick(['😡','🤬','😤','😠']);
+  document.getElementById('overlay-angry').dataset.pen = pen;
+  showOverlay('overlay-angry');
+}
+document.getElementById('angry-accept').addEventListener('click', ()=>{
+  const pen = Number(document.getElementById('overlay-angry').dataset.pen || 0);
+  state.coins = Math.max(0, state.coins - pen);
+  sessionStats.penalties += pen;
+  sessionStats.angry++;
+  sessionStats.served++;
+  state.cashier.streak = 0;
+  updateCashierHeader();
+  save();
+  hideOverlay('overlay-angry');
+  setTimeout(newClient, 500);
+});
+
+function showLetter(level){
+  const L = LEVEL_LETTERS[level];
+  document.getElementById('letter-title').textContent = L.title;
+  document.getElementById('letter-body').innerHTML = L.body;
+  document.getElementById('letter-level').textContent = level;
+  document.getElementById('letter-feature').textContent = L.feature;
+  showOverlay('overlay-letter');
+}
+
+function closeShift(){
+  const html = `
+    <div class="row"><span class="emoji">🧑‍🤝‍🧑</span><span>Обслужено: <b>${sessionStats.served}</b></span></div>
+    <div class="row"><span class="emoji">😊</span><span>Довольных: <b>${sessionStats.happy}</b></span></div>
+    <div class="row"><span class="emoji">😡</span><span>Недовольных: <b>${sessionStats.angry}</b></span></div>
+    <div class="row"><span class="emoji">💰</span><span>Заработано: <b>+${sessionStats.earned}</b></span></div>
+    <div class="row"><span class="emoji">📉</span><span>Штрафов: <b>-${sessionStats.penalties}</b></span></div>
+    <div class="hint-bar">В кошельке сейчас: <b>${state.coins} 💰</b></div>
+  `;
+  document.getElementById('summary-content').innerHTML = html;
+  showOverlay('overlay-summary');
+}
+function restartShift(){
+  hideOverlay('overlay-summary');
+  sessionStats = {served:0, happy:0, angry:0, earned:0, penalties:0};
+  newClient();
+}
+
+/* ============================================================
+   DESIGNER — мастерская
+   ============================================================ */
+const DTASKS = [
+  {id:1, title:'Гараж', emoji:'🚗', color:'#c8dcee',
+    room:{a:5,b:4,labelTop:'5 м',labelSide:'4 м',decor:'🚗'},
+    wish:'Хочу коврик во весь гараж — чтобы машина стояла на чистом!',
+    question:'Гараж 5 м × 4 м. Сколько квадратных метров коврика нужно?',
+    inputs:[{key:'S',label:'Площадь S',unit:'м²',correct:20}],
+    hint:'Площадь = длина × ширина', solution:'S = 5 × 4 = 20 (м²)', reward:70},
+
+  {id:2, title:'Спортзал', emoji:'⚽', color:'#a8e6cf',
+    room:{a:7,b:5,labelTop:'7 м',labelSide:'5 м',decor:'⚽'},
+    wish:'Нужен мягкий газон в спортзале, чтобы играть в футбол!',
+    question:'Спортзал 7 м × 5 м. Сколько квадратных метров газона нужно?',
+    inputs:[{key:'S',label:'Площадь S',unit:'м²',correct:35}],
+    hint:'Площадь = длина × ширина', solution:'S = 7 × 5 = 35 (м²)', reward:70},
+
+  {id:3, title:'Комната геймера', emoji:'🎮', color:'#d4c1ec',
+    room:{a:6,b:3,labelTop:'6 м',labelSide:'3 м',decor:'🎮'},
+    wish:'Хочу LED-ленту по всему периметру комнаты для гейминга!',
+    question:'Комната 6 м × 3 м. Найди периметр — сколько метров ленты нужно?',
+    inputs:[{key:'P',label:'Периметр P',unit:'м',correct:18}],
+    hint:'Периметр = (длина + ширина) × 2', solution:'P = (6 + 3) × 2 = 18 (м)', reward:70},
+
+  {id:4, title:'Спортплощадка', emoji:'🏀', color:'#ffe0b2',
+    room:{a:10,b:8,labelTop:'10 м',labelSide:'8 м',decor:'🏀'},
+    wish:'Нужен забор вокруг площадки, чтобы мяч не улетал!',
+    question:'Площадка 10 м × 8 м. Сколько метров забора нужно?',
+    inputs:[{key:'P',label:'Периметр P',unit:'м',correct:36}],
+    hint:'Периметр = (длина + ширина) × 2', solution:'P = (10 + 8) × 2 = 36 (м)', reward:70},
+
+  {id:5, title:'Мастерская', emoji:'🔨', color:'#c8e8d0',
+    room:{a:4,b:4,labelTop:'4 м',labelSide:'4 м',decor:'🔨'},
+    wish:'Хочу покрасить стены и провести плинтус в мастерской!',
+    question:'Мастерская — квадрат 4 м × 4 м. Найди площадь и периметр.',
+    inputs:[
+      {key:'S',label:'Площадь S',unit:'м²',correct:16},
+      {key:'P',label:'Периметр P',unit:'м',correct:16}
+    ],
+    hint:'S = a × a. P = a × 4.', solution:'S = 4 × 4 = 16 (м²)\nP = 4 × 4 = 16 (м)', reward:80},
+
+  {id:6, title:'Библиотека', emoji:'📚', color:'#c0d0e8',
+    room:{a:6,b:5,labelTop:'6 м',labelSide:'5 м',decor:'📚'},
+    wish:'Покрасим стены и постелим плинтус — сколько всего брать?',
+    question:'Комната 6 м × 5 м. Найди площадь и периметр.',
+    inputs:[
+      {key:'S',label:'Площадь S',unit:'м²',correct:30},
+      {key:'P',label:'Периметр P',unit:'м',correct:22}
+    ],
+    hint:'S = a × b. P = (a + b) × 2.', solution:'S = 6 × 5 = 30 (м²)\nP = (6 + 5) × 2 = 22 (м)', reward:80},
+
+  {id:7, title:'Кухня-студия', emoji:'🍳', color:'#a8e6cf',
+    room:{a:6,b:4,labelTop:'6 м',labelSide:'? м',decor:'🍳'},
+    wish:'Купил 24 плитки по 1 м². Длина 6 м. Какой ширины нужна плитка?',
+    question:'Площадь кухни 24 м², длина 6 м. Найди ширину.',
+    inputs:[{key:'b',label:'Ширина',unit:'м',correct:4}],
+    hint:'Ширина = площадь ÷ длина', solution:'b = 24 : 6 = 4 (м)', reward:75},
+
+  {id:8, title:'Квадратный двор', emoji:'🌳', color:'#c8e0a8',
+    room:{a:4,b:4,labelTop:'? м',labelSide:'? м',decor:'🌳'},
+    wish:'Хочу квадратный двор с забором 16 м. Какая сторона?',
+    question:'Периметр квадратного двора 16 м. Найди сторону.',
+    inputs:[{key:'a',label:'Сторона',unit:'м',correct:4}],
+    hint:'Сторона = периметр ÷ 4', solution:'a = 16 : 4 = 4 (м)', reward:75},
+
+  {id:9, title:'Игровая', emoji:'🕹️', color:'#d4c1ec',
+    room:{a:6,b:6,labelTop:'? м',labelSide:'? м',decor:'🕹️'},
+    wish:'Периметр комнаты 24 м. Хочу ковролин во всю комнату!',
+    question:'Периметр квадратной комнаты 24 м. Найди сторону и площадь.',
+    inputs:[
+      {key:'a',label:'Сторона',unit:'м',correct:6},
+      {key:'S',label:'Площадь S',unit:'м²',correct:36}
+    ],
+    hint:'Шаг 1: a = P ÷ 4. Шаг 2: S = a × a.', solution:'a = 24 : 4 = 6 (м)\nS = 6 × 6 = 36 (м²)', reward:85},
+
+  {id:10, title:'Прихожая', emoji:'🚪', color:'#c8dcee',
+    room:{a:6,b:3,labelTop:'6 м',labelSide:'? м',decor:'🚪'},
+    wish:'Периметр прихожей 18 м, длина 6 м. Хочу новый пол!',
+    question:'Периметр 18 м, длина 6 м. Найди ширину и площадь.',
+    inputs:[
+      {key:'b',label:'Ширина',unit:'м',correct:3},
+      {key:'S',label:'Площадь S',unit:'м²',correct:18}
+    ],
+    hint:'Шаг 1: b = P ÷ 2 − a. Шаг 2: S = a × b.', solution:'b = 18 : 2 − 6 = 3 (м)\nS = 6 × 3 = 18 (м²)', reward:85},
+
+  {id:11, title:'Г-образный холл', emoji:'📐', color:'#c8dcee',
+    room:{type:'custom', svg:`
+      <svg viewBox="0 0 340 240" xmlns="http://www.w3.org/2000/svg">
+        <defs><pattern id="lp2" width="18" height="18" patternUnits="userSpaceOnUse">
+          <rect width="18" height="18" fill="#c8dcee"/>
+          <path d="M 0 18 L 18 0" stroke="rgba(255,255,255,.5)" stroke-width="1"/>
+        </pattern></defs>
+        <path d="M 60 40 L 170 40 L 170 84 L 236 84 L 236 172 L 60 172 Z" fill="url(#lp2)" stroke="#4a90d9" stroke-width="3" stroke-linejoin="round"/>
+        <line x1="170" y1="84" x2="170" y2="172" stroke="#4a90d9" stroke-width="2" stroke-dasharray="6 4"/>
+        <text x="112" y="30" text-anchor="middle" font-size="13" font-weight="700" fill="#2c5f99" font-family="Comfortaa">5 м</text>
+        <text x="45" y="112" text-anchor="middle" font-size="13" font-weight="700" fill="#4a9c5e" font-family="Comfortaa">6 м</text>
+        <text x="203" y="76" text-anchor="middle" font-size="13" font-weight="700" fill="#2c5f99" font-family="Comfortaa">3 м</text>
+        <text x="252" y="132" text-anchor="middle" font-size="13" font-weight="700" fill="#4a9c5e" font-family="Comfortaa">4 м</text>
+        <text x="112" y="112" text-anchor="middle" font-size="32">🛋️</text>
+        <text x="203" y="132" text-anchor="middle" font-size="26">🎮</text>
+      </svg>`},
+    wish:'Г-образный холл — хочу плитку на весь пол!',
+    question:'Г-образная комната. Левая часть 5 м × 6 м, правая 3 м × 4 м. Найди общую площадь.',
+    inputs:[{key:'S',label:'Общая площадь S',unit:'м²',correct:42}],
+    hint:'Раздели на два прямоугольника (пунктир) и сложи площади.',
+    solution:'S₁ = 5 × 6 = 30 (м²)\nS₂ = 3 × 4 = 12 (м²)\nS = 30 + 12 = 42 (м²)',
+    reward:95},
+
+  {id:12, title:'Космическая станция', emoji:'🚀', color:'#c8e0e0',
+    room:{a:8,b:8,labelTop:'? м',labelSide:'? м',decor:'🚀'},
+    wish:'Квадратный отсек 64 м². Нужен защитный контур по всему краю!',
+    question:'Площадь квадратного отсека 64 м². Найди сторону и периметр.',
+    inputs:[
+      {key:'a',label:'Сторона',unit:'м',correct:8},
+      {key:'P',label:'Периметр P',unit:'м',correct:32}
+    ],
+    hint:'8 × 8 = 64. Периметр = сторона × 4.', solution:'a = 8 (м)\nP = 8 × 4 = 32 (м)', reward:95}
+];
+
+function isTaskUnlocked(i){
+  if(i===0) return true;
+  for(let j=0;j<i;j++){
+    if(state.designer.tasks[DTASKS[j].id] && state.designer.tasks[DTASKS[j].id].stars>0) return true;
+  }
+  return false;
+}
+
+function startDesigner(){
+  const grid = document.getElementById('d-task-grid');
+  const solved = Object.values(state.designer.tasks).filter(t=>t.stars>0).length;
+  document.getElementById('d-coins').textContent = state.coins;
+  document.getElementById('d-solved').textContent = solved;
+  document.getElementById('d-total').textContent = DTASKS.length;
+
+  grid.innerHTML = DTASKS.map((t,i)=>{
+    const p = state.designer.tasks[t.id] || {};
+    const stars = p.stars || 0;
+    const unlocked = isTaskUnlocked(i);
+    const cls = `task-card ${stars>0?'solved':''} ${!unlocked?'locked':''}`;
+    const onclick = unlocked ? `onclick="openTask(${i})"` : '';
+    return `<div class="${cls}" style="background:${t.color}" ${onclick}>
+      <div class="task-num">${t.id}</div>
+      <div class="task-emoji">${t.emoji}</div>
+      <div class="task-title-sm">${t.title}</div>
+      <div class="task-stars">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+    </div>`;
+  }).join('');
+  showScreen('screen-designer');
+}
+
+let activeTaskIdx = null;
+let activeAttempts = 0;
+
+function openTask(i){
+  activeTaskIdx = i;
+  activeAttempts = 0;
+  const t = DTASKS[i];
+  const p = state.designer.tasks[t.id] || {};
+  if(p.stars>0){ showReview(t); return; }
+  if(!isTaskUnlocked(i)) return;
+
+  document.getElementById('task-header-title').textContent = `${t.emoji} ${t.title}`;
+  const cNames = ['Андрей','Серёга','Дима','Вова','Женя','Максим','Кирилл','Игорь','Слава','Толя','Петя','Гоша'];
+  const cChar = ['boy1','boy2','boy3','boy1','boy2','boy3','boy1','boy2','boy3','boy1','boy2','boy3'][i%12];
+  const cName = cNames[i % cNames.length];
+  document.getElementById('task-client-row').innerHTML = `
+    <div>${avatarSVG(cChar, 44)}</div>
+    <div class="b-text"><b>${cName}:</b> «${t.wish}»</div>`;
+  document.getElementById('task-plan').innerHTML = renderPlan(t);
+  document.getElementById('task-question').textContent = t.question;
+
+  const nb = document.getElementById('task-notebook');
+  nb.value = p.notebook || '';
+  nb.oninput = ()=>{
+    const cur = state.designer.tasks[t.id] || {};
+    state.designer.tasks[t.id] = {...cur, notebook:nb.value};
+    save();
+  };
+
+  const af = document.getElementById('task-ans-fields');
+  af.innerHTML = t.inputs.map(inp=>`
+    <div class="ans-field-big">
+      <label>${inp.label}</label>
+      <div class="inp-wrap">
+        <input type="number" step="any" id="task-in-${inp.key}" placeholder="?">
+        <span class="unit">${inp.unit}</span>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('task-feedback').innerHTML = '';
+  showScreen('screen-task');
+}
+
+function renderPlan(t){
+  if(t.room.type==='custom') return t.room.svg;
+  const r = t.room;
+  const W=340,H=280, maxW=200,maxH=160;
+  const scale = Math.min(maxW/r.a, maxH/r.b);
+  const w = r.a*scale, h = r.b*scale;
+  const x=(W-w)/2, y=(H-h)/2+10;
+  return `<svg viewBox="0 0 ${W} ${H}" width="${W}" style="max-width:100%;height:auto">
+    <defs><pattern id="fp${t.id}" width="18" height="18" patternUnits="userSpaceOnUse">
+      <rect width="18" height="18" fill="${t.color}"/>
+      <path d="M 0 18 L 18 0" stroke="rgba(255,255,255,.4)" stroke-width="1"/>
+    </pattern></defs>
+    <rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#fp${t.id})" stroke="#4a90d9" stroke-width="3" rx="8"/>
+    <line x1="${x}" y1="${y-18}" x2="${x+w}" y2="${y-18}" stroke="#ff9e3d" stroke-width="2" stroke-linecap="round"/>
+    <line x1="${x}" y1="${y-25}" x2="${x}" y2="${y-11}" stroke="#ff9e3d" stroke-width="2"/>
+    <line x1="${x+w}" y1="${y-25}" x2="${x+w}" y2="${y-11}" stroke="#ff9e3d" stroke-width="2"/>
+    <rect x="${x+w/2-32}" y="${y-34}" width="64" height="22" rx="9" fill="#fff" stroke="#ff9e3d" stroke-width="1.5"/>
+    <text x="${x+w/2}" y="${y-18}" text-anchor="middle" font-size="13" font-weight="700" fill="#d97f1a" font-family="Comfortaa">${r.labelTop}</text>
+    <line x1="${x-18}" y1="${y}" x2="${x-18}" y2="${y+h}" stroke="#4a9c5e" stroke-width="2" stroke-linecap="round"/>
+    <line x1="${x-25}" y1="${y}" x2="${x-11}" y2="${y}" stroke="#4a9c5e" stroke-width="2"/>
+    <line x1="${x-25}" y1="${y+h}" x2="${x-11}" y2="${y+h}" stroke="#4a9c5e" stroke-width="2"/>
+    <rect x="${x-58}" y="${y+h/2-11}" width="44" height="22" rx="9" fill="#fff" stroke="#4a9c5e" stroke-width="1.5"/>
+    <text x="${x-36}" y="${y+h/2+5}" text-anchor="middle" font-size="13" font-weight="700" fill="#2d6b3d" font-family="Comfortaa">${r.labelSide}</text>
+    <text x="${x+w/2}" y="${y+h/2}" text-anchor="middle" dominant-baseline="middle" font-size="44">${r.decor||'🛠️'}</text>
+  </svg>`;
+}
+
+function checkTask(){
+  const t = DTASKS[activeTaskIdx];
+  const fb = document.getElementById('task-feedback');
+  let ok = true;
+  t.inputs.forEach(inp=>{
+    const el = document.getElementById(`task-in-${inp.key}`);
+    const val = parseFloat(String(el.value||'').replace(',','.'));
+    el.classList.remove('correct','wrong');
+    if(!isNaN(val) && Math.abs(val-inp.correct)<0.001){
+      el.classList.add('correct');
+    } else { el.classList.add('wrong'); ok = false; }
+  });
+  if(ok){
+    const stars = activeAttempts===0 ? 3 : activeAttempts===1 ? 2 : 1;
+    const reward = Math.round(t.reward * (stars===3?1:stars===2?0.65:0.4));
+    const cur = state.designer.tasks[t.id] || {};
+    const isFirst = !cur.stars || cur.stars===0;
+    state.designer.tasks[t.id] = {
+      ...cur,
+      stars: Math.max(cur.stars||0, stars),
+      notebook: document.getElementById('task-notebook').value
+    };
+    state.coins += reward;
+    save();
+    showTaskReward(t, stars, reward, isFirst);
+  } else {
+    activeAttempts++;
+    if(activeAttempts===1) fb.innerHTML = `<div class="feedback err">🤔 Почти! Проверь вычисления и попробуй снова.</div>`;
+    else if(activeAttempts===2) fb.innerHTML = `<div class="feedback hint">💡 ${t.hint}</div>`;
+    else fb.innerHTML = `<div class="feedback hint">📖 Первый шаг: ${t.solution.split('\n')[0]}</div>`;
+  }
+}
+function showTaskHint(){
+  const t = DTASKS[activeTaskIdx];
+  document.getElementById('task-feedback').innerHTML = `<div class="feedback hint">💡 ${t.hint}</div>`;
+}
+function showTaskReward(t, stars, reward, isFirst){
+  const box = document.getElementById('reward-content');
+  box.innerHTML = `
+    <h2>🎉 Заказ выполнен!</h2>
+    <div class="stars">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+    <div class="row"><span class="emoji">💰</span><span>+ ${reward} монет</span></div>
+    ${isFirst ? `<div class="client-msg">💌 Клиент очень доволен! «Спасибо!»</div>` : ''}
+    <div class="sol">${t.solution.replace(/\n/g,'<br>')}</div>
+    <div class="hint-bar">🛸 Потрать монеты в разделе «Моя комната»</div>
+    <button class="btn btn-primary" onclick="hideOverlay('overlay-reward');startDesigner()">Дальше →</button>
+  `;
+  showOverlay('overlay-reward');
+}
+function showReview(t){
+  const cur = state.designer.tasks[t.id] || {};
+  const stars = cur.stars || 0;
+  const box = document.getElementById('reward-content');
+  box.innerHTML = `
+    <h2>${t.emoji} ${t.title}</h2>
+    <div class="stars">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+    <div class="client-msg">«${t.wish}»</div>
+    <div class="sol">${t.solution.replace(/\n/g,'<br>')}</div>
+    <button class="btn btn-primary" onclick="hideOverlay('overlay-reward')">Понятно ✓</button>
+  `;
+  showOverlay('overlay-reward');
+}
+
+/* ============================================================
+   HOME — мужская мебель
+   ============================================================ */
+const FURN = {
+  chair:{name:'Стул', price:12, w:14, svg:`<svg viewBox="0 0 100 100"><ellipse cx="50" cy="89" rx="23" ry="4.5" fill="#000" opacity=".13"/><rect x="30" y="20" width="40" height="38" rx="13" fill="#4a90d9"/><rect x="25" y="50" width="50" height="15" rx="7" fill="#2c5f99"/><rect x="30" y="63" width="7" height="21" rx="3.5" fill="#5d4a3a"/><rect x="63" y="63" width="7" height="21" rx="3.5" fill="#5d4a3a"/></svg>`},
+  cactus:{name:'Кактус', price:16, w:12, svg:`<svg viewBox="0 0 100 100"><ellipse cx="50" cy="90" rx="20" ry="4" fill="#000" opacity=".13"/><rect x="38" y="55" width="24" height="32" rx="10" fill="#5d4a3a"/><ellipse cx="50" cy="40" rx="10" ry="20" fill="#4a9c5e"/><ellipse cx="36" cy="45" rx="6" ry="10" fill="#3d7a4a"/><ellipse cx="64" cy="45" rx="6" ry="10" fill="#3d7a4a"/></svg>`},
+  rocket:{name:'Ракета-модель', price:24, w:13, svg:`<svg viewBox="0 0 100 100"><ellipse cx="50" cy="92" rx="20" ry="4" fill="#000" opacity=".13"/><path d="M50 15 L60 45 L60 70 L40 70 L40 45 Z" fill="#e8f2ff" stroke="#4a90d9" stroke-width="2"/><ellipse cx="50" cy="40" rx="5" ry="5" fill="#4a90d9"/><path d="M40 55 L32 65 L40 70 Z" fill="#ff9e3d"/><path d="M60 55 L68 65 L60 70 Z" fill="#ff9e3d"/><path d="M44 70 L44 82 L50 92 L56 82 L56 70 Z" fill="#ff9e3d"/></svg>`},
+  poster:{name:'Постер', price:20, w:18, svg:`<svg viewBox="0 0 100 100"><rect x="9" y="14" width="82" height="64" rx="4" fill="#2c3e50"/><rect x="14" y="19" width="72" height="54" rx="2" fill="#4a90d9"/><circle cx="70" cy="34" r="12" fill="#ffd166"/><path d="M14 73 L40 40 L60 55 L75 42 L86 73 Z" fill="#4a9c5e"/><path d="M14 73 L32 55 L48 73 Z" fill="#3d7a4a"/><circle cx="30" cy="30" r="2" fill="#fff"/><circle cx="45" cy="26" r="1.5" fill="#fff"/><circle cx="60" cy="32" r="1.5" fill="#fff"/></svg>`},
+  rug:{name:'Ковёр', price:22, w:34, svg:`<svg viewBox="0 0 100 100"><ellipse cx="50" cy="58" rx="46" ry="26" fill="#2c5f99"/><ellipse cx="50" cy="58" rx="38" ry="20" fill="#4a90d9"/><ellipse cx="50" cy="58" rx="24" ry="12" fill="#ff9e3d"/><ellipse cx="50" cy="58" rx="10" ry="5" fill="#ffd166"/></svg>`},
+  desk:{name:'Рабочий стол', price:28, w:26, svg:`<svg viewBox="0 0 100 100"><ellipse cx="50" cy="88" rx="34" ry="5" fill="#000" opacity=".13"/><rect x="14" y="54" width="8" height="31" rx="4" fill="#5d4a3a"/><rect x="78" y="54" width="8" height="31" rx="4" fill="#5d4a3a"/><rect x="8" y="38" width="84" height="17" rx="4" fill="#c9a37a"/><rect x="8" y="38" width="84" height="5" rx="2" fill="#e8d0b8"/><rect x="30" y="20" width="40" height="20" rx="3" fill="#2c3e50"/><rect x="33" y="23" width="34" height="14" fill="#4a90d9"/></svg>`},
+  lamp:{name:'Торшер', price:26, w:14, svg:`<svg viewBox="0 0 100 100"><ellipse cx="50" cy="91" rx="18" ry="4.5" fill="#000" opacity=".13"/><rect x="46" y="44" width="8" height="45" rx="4" fill="#5d4a3a"/><path d="M28 46 L72 46 L62 16 L38 16 Z" fill="#ff9e3d"/><ellipse cx="50" cy="46" rx="22" ry="3.5" fill="#d97f1a"/></svg>`},
+  whiteboard:{name:'Белый щит', price:24, w:16, svg:`<svg viewBox="0 0 100 100"><rect x="6" y="20" width="88" height="60" rx="3" fill="#e8f2ff" stroke="#4a90d9" stroke-width="3"/><line x1="15" y1="35" x2="55" y2="35" stroke="#4a9c5e" stroke-width="2"/><line x1="15" y1="48" x2="70" y2="48" stroke="#ff9e3d" stroke-width="2"/><line x1="15" y1="61" x2="45" y2="61" stroke="#4a90d9" stroke-width="2"/><circle cx="78" cy="35" r="3" fill="#e63946"/></svg>`},
+  fan:{name:'Вентилятор', price:34, w:18, svg:`<svg viewBox="0 0 100 100"><line x1="50" y1="2" x2="50" y2="22" stroke="#5d4a3a" stroke-width="3"/><circle cx="50" cy="20" r="5" fill="#5d4a3a"/><ellipse cx="30" cy="40" rx="22" ry="6" fill="#4a90d9" transform="rotate(-20 30 40)"/><ellipse cx="70" cy="40" rx="22" ry="6" fill="#4a90d9" transform="rotate(20 70 40)"/><ellipse cx="50" cy="58" rx="22" ry="6" fill="#4a90d9"/><circle cx="50" cy="40" r="6" fill="#ff9e3d"/></svg>`},
+  bookshelf:{name:'Полка', price:38, w:20, svg:`<svg viewBox="0 0 100 100"><ellipse cx="50" cy="91" rx="34" ry="5" fill="#000" opacity=".13"/><rect x="14" y="11" width="72" height="78" rx="5" fill="#5d4a3a"/><rect x="19" y="16" width="62" height="68" fill="#c9a37a"/><line x1="19" y1="38" x2="81" y2="38" stroke="#5d4a3a" stroke-width="3"/><line x1="19" y1="60" x2="81" y2="60" stroke="#5d4a3a" stroke-width="3"/><rect x="23" y="20" width="6" height="16" fill="#e63946"/><rect x="31" y="22" width="5" height="14" fill="#4a90d9"/><rect x="38" y="21" width="7" height="15" fill="#ff9e3d"/><rect x="54" y="20" width="6" height="16" fill="#4a9c5e"/></svg>`},
+  beanbag:{name:'Кресло-мешок', price:40, w:22, svg:`<svg viewBox="0 0 100 100"><ellipse cx="50" cy="90" rx="32" ry="5" fill="#000" opacity=".13"/><path d="M20 65 Q15 35 50 30 Q85 35 80 65 Q80 88 50 90 Q20 88 20 65 Z" fill="#2c5f99"/><path d="M25 60 Q25 45 50 42 Q75 45 75 60" fill="#4a90d9" opacity=".7"/><ellipse cx="50" cy="88" rx="30" ry="4" fill="#1a4570"/></svg>`},
+  tvstand:{name:'ТВ-тумба', price:36, w:28, svg:`<svg viewBox="0 0 100 100"><ellipse cx="50" cy="88" rx="38" ry="5" fill="#000" opacity=".13"/><rect x="10" y="62" width="80" height="22" rx="4" fill="#5d4a3a"/><rect x="20" y="30" width="60" height="36" rx="4" fill="#1a2332"/><rect x="23" y="33" width="54" height="30" rx="2" fill="#4a90d9"/><rect x="30" y="38" width="40" height="20" fill="#6bc5e8" opacity=".6"/><rect x="46" y="66" width="8" height="4" fill="#2c3e50"/></svg>`},
+  dartboard:{name:'Дартс', price:56, w:22, svg:`<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="#2c3e50" stroke="#4a90d9" stroke-width="3"/><circle cx="50" cy="50" r="34" fill="#ff9e3d"/><circle cx="50" cy="50" r="24" fill="#2c3e50"/><circle cx="50" cy="50" r="14" fill="#ff9e3d"/><circle cx="50" cy="50" r="5" fill="#e63946"/><line x1="50" y1="48" x2="65" y2="35" stroke="#ffd166" stroke-width="2" stroke-linecap="round"/><line x1="50" y1="48" x2="35" y2="42" stroke="#ffd166" stroke-width="2" stroke-linecap="round"/></svg>`},
+  bed:{name:'Кровать', price:64, w:34, svg:`<svg viewBox="0 0 100 100"><ellipse cx="50" cy="91" rx="42" ry="5" fill="#000" opacity=".13"/><rect x="6" y="26" width="10" height="54" rx="5" fill="#5d4a3a"/><rect x="84" y="50" width="10" height="30" rx="5" fill="#5d4a3a"/><rect x="12" y="46" width="76" height="34" rx="9" fill="#8a6a4a"/><rect x="14" y="40" width="72" height="28" rx="9" fill="#e8f2ff"/><rect x="18" y="34" width="28" height="17" rx="8" fill="#fff"/><rect x="50" y="34" width="28" height="17" rx="8" fill="#c8dcee"/><rect x="14" y="57" width="72" height="18" rx="6" fill="#4a90d9"/></svg>`},
+  workbench:{name:'Верстак', price:38, w:26, svg:`<svg viewBox="0 0 100 100"><ellipse cx="50" cy="90" rx="34" ry="5" fill="#000" opacity=".13"/><rect x="14" y="55" width="8" height="33" rx="4" fill="#5d4a3a"/><rect x="78" y="55" width="8" height="33" rx="4" fill="#5d4a3a"/><rect x="10" y="42" width="80" height="15" rx="3" fill="#8a6a4a"/><rect x="10" y="42" width="80" height="4" rx="2" fill="#c9a37a"/><rect x="25" y="28" width="6" height="14" fill="#2c3e50"/><rect x="40" y="26" width="12" height="4" fill="#4a9c5e"/><circle cx="70" cy="32" r="4" fill="#ff9e3d"/></svg>`}
+};
+
+const WALLS = [
+  {id:'sky', color:'#d8e8f5'}, {id:'blue', color:'#b8d4e8'},
+  {id:'mint', color:'#d4ecd8'}, {id:'green', color:'#c8e0c0'},
+  {id:'cream', color:'#f0ead8'}, {id:'navy', color:'#b8c8dc'},
+  {id:'grey', color:'#dcdce0'}, {id:'peach', color:'#f0ddc8'},
+  {id:'sand', color:'#e8dcc0'}, {id:'forest', color:'#c8d8c8'},
+  {id:'coral', color:'#f0d0c8'}, {id:'ice', color:'#e0f0f8'}
+];
+
+const FLOORS = [
+  {id:'wood', name:'Дерево', color:'#a0704a',
+    pattern:'repeating-linear-gradient(0deg,rgba(0,0,0,.1) 0 2px,transparent 2px 22px),repeating-linear-gradient(90deg,rgba(0,0,0,.08) 0 2px,transparent 2px 60px)'},
+  {id:'tile', name:'Плитка', color:'#c8c8d0',
+    pattern:'linear-gradient(45deg,#a8a8b8 25%,transparent 25%,transparent 75%,#a8a8b8 75%),linear-gradient(45deg,#a8a8b8 25%,transparent 25%,transparent 75%,#a8a8b8 75%)',
+    size:'40px 40px', position:'0 0,20px 20px'},
+  {id:'carpet', name:'Ковролин', color:'#4a5a6a',
+    pattern:'radial-gradient(circle at 5px 5px,rgba(255,255,255,.15) 2px,transparent 2px),radial-gradient(circle at 15px 15px,rgba(0,0,0,.2) 2px,transparent 2px)',
+    size:'20px 20px'},
+  {id:'concrete', name:'Бетон', color:'#9a9a98',
+    pattern:'radial-gradient(circle at 8px 8px,#7a7a78 3px,transparent 4px),radial-gradient(circle at 22px 22px,#b0b0a8 4px,transparent 5px)',
+    size:'32px 32px'},
+  {id:'space', name:'Космос', color:'#1a2942',
+    pattern:'radial-gradient(circle at 20px 20px,#fff 1.5px,transparent 2px),radial-gradient(circle at 60px 40px,#fff 1px,transparent 1.5px),radial-gradient(circle at 40px 70px,#fff 1.2px,transparent 1.8px)',
+    size:'80px 80px'},
+  {id:'grass', name:'Трава', color:'#6a9a5a',
+    pattern:'radial-gradient(circle at 3px 8px,#4a8a3a 1.5px,transparent 2px),radial-gradient(circle at 12px 4px,#5a9a4a 1.5px,transparent 2px),radial-gradient(circle at 8px 14px,#3a7a2a 1.5px,transparent 2px)',
+    size:'16px 16px'}
+];
+
+function startHome(){
+  document.getElementById('h-coins').textContent = state.coins;
+  renderRoom();
+  renderWallSwatches();
+  renderFloorSwatches();
+  renderHomeInventory();
+  renderHomeShop();
+  showScreen('screen-home');
+}
+
+function renderRoom(){
+  const scene = document.getElementById('room-scene');
+  scene.querySelectorAll('.room-item').forEach(el=>el.remove());
+  const wall = WALLS.find(w=>w.id===state.home.wallpaper) || WALLS[0];
+  scene.style.setProperty('--wall-color', wall.color);
+
+  const floorEl = document.getElementById('room-floor');
+  const fl = FLOORS.find(f=>f.id===state.home.floor) || FLOORS[0];
+  floorEl.style.backgroundColor = fl.color;
+  floorEl.style.backgroundImage = fl.pattern;
+  floorEl.style.backgroundSize = fl.size || 'auto';
+  floorEl.style.backgroundPosition = fl.position || '0 0';
+
+  state.home.placed.forEach((p, idx)=>{
+    const f = FURN[p.id];
+    if(!f) return;
+    const el = document.createElement('div');
+    el.className = 'room-item' + (state.home.selected===idx ? ' selected' : '');
+    el.dataset.idx = idx;
+    el.style.left = p.x + '%';
+    el.style.top = p.y + '%';
+    el.style.width = p.w + '%';
+    el.style.transform = `translate(-50%,-50%) rotate(${p.rot||0}deg)`;
+    el.style.zIndex = p.id==='rug' ? 1 : (p.id==='fan' ? 60 : (2+idx));
+    el.innerHTML = f.svg
+      + `<div class="room-rotate" data-rot="${idx}">↻</div>`
+      + `<div class="room-handle tl" data-handle="tl" data-idx="${idx}"></div>`
+      + `<div class="room-handle tr" data-handle="tr" data-idx="${idx}"></div>`
+      + `<div class="room-handle bl" data-handle="bl" data-idx="${idx}"></div>`
+      + `<div class="room-handle br" data-handle="br" data-idx="${idx}"></div>`;
+    scene.appendChild(el);
+  });
+  updateSelPanel();
+  setupRoomInteractions();
+}
+
+function updateSelPanel(){
+  const panel = document.getElementById('sel-panel');
+  const idx = state.home.selected;
+  if(idx===null || !state.home.placed[idx]){ panel.classList.remove('visible'); return; }
+  const p = state.home.placed[idx];
+  const f = FURN[p.id];
+  const sizePct = Math.round(p.w / f.w * 100);
+  panel.classList.add('visible');
+  panel.innerHTML = `
+    <span class="sel-name">${f.name} · ${sizePct}% · ${p.rot||0}°</span>
+    <button class="sel-btn rot" onclick="rotateSel(15)">↻ +15°</button>
+    <button class="sel-btn rot" onclick="rotateSel(90)">↻ +90°</button>
+    <button class="sel-btn del" onclick="deleteSel()">❌ Убрать</button>
+  `;
+}
+
+function rotateSel(deg){
+  const p = state.home.placed[state.home.selected];
+  if(!p) return;
+  p.rot = ((p.rot||0) + deg) % 360;
+  const el = document.querySelector(`.room-item[data-idx="${state.home.selected}"]`);
+  if(el) el.style.transform = `translate(-50%,-50%) rotate(${p.rot}deg)`;
+  save(); updateSelPanel();
+}
+function deleteSel(){
+  const idx = state.home.selected;
+  const p = state.home.placed[idx];
+  if(!p) return;
+  state.home.placed.splice(idx, 1);
+  state.home.inventory[p.id] = (state.home.inventory[p.id]||0) + 1;
+  state.home.selected = null;
+  save(); renderRoom(); renderHomeInventory();
+}
+
+function renderWallSwatches(){
+  const box = document.getElementById('wall-swatches');
+  box.innerHTML = WALLS.map(w=>`
+    <button class="swatch ${state.home.wallpaper===w.id?'active':''}"
+      style="background:${w.color}" onclick="setWall('${w.id}')" title="${w.id}"></button>
+  `).join('');
+}
+function renderFloorSwatches(){
+  const box = document.getElementById('floor-swatches');
+  box.innerHTML = FLOORS.map(f=>{
+    const st = `background-color:${f.color};background-image:${f.pattern}`
+      + (f.size?`;background-size:${f.size}`:'')
+      + (f.position?`;background-position:${f.position}`:'');
+    return `<button class="fswatch ${state.home.floor===f.id?'active':''}"
+      style="${st}" onclick="setFloor('${f.id}')" title="${f.name}">
+      <span class="fswatch-lbl">${f.name}</span>
+    </button>`;
+  }).join('');
+}
+function setWall(id){ state.home.wallpaper = id; save(); renderRoom(); renderWallSwatches(); }
+function setFloor(id){ state.home.floor = id; save(); renderRoom(); renderFloorSwatches(); }
+
+function renderHomeInventory(){
+  const box = document.getElementById('home-inventory');
+  const inv = Object.keys(state.home.inventory).filter(k=>state.home.inventory[k]>0 && FURN[k]);
+  if(inv.length===0){
+    box.innerHTML = `<div class="empty-msg">Пока пусто. Купи мебель в магазине ниже 🔧</div>`;
+    return;
+  }
+  box.innerHTML = inv.map(id=>`
+    <div class="inv-item" onclick="placeFromInv('${id}')">
+      <div class="item-art">${FURN[id].svg}</div>
+      <div class="item-name">${FURN[id].name}</div>
+      <span class="inv-count">×${state.home.inventory[id]}</span>
+    </div>
+  `).join('');
+}
+
+function renderHomeShop(){
+  const box = document.getElementById('home-shop');
+  box.innerHTML = Object.keys(FURN).map(id=>{
+    const f = FURN[id];
+    const can = state.coins >= f.price;
+    return `<div class="shop-card">
+      <div class="item-art">${f.svg}</div>
+      <div class="item-name">${f.name}</div>
+      <button class="buy-btn" ${can?'':'disabled'} onclick="buyFurn('${id}')">💰 ${f.price}</button>
+    </div>`;
+  }).join('');
+}
+
+function buyFurn(id){
+  const f = FURN[id];
+  if(state.coins < f.price) return;
+  state.coins -= f.price;
+  state.home.inventory[id] = (state.home.inventory[id]||0) + 1;
+  save();
+  document.getElementById('h-coins').textContent = state.coins;
+  renderHomeShop();
+  renderHomeInventory();
+  showToast(`Куплено: ${f.name}!`, 'success');
+}
+function placeFromInv(id){
+  if(!state.home.inventory[id] || state.home.inventory[id]<=0) return;
+  state.home.inventory[id]--;
+  if(state.home.inventory[id]===0) delete state.home.inventory[id];
+  state.home.placed.push({
+    id,
+    x: 45 + Math.random()*15,
+    y: id==='rug' ? 82 : (id==='fan' ? 16 : 50 + Math.random()*15),
+    w: FURN[id].w,
+    rot: 0
+  });
+  state.home.selected = state.home.placed.length-1;
+  save();
+  renderRoom();
+  renderHomeInventory();
+}
+
+function setupRoomInteractions(){
+  const scene = document.getElementById('room-scene');
+  scene.onpointerdown = (e)=>{
+    if(e.target.classList.contains('room-rotate')){
+      e.stopPropagation(); e.preventDefault();
+      startRotate(e, e.target); return;
+    }
+    if(e.target.classList.contains('room-handle')){
+      e.stopPropagation(); e.preventDefault();
+      startResize(e, e.target); return;
+    }
+    const itemEl = e.target.closest('.room-item');
+    if(itemEl){
+      const idx = parseInt(itemEl.dataset.idx, 10);
+      selectRoomItem(idx);
+      startMove(e, itemEl);
+      return;
+    }
+    selectRoomItem(null);
+  };
+}
+function selectRoomItem(idx){
+  state.home.selected = idx;
+  document.querySelectorAll('.room-item').forEach(el=>{
+    el.classList.toggle('selected', parseInt(el.dataset.idx,10)===idx);
+  });
+  updateSelPanel();
+}
+function startMove(e, itemEl){
+  const idx = parseInt(itemEl.dataset.idx, 10);
+  const item = state.home.placed[idx];
+  if(!item) return;
+  const rect = document.getElementById('room-scene').getBoundingClientRect();
+  const offsetX = e.clientX - rect.left - (item.x/100)*rect.width;
+  const offsetY = e.clientY - rect.top - (item.y/100)*rect.height;
+  itemEl.classList.add('dragging');
+  try{ itemEl.setPointerCapture(e.pointerId); }catch(err){}
+  function onMove(ev){
+    item.x = Math.max(5, Math.min(95, ((ev.clientX - rect.left - offsetX)/rect.width)*100));
+    item.y = Math.max(8, Math.min(92, ((ev.clientY - rect.top - offsetY)/rect.height)*100));
+    itemEl.style.left = item.x + '%';
+    itemEl.style.top = item.y + '%';
+  }
+  function onUp(){
+    itemEl.classList.remove('dragging');
+    try{ itemEl.releasePointerCapture(e.pointerId); }catch(err){}
+    itemEl.removeEventListener('pointermove', onMove);
+    itemEl.removeEventListener('pointerup', onUp);
+    itemEl.removeEventListener('pointercancel', onUp);
+    save();
+  }
+  itemEl.addEventListener('pointermove', onMove);
+  itemEl.addEventListener('pointerup', onUp);
+  itemEl.addEventListener('pointercancel', onUp);
+}
+function startResize(e, handleEl){
+  const idx = parseInt(handleEl.dataset.idx, 10);
+  const item = state.home.placed[idx];
+  if(!item) return;
+  const rect = document.getElementById('room-scene').getBoundingClientRect();
+  const itemEl = document.querySelector(`.room-item[data-idx="${idx}"]`);
+  const cx = rect.left + (item.x/100)*rect.width;
+  const cy = rect.top + (item.y/100)*rect.height;
+  const startDist = Math.max(Math.hypot(e.clientX-cx, e.clientY-cy), 12);
+  const startW = item.w;
+  try{ handleEl.setPointerCapture(e.pointerId); }catch(err){}
+  function onMove(ev){
+    const dist = Math.hypot(ev.clientX-cx, ev.clientY-cy);
+    item.w = Math.max(4, Math.min(80, startW * (dist/startDist)));
+    itemEl.style.width = item.w + '%';
+    updateSelPanel();
+  }
+  function onUp(){
+    try{ handleEl.releasePointerCapture(e.pointerId); }catch(err){}
+    handleEl.removeEventListener('pointermove', onMove);
+    handleEl.removeEventListener('pointerup', onUp);
+    handleEl.removeEventListener('pointercancel', onUp);
+    save();
+  }
+  handleEl.addEventListener('pointermove', onMove);
+  handleEl.addEventListener('pointerup', onUp);
+  handleEl.addEventListener('pointercancel', onUp);
+}
+function startRotate(e, handleEl){
+  const idx = parseInt(handleEl.dataset.rot, 10);
+  const item = state.home.placed[idx];
+  if(!item) return;
+  const rect = document.getElementById('room-scene').getBoundingClientRect();
+  const itemEl = document.querySelector(`.room-item[data-idx="${idx}"]`);
+  const cx = rect.left + (item.x/100)*rect.width;
+  const cy = rect.top + (item.y/100)*rect.height;
+  const startAng = Math.atan2(e.clientY-cy, e.clientX-cx);
+  const startRot = item.rot || 0;
+  try{ handleEl.setPointerCapture(e.pointerId); }catch(err){}
+  function onMove(ev){
+    const ang = Math.atan2(ev.clientY-cy, ev.clientX-cx);
+    let deg = startRot + (ang-startAng)*180/Math.PI;
+    deg = Math.round(deg/15)*15;
+    item.rot = deg;
+    itemEl.style.transform = `translate(-50%,-50%) rotate(${deg}deg)`;
+    updateSelPanel();
+  }
+  function onUp(){
+    try{ handleEl.releasePointerCapture(e.pointerId); }catch(err){}
+    handleEl.removeEventListener('pointermove', onMove);
+    handleEl.removeEventListener('pointerup', onUp);
+    handleEl.removeEventListener('pointercancel', onUp);
+    save();
+  }
+  handleEl.addEventListener('pointermove', onMove);
+  handleEl.addEventListener('pointerup', onUp);
+  handleEl.addEventListener('pointercancel', onUp);
+}
+
+/* ============================================================
+   OVERLAYS & TOAST
+   ============================================================ */
+function showOverlay(id){ document.getElementById(id).classList.add('show'); }
+function hideOverlay(id){ document.getElementById(id).classList.remove('show'); }
+
+function showToast(msg, type='info'){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .4s'; }, 1800);
+  setTimeout(()=>t.remove(), 2400);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderWelcome();
+renderCharacter();
+if(state.player){
+  goHub();
+} else {
+  showScreen('screen-welcome');
+}
+</script>
+</body>
+</html>
