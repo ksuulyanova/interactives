@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Спряжение глаголов — тренажёр</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Comic Sans MS', sans-serif;
+    font-size: 22px;
+    background: #FFF9E6;
+    margin: 0;
+    padding: 15px;
+    color: #222;
+    line-height: 1.5;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+
+  h1 { text-align: center; font-size: 36px; color: #333; margin: 10px 0; }
+  h2 { font-size: 28px; margin: 0; }
+  h3 { font-size: 24px; margin: 15px 0 10px; }
+
+  .card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    margin: 18px 0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    border: 3px solid #ddd;
+  }
+  .card.green { background: #E8F5E9; border-color: #4CAF50; }
+  .card.blue { background: #E3F2FD; border-color: #2196F3; }
+  .card.yellow { background: #FFFDE7; border-color: #FFC107; }
+
+  .section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    margin: 30px 0 15px;
+    border-radius: 15px;
+    color: white;
+    background: #FF9800;
+  }
+  .section-title.green { background: #4CAF50; }
+  .section-title.blue { background: #2196F3; }
+  .section-title.pink { background: #E91E63; }
+  .section-title.purple { background: #9C27B0; }
+  .section-title.teal { background: #009688; }
+
+  /* Алгоритм — шаги */
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: white;
+    padding: 15px 20px;
+    margin: 10px 0;
+    border-radius: 15px;
+    font-size: 22px;
+    border-left: 8px solid #FFC107;
+  }
+  .step-num {
+    background: #FFC107;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+  .arrow { text-align: center; font-size: 36px; color: #FFC107; margin: 2px 0; }
+
+  /* Домики */
+  .house-row { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin: 15px 0; }
+  .house {
+    padding: 25px 35px;
+    border-radius: 20px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 26px;
+    min-width: 200px;
+  }
+  .house.green { background: #C8E6C9; color: #1B5E20; border: 5px solid #4CAF50; }
+  .house.blue  { background: #BBDEFB; color: #0D47A1; border: 5px solid #2196F3; }
+  .house small { display: block; font-size: 18px; font-weight: normal; margin-top: 8px; }
+
+  /* Исключения */
+  .exc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .exc-item {
+    background: #2196F3; color: white; padding: 12px;
+    border-radius: 12px; text-align: center;
+    font-size: 18px; font-weight: bold;
+  }
+  .exc-item.green-exc { background: #4CAF50; }
+
+  /* Таблица окончаний */
+  table { width: 100%; border-collapse: collapse; font-size: 22px; margin: 10px 0; }
+  th, td { padding: 10px; text-align: center; border: 2px solid #ddd; }
+  th { background: #FFC107; font-size: 18px; }
+  .t-green { background: #E8F5E9; }
+  .t-blue  { background: #E3F2FD; }
+
+  /* Задания */
+  .task {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    margin: 10px 0;
+    background: #FAFAFA;
+    border-radius: 15px;
+    flex-wrap: wrap;
+    border: 2px solid #eee;
+  }
+  .task .word { font-size: 26px; font-weight: bold; min-width: 170px; }
+  .feedback { font-size: 28px; min-width: 40px; }
+
+  button {
+    font-family: inherit;
+    font-size: 22px;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.15s;
+  }
+  button:hover:not(:disabled) { transform: scale(1.05); }
+  button:disabled { cursor: default; }
+
+  .btn-green { background: #4CAF50; color: white; }
+  .btn-blue  { background: #2196F3; color: white; }
+  .btn-yellow{ background: #FFC107; color: #333; }
+  .btn-reset { background: #FF5722; color: white; font-size: 18px; padding: 8px 16px; }
+
+  .btn-correct {
+    outline: 4px solid #4CAF50;
+    box-shadow: 0 0 15px rgba(76,175,80,0.6);
+  }
+  .btn-wrong {
+    outline: 4px solid #F44336;
+    opacity: 0.55;
+  }
+
+  input {
+    font-family: inherit;
+    font-size: 26px;
+    padding: 8px;
+    border: 3px solid #FFC107;
+    border-radius: 12px;
+    width: 70px;
+    text-align: center;
+    font-weight: bold;
+  }
+  input.correct { border-color: #4CAF50; background: #E8F5E9; }
+  input.wrong   { border-color: #F44336; background: #FFEBEE; }
+
+  .hint {
+    background: #FFF9C4;
+    padding: 15px 20px;
+    border-radius: 12px;
+    border-left: 8px solid #FFC107;
+    margin: 12px 0;
+    font-size: 20px;
+  }
+  .hint b { color: #C62828; }
+
+  .score-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: linear-gradient(90deg, #FFC107, #FF9800);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 0 0 20px 20px;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  }
+  .score-bar b { font-size: 26px; }
+
+  #celebrate {
+    display: none;
+    text-align: center;
+    font-size: 40px;
+    color: #E91E63;
+    padding: 30px;
+    margin: 20px 0;
+    background: #FFFDE7;
+    border-radius: 25px;
+    border: 4px dashed #E91E63;
+    animation: pop 0.6s ease;
+  }
+  @keyframes pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  .big-emoji { font-size: 40px; }
+</style>
+</head>
+<body>
+
+<div class="score-bar">
+  🌟 Правильно: <b id="score">0</b> из <b id="total">0</b>
+</div>
+
+<div class="container">
+
+<h1>🟢🔵 Тренажёр: спряжение глаголов</h1>
+
+<!-- ============ ПРАВИЛО 1 ============ -->
+<div class="section-title">
+  <h2>📌 Шаг 1. Как узнать спряжение?</h2>
+</div>
+
+<div class="card yellow">
+  <div class="step">
+    <div class="step-num">1</div>
+    <div>Поставь глагол в начальную форму: <b>«что делать?»</b></div>
+  </div>
+  <div class="arrow">⬇</div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div>Смотри на <b>конец слова</b> 👀</div>
+  </div>
+  <div class="arrow">⬇</div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div>Слово заканчивается на <b>‑ИТЬ</b>?</div>
+  </div>
+  <div class="arrow">⬇</div>
+
+  <div class="house-row">
+    <div class="house blue">🔵 II<br><small>заканчивается на ‑ИТЬ<br>(кроме брить, стелить)</small></div>
+    <div class="house green">🟢 I<br><small>все остальные<br>(кроме 11 исключений)</small></div>
+  </div>
+
+  <div class="hint">
+    💡 <b>Исключения</b> — это слова, которые НЕ подчиняются правилу. Их надо запомнить!
+  </div>
+</div>
+
+<!-- ============ ИСКЛЮЧЕНИЯ ============ -->
+<div class="section-title blue">
+  <h2>🔵 11 слов → II спряжение</h2>
+</div>
+<div class="card blue">
+  <div class="exc-grid">
+    <div class="exc-item">ГНАТЬ</div>
+    <div class="exc-item">ДЕРЖАТЬ</div>
+    <div class="exc-item">ДЫШАТЬ</div>
+    <div class="exc-item">СЛЫШАТЬ</div>
+    <div class="exc-item">СМОТРЕТЬ</div>
+    <div class="exc-item">ВИДЕТЬ</div>
+    <div class="exc-item">НЕНАВИДЕТЬ</div>
+    <div class="exc-item">ОБИДЕТЬ</div>
+    <div class="exc-item">ВЕРТЕТЬ</div>
+    <div class="exc-item">ТЕРПЕТЬ</div>
+    <div class="exc-item">ЗАВИСЕТЬ</div>
+  </div>
+  <div class="hint" style="margin-top:15px">
+    🎵 Подсказка: <b>«Гнать, держать, дышать и слышать, смотреть, видеть, ненавидеть, и обидеть, и терпеть, и вертеть, и зависеть»</b>
+  </div>
+</div>
+
+<div class="section-title green">
+  <h2>🟢 2 слова → I спряжение</h2>
+</div>
+<div class="card green">
+  <div class="exc-grid" style="grid-template-columns: 1fr 1fr;">
+    <div class="exc-item green-exc">БРИТЬ</div>
+    <div class="exc-item green-exc">СТЕЛИТЬ</div>
+  </div>
+  <div class="hint" style="margin-top:15px">
+    💡 Хотя они заканчиваются на <b>‑ИТЬ</b>, это <b>I</b> спряжение!
+  </div>
+</div>
+
+<!-- ============ УРОВЕНЬ 0 ============ -->
+<div class="section-title teal">
+  <h2>✏️ Уровень 0 — разминка</h2>
+  <button class="btn-reset" onclick="resetSection(this)">🔄 Сброс</button>
+</div>
+<div class="card">
+  <div class="hint">Нажми 🟢 или 🔵 — куда идёт глагол?</div>
+  <div class="task choice" data-answer="g"><span class="word">ЧИТАТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="b"><span class="word">ЛЮБИТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="g"><span class="word">ПЕТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="b"><span class="word">СТРОИТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="g"><span class="word">БРИТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="g"><span class="word">СТЕЛИТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="b"><span class="word">ГНАТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="b"><span class="word">ДЫШАТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="g"><span class="word">ГУЛЯТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="b"><span class="word">КЛЕИТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+</div>
+
+<!-- ============ ПРАВИЛО 2 ============ -->
+<div class="section-title">
+  <h2>📌 Шаг 2. Какое окончание?</h2>
+</div>
+
+<div class="card yellow">
+  <div class="step">
+    <div class="step-num">1</div>
+    <div>Узнай спряжение: 🟢 или 🔵</div>
+  </div>
+  <div class="arrow">⬇</div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div>Найди лицо: <b>я / ты / он / мы / вы / они</b></div>
+  </div>
+  <div class="arrow">⬇</div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div>Посмотри окончание в таблице ⬇</div>
+  </div>
+</div>
+
+<div class="card">
+  <table>
+    <tr><th>Лицо</th><th class="t-green">🟢 I спряжение</th><th class="t-blue">🔵 II спряжение</th></tr>
+    <tr><td>Я</td><td class="t-green">‑У / ‑Ю</td><td class="t-blue">‑У / ‑Ю</td></tr>
+    <tr><td>Ты</td><td class="t-green">‑ЕШЬ</td><td class="t-blue">‑ИШЬ</td></tr>
+    <tr><td>Он</td><td class="t-green">‑ЕТ</td><td class="t-blue">‑ИТ</td></tr>
+    <tr><td>Мы</td><td class="t-green">‑ЕМ</td><td class="t-blue">‑ИМ</td></tr>
+    <tr><td>Вы</td><td class="t-green">‑ЕТЕ</td><td class="t-blue">‑ИТЕ</td></tr>
+    <tr><td>Они</td><td class="t-green">‑УТ / ‑ЮТ</td><td class="t-blue">‑АТ / ‑ЯТ</td></tr>
+  </table>
+  <div class="hint">
+    🟢 I: буквы <b>Е, У, Ю</b> &nbsp;•&nbsp; 🔵 II: буквы <b>И, А, Я</b>
+  </div>
+</div>
+
+<!-- ============ УРОВЕНЬ 1 ============ -->
+<div class="section-title teal">
+  <h2>✏️ Уровень 1 — определи спряжение</h2>
+  <button class="btn-reset" onclick="resetSection(this)">🔄 Сброс</button>
+</div>
+<div class="card">
+  <div class="task choice" data-answer="g"><span class="word">РИСОВАТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="b"><span class="word">СМОТРЕТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="g"><span class="word">МЫТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="b"><span class="word">ВИДЕТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="g"><span class="word">ПИСАТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="b"><span class="word">ДЕРЖАТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="g"><span class="word">ГУЛЯТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="b"><span class="word">СЛЫШАТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="b"><span class="word">СТРОИТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="g"><span class="word">БРИТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+</div>
+
+<!-- ============ УРОВЕНЬ 2 ============ -->
+<div class="section-title pink">
+  <h2>✏️ Уровень 2 — вставь букву</h2>
+  <button class="btn-reset" onclick="resetSection(this)">🔄 Сброс</button>
+</div>
+<div class="card">
+  <div class="hint">Напиши <b>одну букву</b> в окошко. Сначала узнай спряжение!</div>
+  <div class="task letter" data-answer="е"><span class="word">Ты чита...шь</span><input type="text" maxlength="2"><span class="feedback"></span></div>
+  <div class="task letter" data-answer="и"><span class="word">Он люб...т</span><input type="text" maxlength="2"><span class="feedback"></span></div>
+  <div class="task letter" data-answer="е"><span class="word">Мы гуля...м</span><input type="text" maxlength="2"><span class="feedback"></span></div>
+  <div class="task letter" data-answer="и"><span class="word">Вы смотр...те</span><input type="text" maxlength="2"><span class="feedback"></span></div>
+  <div class="task letter" data-answer="ю"><span class="word">Они чита...т</span><input type="text" maxlength="2"><span class="feedback"></span></div>
+  <div class="task letter" data-answer="е"><span class="word">Он рису...т</span><input type="text" maxlength="2"><span class="feedback"></span></div>
+  <div class="task letter" data-answer="и"><span class="word">Ты вид...шь</span><input type="text" maxlength="2"><span class="feedback"></span></div>
+  <div class="task letter" data-answer="я"><span class="word">Они кле...т</span><input type="text" maxlength="2"><span class="feedback"></span></div>
+  <div class="task letter" data-answer="и"><span class="word">Мы дыш...м</span><input type="text" maxlength="2"><span class="feedback"></span></div>
+  <div class="task letter" data-answer="е"><span class="word">Вы пиш...те</span><input type="text" maxlength="2"><span class="feedback"></span></div>
+  <div class="task letter" data-answer="е"><span class="word">Ты стел...шь</span><input type="text" maxlength="2"><span class="feedback"></span></div>
+  <div class="task letter" data-answer="а"><span class="word">Они держ...т</span><input type="text" maxlength="2"><span class="feedback"></span></div>
+</div>
+
+<!-- ============ УРОВЕНЬ 3 ============ -->
+<div class="section-title purple">
+  <h2>✏️ Уровень 3 — найди ошибку</h2>
+  <button class="btn-reset" onclick="resetSection(this)">🔄 Сброс</button>
+</div>
+<div class="card">
+  <div class="hint">Написано <b>правильно</b>? Нажми ✅ или ❌</div>
+  <div class="task choice" data-answer="w"><span class="word">Он смотрет</span><button class="btn-green" data-val="c">✅</button><button class="btn-yellow" data-val="w">❌</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="w"><span class="word">Ты читаишь</span><button class="btn-green" data-val="c">✅</button><button class="btn-yellow" data-val="w">❌</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="c"><span class="word">Они любят</span><button class="btn-green" data-val="c">✅</button><button class="btn-yellow" data-val="w">❌</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="c"><span class="word">Мы пишем</span><button class="btn-green" data-val="c">✅</button><button class="btn-yellow" data-val="w">❌</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="w"><span class="word">Вы дышаете</span><button class="btn-green" data-val="c">✅</button><button class="btn-yellow" data-val="w">❌</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="w"><span class="word">Она гуляит</span><button class="btn-green" data-val="c">✅</button><button class="btn-yellow" data-val="w">❌</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="w"><span class="word">Они видют</span><button class="btn-green" data-val="c">✅</button><button class="btn-yellow" data-val="w">❌</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="w"><span class="word">Ты строешь</span><button class="btn-green" data-val="c">✅</button><button class="btn-yellow" data-val="w">❌</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="w"><span class="word">Мы клеем</span><button class="btn-green" data-val="c">✅</button><button class="btn-yellow" data-val="w">❌</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="w"><span class="word">Он бреит</span><button class="btn-green" data-val="c">✅</button><button class="btn-yellow" data-val="w">❌</button><span class="feedback"></span></div>
+</div>
+
+<!-- ============ УРОВЕНЬ 4 ============ -->
+<div class="section-title teal">
+  <h2>✏️ Уровень 4 — выбери окончание</h2>
+  <button class="btn-reset" onclick="resetSection(this)">🔄 Сброс</button>
+</div>
+<div class="card">
+  <div class="task choice" data-answer="строит"><span class="word">Он ...</span><button class="btn-green" data-val="строит">строит</button><button class="btn-blue" data-val="строет">строет</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="дышишь"><span class="word">Ты ...</span><button class="btn-green" data-val="дышишь">дышишь</button><button class="btn-blue" data-val="дышаешь">дышаешь</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="гуляем"><span class="word">Мы ...</span><button class="btn-green" data-val="гуляем">гуляем</button><button class="btn-blue" data-val="гулим">гулим</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="смотрите"><span class="word">Вы ...</span><button class="btn-green" data-val="смотрите">смотрите</button><button class="btn-blue" data-val="смотрете">смотрете</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="читают"><span class="word">Они ...</span><button class="btn-green" data-val="читают">читают</button><button class="btn-blue" data-val="читаят">читаят</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="люблю"><span class="word">Я ...</span><button class="btn-green" data-val="люблю">люблю</button><button class="btn-blue" data-val="любю">любю</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="пишет"><span class="word">Она ...</span><button class="btn-green" data-val="пишет">пишет</button><button class="btn-blue" data-val="пишит">пишит</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="держат"><span class="word">Они ...</span><button class="btn-green" data-val="держат">держат</button><button class="btn-blue" data-val="держут">держут</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="видишь"><span class="word">Ты ...</span><button class="btn-green" data-val="видишь">видишь</button><button class="btn-blue" data-val="видешь">видешь</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="клеим"><span class="word">Мы ...</span><button class="btn-green" data-val="клеим">клеим</button><button class="btn-blue" data-val="клеем">клеем</button><span class="feedback"></span></div>
+</div>
+
+<!-- ============ УРОВЕНЬ 5 ============ -->
+<div class="section-title">
+  <h2>✏️ Уровень 5 — мини‑тест</h2>
+  <button class="btn-reset" onclick="resetSection(this)">🔄 Сброс</button>
+</div>
+<div class="card">
+  <div class="task choice" data-answer="b"><span class="word">ЛЮБИТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="b"><span class="word">СМОТРЕТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="е"><span class="word">Ты пиш...шь</span><button class="btn-green" data-val="е">е</button><button class="btn-blue" data-val="и">и</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="я"><span class="word">Они вид...т</span><button class="btn-green" data-val="у">у</button><button class="btn-blue" data-val="я">я</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="е"><span class="word">Мы гуля...м</span><button class="btn-green" data-val="е">е</button><button class="btn-blue" data-val="и">и</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="и"><span class="word">Вы дыш...те</span><button class="btn-green" data-val="и">и</button><button class="btn-blue" data-val="е">е</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="g"><span class="word">БРИТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="g"><span class="word">СТЕЛИТЬ</span><button class="btn-green" data-val="g">🟢 I</button><button class="btn-blue" data-val="b">🔵 II</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="и"><span class="word">Он стро...т</span><button class="btn-green" data-val="и">и</button><button class="btn-blue" data-val="е">е</button><span class="feedback"></span></div>
+  <div class="task choice" data-answer="я"><span class="word">Они кле...т</span><button class="btn-green" data-val="я">я</button><button class="btn-blue" data-val="у">у</button><span class="feedback"></span></div>
+</div>
+
+<div id="celebrate">
+  🎉 Молодец! Ты справилась со всеми заданиями! 🎉
+</div>
+
+</div>
+
+<script>
+const tasks = document.querySelectorAll('.task');
+const done = new Set();
+document.getElementById('total').textContent = tasks.length;
+
+const scoreEl = document.getElementById('score');
+const celebrate = document.getElementById('celebrate');
+
+function markDone(task) {
+  if (!task.dataset.id) task.dataset.id = Math.random().toString(36).slice(2);
+  if (done.has(task.dataset.id)) return;
+  done.add(task.dataset.id);
+  scoreEl.textContent = done.size;
+  if (done.size === tasks.length) celebrate.style.display = 'block';
+}
+
+// Кнопки с выбором
+tasks.forEach(task => {
+  if (!task.classList.contains('choice')) return;
+  const ans = task.dataset.answer;
+  const fb = task.querySelector('.feedback');
+  const buttons = task.querySelectorAll('button');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (task.classList.contains('done')) return;
+      if (btn.dataset.val === ans) {
+        btn.classList.add('btn-correct');
+        fb.textContent = '✅';
+        task.classList.add('done');
+        buttons.forEach(b => b.disabled = true);
+        markDone(task);
+      } else {
+        btn.classList.add('btn-wrong');
+        fb.textContent = '❌';
+      }
+    });
+  });
+});
+
+// Поля ввода буквы
+tasks.forEach(task => {
+  if (!task.classList.contains('letter')) return;
+  const ans = task.dataset.answer.toLowerCase();
+  const input = task.querySelector('input');
+  const fb = task.querySelector('.feedback');
+
+  input.addEventListener('input', () => {
+    if (task.classList.contains('done')) return;
+    const val = input.value.trim().toLowerCase();
+    if (val === '') {
+      input.classList.remove('correct', 'wrong');
+      fb.textContent = '';
+      return;
+    }
+    if (val === ans) {
+      input.classList.add('correct');
+      input.classList.remove('wrong');
+      fb.textContent = '✅';
+      task.classList.add('done');
+      input.disabled = true;
+      markDone(task);
+    } else {
+      input.classList.add('wrong');
+      input.classList.remove('correct');
+      fb.textContent = '❌';
+    }
+  });
+});
+
+// Сброс секции
+function resetSection(btn) {
+  const title = btn.closest('.section-title');
+  let section = title.nextElementSibling;
+  while (section && !section.classList.contains('section-title')) {
+    section.querySelectorAll('.task').forEach(task => {
+      task.classList.remove('done');
+      task.querySelectorAll('button').forEach(b => {
+        b.classList.remove('btn-correct', 'btn-wrong');
+        b.disabled = false;
+      });
+      const inp = task.querySelector('input');
+      if (inp) {
+        inp.value = '';
+        inp.disabled = false;
+        inp.classList.remove('correct', 'wrong');
+      }
+      const fb = task.querySelector('.feedback');
+      if (fb) fb.textContent = '';
+      if (task.dataset.id && done.has(task.dataset.id)) {
+        done.delete(task.dataset.id);
+      }
+    });
+    section = section.nextElementSibling;
+  }
+  scoreEl.textContent = done.size;
+  celebrate.style.display = 'none';
+}
+</script>
+
+</body>
+</html>
